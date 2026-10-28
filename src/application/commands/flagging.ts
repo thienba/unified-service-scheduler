@@ -54,7 +54,7 @@ export async function reflag(
       ? withFlags(
           stored,
           dealership,
-          technicianOf.get(stored.technicianId)!,
+          technicianOf.get(stored.technicianId),
           now,
         )
       : stored;

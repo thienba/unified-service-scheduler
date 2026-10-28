@@ -69,6 +69,16 @@ describe("flagKinds (AD-14)", () => {
   });
 });
 
+describe("an unknown technician", () => {
+  it("has no shift, so the appointment gets outside_shift and nothing throws", () => {
+    const a = appointment("a1", "gone", "b1", at("09:00"), at("10:00"));
+    expect(flagKinds(a, dealership(), undefined)).toEqual(["outside_shift"]);
+    expect(withFlags(a, dealership(), undefined, 5 * MIN).flags).toEqual([
+      { kind: "outside_shift", since: 5 * MIN },
+    ]);
+  });
+});
+
 describe("withFlags (AD-14, D-0001-22 c)", () => {
   const d = dealership();
   const t = technician("t1");

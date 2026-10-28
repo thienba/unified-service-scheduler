@@ -13,11 +13,14 @@ import { shiftSegments } from "../policies/work-segments";
 import { localDateOf } from "../time";
 import { contains } from "./interval";
 
-/** The flags an appointment deserves under these hours and this technician's shifts. */
+/**
+ * The flags an appointment deserves under these hours and this technician's shifts.
+ * A technician that is not known has no shift, so the appointment is outside it.
+ */
 export function flagKinds(
   appointment: Pick<Appointment, "start" | "end">,
   dealership: Dealership,
-  technician: Technician,
+  technician: Technician | undefined,
 ): AppointmentFlagKind[] {
   const date = localDateOf(appointment.start, dealership.timeZone);
   const window = openingWindow(dealership, date);
@@ -25,9 +28,11 @@ export function flagKinds(
   if (window === null || !contains(window, appointment)) {
     kinds.push("outside_opening_hours");
   }
-  const fitsShift = shiftSegments(technician, dealership, date).some(
-    (segment) => contains(segment, appointment),
-  );
+  const fitsShift =
+    technician !== undefined &&
+    shiftSegments(technician, dealership, date).some((segment) =>
+      contains(segment, appointment),
+    );
   if (!fitsShift) kinds.push("outside_shift");
   return kinds;
 }
@@ -40,7 +45,7 @@ export function flagKinds(
 export function withFlags(
   appointment: Appointment,
   dealership: Dealership,
-  technician: Technician,
+  technician: Technician | undefined,
   now: EpochMs,
 ): Appointment {
   const kinds = flagKinds(appointment, dealership, technician);
