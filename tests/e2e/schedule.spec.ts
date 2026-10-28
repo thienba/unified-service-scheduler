@@ -119,12 +119,9 @@ for (const width of [390, 1440]) {
           .getByRole("button", { name: "List" })
           .click();
         await expect(page).toHaveURL(/view=list/);
-      } else {
-        // Below 1024 wide there is no timeline to select in: selected states fall back to the list (staff.md 5.1).
-        await shot(page, "schedule-list");
-        await shot(page, "schedule-selected");
-        await shot(page, "schedule-selected-flagged");
       }
+      // Below 1024 wide there is no timeline and no detail panel, so the states selected and selected-flagged
+      // exist only on the desktop (staff.md 5.1 draws no phone version). No 390 shots are taken of them.
 
       // The list: time order, gap rows between, each row 64px or more.
       const list = page.getByRole("list", { name: /in time order/ });
@@ -144,7 +141,7 @@ for (const width of [390, 1440]) {
         "href",
         /^\/book\/for-customer\?start=.*&technicianId=tech-lon-/,
       );
-      if (wide) await checkState(page, "schedule-list");
+      await checkState(page, "schedule-list");
 
       // Rows to Bays: one row per bay, no free gaps, and the facts line says why.
       await page
@@ -180,7 +177,8 @@ for (const width of [390, 1440]) {
         ).toHaveCount(4);
         await checkState(page, "schedule-bays");
       } else {
-        await shot(page, "schedule-bays");
+        // The phone has no bay timeline: Bays is the bay list, checked like any state.
+        await checkState(page, "schedule-bays");
       }
     });
 
@@ -556,22 +554,47 @@ test("the timeline: shading, break, leave, Now line, gaps, names and Tab order",
 
   const flagged = ash.getByRole("button", { name: /, flagged: / });
   await expect(flagged).toHaveAccessibleName(
-    /^13:15 to 14:15, Oil and filter change, Kia Ceed EF56 JKL, Demo Tech Ash, Bay 1, Courtesy car, flagged: .+$/,
+    /^13:15 to 14:15, Oil and filter change, Kia Ceed EF56 JKL, Demo Tech Ash, Bay 1, Courtesy car, Courtesy car 1, flagged: .+$/,
   );
   const birch = timeline(page).getByRole("group", { name: "Demo Tech Birch" });
   const gap = birch.getByRole("link").first();
   await expect(gap).toHaveAccessibleName(
     /^Free, \d\d:\d\d to \d\d:\d\d, .+, Demo Tech Birch\. Book this time\.$/,
   );
-  // Rows are groups; Tab walks each row in time order, no custom arrow keys.
-  const names = await birch
-    .locator("button, a")
-    .evaluateAll((els) => els.map((e) => e.getAttribute("aria-label")!));
-  await birch.locator("button, a").first().focus();
-  for (const name of names.slice(1)) {
-    await page.keyboard.press("Tab");
-    await expect(page.locator(":focus")).toHaveAttribute("aria-label", name);
+  // Rows are groups; Tab walks each row in time order, no custom arrow keys. The expected order comes
+  // from the start times in the names, not from the page, so a wrong sort in the row fails here.
+  for (const row of [ash, birch]) {
+    const names = await row
+      .locator("button, a")
+      .evaluateAll((els) => els.map((e) => e.getAttribute("aria-label")!));
+    expect(names.length).toBeGreaterThan(1);
+    const startOf = (name: string) => /(\d\d:\d\d) to /.exec(name)![1]!;
+    const inTimeOrder = [...names].sort((x, y) =>
+      startOf(x).localeCompare(startOf(y)),
+    );
+    await row.getByRole("button").or(row.getByRole("link")).first().focus();
+    await expect(page.locator(":focus")).toHaveAttribute(
+      "aria-label",
+      inTimeOrder[0]!,
+    );
+    for (const name of inTimeOrder.slice(1)) {
+      await page.keyboard.press("Tab");
+      await expect(page.locator(":focus")).toHaveAttribute("aria-label", name);
+    }
   }
+});
+
+test("a date that is not a real date opens today, like no date", async ({
+  page,
+}) => {
+  await seedBusyDay(page);
+  await signIn(page, "Staff");
+  await openSchedule(page, "?date=2026-13-45");
+  await expect(
+    page.getByText(
+      "4 appointments, 1 flagged, 2 free gaps. 2 technicians working, 1 on leave.",
+    ),
+  ).toBeVisible();
 });
 
 test("the manager's gaps link to the booking too, and the manager has no top Book button (D-0001-54)", async ({

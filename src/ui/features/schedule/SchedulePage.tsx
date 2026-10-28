@@ -25,6 +25,7 @@ import {
   dayAxis,
   factsText,
   listItems,
+  refetchEvery,
   type Rows,
   type ScheduleDay,
 } from "./schedule-model";
@@ -33,6 +34,13 @@ import { Legend, Timeline } from "./Timeline";
 type View = "timeline" | "list" | "technician";
 
 const LOCAL_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+/** A real calendar date in `?date=`: "2026-13-45" is treated like no date at all. */
+function isRealDate(text: string): boolean {
+  if (!LOCAL_DATE.test(text)) return false;
+  const at = new Date(`${text}T00:00:00Z`);
+  return !Number.isNaN(at.getTime()) && at.toISOString().startsWith(text);
+}
 
 /** The current instant, again every half minute, so the Now line and "today" keep up. */
 function useNow(): number {
@@ -54,7 +62,7 @@ export function SchedulePage() {
   const zone = selected?.timeZone ?? "UTC";
   const today = localDateIn(now, zone);
   const asked = params.get("date");
-  const date = asked && LOCAL_DATE.test(asked) ? asked : today;
+  const date = asked && isRealDate(asked) ? asked : today;
   const rows: Rows = params.get("rows") === "bays" ? "bays" : "technicians";
   const askedView = params.get("view");
   // From 1024 wide the timeline is the default; below it the list (design.md section 3, rule 6).
@@ -86,6 +94,8 @@ export function SchedulePage() {
         }),
       ),
     enabled: dealershipId !== undefined,
+    // Today is asked for again, so gaps whose time has passed go (D-0001-21).
+    refetchInterval: refetchEvery(date, today),
   });
 
   const staff = me?.role === "staff";

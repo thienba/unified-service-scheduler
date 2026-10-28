@@ -21,6 +21,7 @@ import {
   hoursFrom,
   listItems,
   railText,
+  refetchEvery,
   type Appointment,
   type ScheduleDay,
   type ScheduleTechnician,
@@ -157,7 +158,7 @@ describe("the schedule's words (staff.md 5.1, Copy)", () => {
       "09:15 to 12:15, Full service, Vauxhall Corsa CD34 FGH, Test Tech One, Bay 1, Drop-off",
     );
     expect(blockName(day, day.appointments[1]!)).toBe(
-      "12:15 to 13:45, Brake fluid change, Peugeot 208 PG28 GHI, Bartholomew Wojciechowski, Bay 1, Courtesy car, flagged: Ends after Bartholomew's shift, 13:00",
+      "12:15 to 13:45, Brake fluid change, Peugeot 208 PG28 GHI, Bartholomew Wojciechowski, Bay 1, Courtesy car, Car 2, flagged: Ends after Bartholomew's shift, 13:00",
     );
   });
 
@@ -184,6 +185,12 @@ describe("the schedule's words (staff.md 5.1, Copy)", () => {
         }),
       ),
     ).toBe("Waiting");
+  });
+
+  it("asks for today again every minute so passed gaps go, and other days never", () => {
+    expect(refetchEvery("2026-10-28", "2026-10-28")).toBe(60_000);
+    expect(refetchEvery("2026-10-29", "2026-10-28")).toBe(false);
+    expect(refetchEvery("2026-10-27", "2026-10-28")).toBe(false);
   });
 
   it("writes the facts line for a normal, an empty, a past and a bay day", () => {
@@ -350,7 +357,7 @@ describe("Timeline (design.md 8.12)", () => {
     const name = within(group).getByText("Bartholomew Wojciechowski");
     expect(name.className).toContain("truncate");
     expect(name.closest("[title]")?.getAttribute("title")).toBe(
-      "Bartholomew Wojciechowski",
+      "Bartholomew Wojciechowski, Service, brakes · shift 08:00 to 16:30",
     );
   });
 
@@ -359,6 +366,14 @@ describe("Timeline (design.md 8.12)", () => {
     const block = screen.getByRole("button", { name: /^09:15 to 12:15/ });
     expect(block.style.left).toBe("calc(var(--size-hour) * 1.2500)");
     expect(block.style.width).toBe("calc(var(--size-hour) * 3.0000)");
+  });
+
+  it("keeps the car choice's icon on a flagged block, next to the alert", () => {
+    renderTimeline(sampleDay());
+    const block = screen.getByRole("button", { name: /, flagged: / });
+    expect(
+      [...block.querySelectorAll("use")].map((i) => i.getAttribute("href")),
+    ).toEqual(["#i-alert", "#i-key"]);
   });
 
   it("tells the parent which block was picked", () => {
@@ -499,5 +514,6 @@ describe("ScheduleList (design.md 8.13)", () => {
     expect(links[1]!.textContent).toContain(
       "Flagged: Ends after Bartholomew's shift, 13:00",
     );
+    expect(links[1]!.textContent).toContain("Courtesy car, Car 2");
   });
 });

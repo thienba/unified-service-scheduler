@@ -21,6 +21,7 @@ import {
   hoursFrom,
   minutesBetween,
   railText,
+  railTitle,
   vehicleText,
   type Appointment,
   type Axis,
@@ -57,7 +58,8 @@ export function TimelineBlock({
   vertical?: boolean;
 }) {
   const reason = flagReason(a);
-  const icon = reason ? "alert" : transportWords[a.transport as Transport].icon;
+  // A flagged block shows the alert and still the car choice, so the car choice is never lost (REQ-BOOK-010.AC-2).
+  const carIcon = transportWords[a.transport as Transport].icon;
   const minutes = minutesBetween(a.start, a.end);
   // The visible words run in the same order as the name in `aria-label`, so the name contains them
   // (WCAG 2.5.3, Q-0001-209): service then vehicle on a row, time then service in the one-day view.
@@ -80,13 +82,14 @@ export function TimelineBlock({
   const content = blockShowsText(minutes) ? (
     <>
       <b className="flex min-w-0 items-center gap-1 text-sm font-semibold">
-        <Icon name={icon} />
+        {reason && <Icon name="alert" />}
+        <Icon name={carIcon} />
         <span className="num truncate">{top}</span>
       </b>{" "}
       <small className="num block truncate text-xs">{bottom}</small>
     </>
   ) : (
-    <Icon name={icon} />
+    <Icon name={reason ? "alert" : carIcon} />
   );
   const name = blockName(day, a);
   const title = `${time}, ${a.display.serviceTypeName}, ${vehicleText(a)}${reason ? " (flagged)" : ""}`;
@@ -233,7 +236,7 @@ function TimelineRow({
     >
       <div
         className="sticky start-0 z-20 flex w-(--size-rail) shrink-0 flex-col justify-center border-e border-border-subtle bg-surface px-4 py-2"
-        title={name}
+        title={railTitle(name, subtitle)}
       >
         <b className="truncate font-heading">{name}</b>
         <span className="num truncate text-sm text-text-secondary">

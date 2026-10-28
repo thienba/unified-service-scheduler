@@ -15,6 +15,15 @@ export type Appointment = components["schemas"]["Appointment"];
 export type TimeSlot = components["schemas"]["TimeSlot"];
 export type Rows = "technicians" | "bays";
 
+/**
+ * How often today's day is asked for again, so free gaps whose time has passed go away (D-0001-21: past
+ * time today has no gaps). Other days do not change by the clock.
+ */
+export const TODAY_REFETCH_MS = 60_000;
+export function refetchEvery(date: string, today: string): number | false {
+  return date === today ? TODAY_REFETCH_MS : false;
+}
+
 const HOUR_MS = 3_600_000;
 const MINUTE_MS = 60_000;
 
@@ -119,7 +128,7 @@ export function carChoiceText(a: Appointment): string {
     : label;
 }
 
-/** "09:15 to 12:15, Full service, Vauxhall Corsa CD34 FGH, Maya Okafor, Bay 1, Drop-off" (+ the flag). */
+/** "09:15 to 12:15, Full service, Vauxhall Corsa CD34 FGH, Maya Okafor, Bay 1, Drop-off" (+ the flag). A courtesy car is named: "…, Courtesy car, Car 2". */
 export function blockName(day: ScheduleDay, a: Appointment): string {
   const reason = flagReason(a);
   return [
@@ -128,7 +137,7 @@ export function blockName(day: ScheduleDay, a: Appointment): string {
     `${vehicleText(a)} ${a.display.vehicle.registration}`,
     technicianName(day, a),
     bayName(day, a),
-    transportLabel(a) + (reason ? `, flagged: ${reason}` : ""),
+    carChoiceText(a) + (reason ? `, flagged: ${reason}` : ""),
   ].join(", ");
 }
 
@@ -147,6 +156,11 @@ export function gapHref(gap: TimeSlot, technicianId: string): string {
 export function skillsText(t: ScheduleTechnician): string {
   const text = t.skills.join(", ");
   return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+/** The rail's `title`: the name, then the second line, so cut-off shift times can still be read. */
+export function railTitle(name: string, subtitle: string): string {
+  return `${name}, ${subtitle}`;
 }
 
 /** The rail's second line: "Mechanic, ev · shift 08:00 to 16:30", or "… · on leave". */

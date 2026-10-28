@@ -1,8 +1,9 @@
 // design.md 8.13: ListRow (AppointmentRow and FreeGapRow). The list reads in time order (REQ-BOOK-004.AC-6).
 import { Link } from "react-router";
 import {
+  Badge,
   FlagBadge,
-  TransportBadge,
+  transportWords,
   type Transport,
 } from "../../components/Badge";
 import { Plate } from "../../components/Small";
@@ -14,6 +15,7 @@ import {
 } from "../../format/format";
 import {
   bayName,
+  carChoiceText,
   flagReason,
   gapHref,
   minutesBetween,
@@ -61,7 +63,9 @@ export function AppointmentRow({
         <span className="block text-sm text-text-secondary">{who}</span>
       </span>
       <span className="col-start-2 flex flex-wrap gap-2 md:col-start-3 md:row-start-1 md:max-w-(--size-side) md:justify-end">
-        <TransportBadge transport={a.transport as Transport} />
+        <Badge icon={transportWords[a.transport as Transport].icon}>
+          {carChoiceText(a)}
+        </Badge>
         {reason && <FlagBadge>Flagged: {reason}</FlagBadge>}
       </span>
     </Link>

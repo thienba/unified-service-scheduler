@@ -39,6 +39,16 @@ async function build(
     }
     return technicians.get(dealershipId)!;
   };
+  // One read of a dealership's cars and bays, not one per appointment: a busy day has many.
+  const once = <T>(load: (dealershipId: string) => Promise<T>) => {
+    const seen = new Map<string, Promise<T>>();
+    return (dealershipId: string) => {
+      if (!seen.has(dealershipId)) seen.set(dealershipId, load(dealershipId));
+      return seen.get(dealershipId)!;
+    };
+  };
+  const carList = once((id) => stores.scheduling.listCourtesyCars(id));
+  const bayList = once((id) => stores.scheduling.listServiceBays(id));
   const views: AppointmentView[] = [];
   for (const appointment of appointments) {
     const serviceType = await stores.scheduling.getServiceType(
@@ -60,15 +70,13 @@ async function build(
       },
     };
     if (appointment.courtesyCarId !== null) {
-      const car = (
-        await stores.scheduling.listCourtesyCars(appointment.dealershipId)
-      ).find((c) => c.id === appointment.courtesyCarId);
+      const car = (await carList(appointment.dealershipId)).find(
+        (c) => c.id === appointment.courtesyCarId,
+      );
       if (car) display.courtesyCarName = car.name;
     }
     if (actor.role !== "customer") {
-      const bays = await stores.scheduling.listServiceBays(
-        appointment.dealershipId,
-      );
+      const bays = await bayList(appointment.dealershipId);
       display.customerName = customer!.name;
       if (technician) display.technicianName = technician.name;
       const bay = bays.find((b) => b.id === appointment.serviceBayId);
