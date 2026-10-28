@@ -3,6 +3,7 @@ import { createMemoryRepository } from "../memory/memory-repository";
 import { describeBookContract } from "./book.contract";
 import { describeChangeContract } from "./change.contract";
 import { describeManagerContract } from "./manager.contract";
+import { describeOutboxContract } from "./outbox.contract";
 import { describeRaceContract, raceOnce } from "./race.contract";
 
 // The check is a spy that still runs the real one (REQ-BOOK-001.AC-2).
@@ -17,6 +18,7 @@ const open = async () => createMemoryRepository();
 describeBookContract("in-memory", open);
 describeChangeContract("in-memory", open);
 describeManagerContract("in-memory", open);
+describeOutboxContract("in-memory", open);
 describeRaceContract("in-memory", open);
 
 describe("in-memory store, repeated race", () => {

@@ -12,7 +12,8 @@ import {
 import type { Appointment, EpochMs } from "../../domain/model";
 import { MINUTE_MS } from "../../domain/time";
 import type { FieldError } from "../../domain/validation/new-customer";
-import type { LogFields } from "../ports";
+import type { LogFields, OutboxMessage } from "../ports";
+import type { PlannedMessage } from "../../domain/outbox";
 
 export interface TimeSuggestion {
   start: EpochMs;
@@ -137,4 +138,19 @@ export function logOutcome(
     ...(result.kind === "slot_unavailable" ? { reasons: result.reasons } : {}),
     ...(result.kind === "ok" ? { appointmentId: result.appointment.id } : {}),
   });
+}
+
+/** The outbox messages of an event as stored rows: ids and a status, nothing about the customer (AD-13, SEC-17). */
+export function outboxRows(
+  deps: CommandDeps,
+  planned: PlannedMessage[],
+): OutboxMessage[] {
+  return planned.map(({ appointmentId, kind, dedupeKey, dueAt }) => ({
+    id: deps.ids.next(),
+    appointmentId,
+    kind,
+    dedupeKey,
+    dueAt,
+    status: "pending",
+  }));
 }

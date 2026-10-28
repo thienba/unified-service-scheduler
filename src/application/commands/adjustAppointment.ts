@@ -11,10 +11,12 @@ import type {
   SchedulingSnapshot,
 } from "../../domain/availability";
 import type { Appointment, EpochMs } from "../../domain/model";
+import { messagesForMove } from "../../domain/outbox";
 import { MINUTE_MS } from "../../domain/time";
 import type { FieldError } from "../../domain/validation/new-customer";
 import {
   logOutcome,
+  outboxRows,
   runCheck,
   slotUnavailable,
   type CommandResult,
@@ -179,7 +181,15 @@ async function adjust(
       version: current.version + 1,
       updatedAt: now,
     };
-    await deps.logger.step("write", () => stores.appointments.update(moved));
+    await deps.logger.step("write", async () => {
+      await stores.appointments.update(moved);
+      // Only a new start changes what the customer was told; a new technician or bay queues nothing
+      // (Q-0001-123 g: nothing changed, nothing to queue).
+      if (moved.start !== current.start) {
+        await stores.outbox.cancelPending(moved.id);
+        await stores.outbox.add(outboxRows(deps, messagesForMove(moved, now)));
+      }
+    });
     const picked: AdjustPicked = {};
     if (
       request.technicianId === undefined &&

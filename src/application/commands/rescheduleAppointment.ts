@@ -9,10 +9,12 @@ import { isBlocking } from "../../domain/appointment/blocking";
 import type { SchedulingSnapshot } from "../../domain/availability";
 import type { Appointment, EpochMs } from "../../domain/model";
 import { customerMayChange } from "../../domain/policies/change-cutoff";
+import { messagesForMove } from "../../domain/outbox";
 import { MINUTE_MS } from "../../domain/time";
 import {
   ROUTES,
   logOutcome,
+  outboxRows,
   runCheck,
   slotUnavailable,
   type CommandResult,
@@ -153,6 +155,8 @@ async function reschedule(
     };
     await deps.logger.step("write", async () => {
       await stores.appointments.update(moved);
+      await stores.outbox.cancelPending(moved.id);
+      await stores.outbox.add(outboxRows(deps, messagesForMove(moved, now)));
       await stores.idempotency.put(
         keyRecord(actor, idempotencyKey, hash, moved.id, now),
       );
