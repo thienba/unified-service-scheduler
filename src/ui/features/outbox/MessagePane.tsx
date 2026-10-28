@@ -85,6 +85,12 @@ export function MessagePane({
       aria-label="Message"
       className="sticky top-4 grid min-w-0 content-start gap-4 self-start rounded-card border border-border-subtle bg-surface p-5"
     >
+      {/* Opening a row fills the pane without moving focus, so a screen reader hears what opened (WCAG 4.1.3). */}
+      <p role="status" className="sr-only">
+        {open
+          ? `${open.message.kindLabel}, ${open.message.dueText}, is shown beside the list.`
+          : ""}
+      </p>
       {open ? (
         <>
           <h2 className="text-xl">{open.message.kindLabel}</h2>

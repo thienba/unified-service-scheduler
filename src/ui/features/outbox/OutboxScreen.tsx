@@ -81,8 +81,23 @@ export function OutboxScreen() {
   const { selected } = useSelectedDealership();
   const [params, setParams] = useSearchParams();
   const appointmentId = params.get("appointmentId") ?? undefined;
-  const [filter, setFilter] = useState<Filter>("all");
-  const [openId, setOpenId] = useState<string | null>(null);
+  // The filter and the open message belong to one view: a new `?appointmentId` (a link, back or forward)
+  // starts again from "All" with nothing open, so a hidden filter never hides rows.
+  const [view, setView] = useState<{
+    for: string | undefined;
+    filter: Filter;
+    openId: string | null;
+  }>({ for: appointmentId, filter: "all", openId: null });
+  const current =
+    view.for === appointmentId
+      ? view
+      : { for: appointmentId, filter: "all" as Filter, openId: null };
+  // Kept, not only shown: coming back to the whole outbox later starts from "All" too.
+  if (current !== view) setView(current);
+  const { filter, openId } = current;
+  const setFilter = (next: Filter) => setView({ ...current, filter: next });
+  const setOpenId = (next: string | null) =>
+    setView({ ...current, openId: next });
   const wide = useMediaQuery(query.lg);
   const idPrefix = useId();
 
@@ -261,10 +276,7 @@ export function OutboxScreen() {
         </Alert>
       </div>
       {only ? (
-        <div
-          role="status"
-          className="flex flex-wrap items-center gap-3 rounded-card border border-text-link bg-info-tint p-5"
-        >
+        <div className="flex flex-wrap items-center gap-3 rounded-card border border-text-link bg-info-tint p-5">
           <Icon name="info" large className="text-text-link" />
           <p className="m-0 min-w-0 flex-1 basis-60">
             Showing the messages for <b>{only.summary}</b>.
@@ -315,7 +327,10 @@ export function OutboxScreen() {
                     message={m}
                     selected={m.id === openId}
                     opensDialog={!wide}
-                    onOpen={setOpenId}
+                    onOpen={(id) =>
+                      // On desktop the row is a toggle: pressing the open one again closes it.
+                      setOpenId(wide && id === openId ? null : id)
+                    }
                   />
                 ))}
               </ul>

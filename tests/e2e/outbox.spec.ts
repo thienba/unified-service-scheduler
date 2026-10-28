@@ -150,10 +150,21 @@ async function shot(page: Page, state: string) {
   await page.waitForTimeout(300);
   // An open sheet is fixed to the window, so a full-page shot would draw it mid-page.
   const sheetOpen = (await page.getByRole("dialog").count()) > 0;
-  await page.screenshot({
-    path: path.join(dir, "shots", `outbox-${state}-${width}.png`),
-    fullPage: !sheetOpen,
-  });
+  const file = path.join(dir, "shots", `outbox-${state}-${width}.png`);
+  if (sheetOpen) {
+    await page.screenshot({ path: file });
+    return;
+  }
+  // A full-page shot paints the shell's fixed tab bar where the window ended, over a row. Making the
+  // window as tall as the page puts the bar at the page's foot, where a reader sees it.
+  const before = page.viewportSize()!;
+  const height = await page.evaluate(
+    () => document.documentElement.scrollHeight,
+  );
+  await page.setViewportSize({ width: before.width, height });
+  await page.waitForTimeout(100);
+  await page.screenshot({ path: file });
+  await page.setViewportSize(before);
 }
 
 /** One booking moved, one booking cancelled: the list the ticket's states are drawn from. */
@@ -268,11 +279,45 @@ for (const width of [390, 1440]) {
     const slow = await context.newPage();
     await slow.setViewportSize({ width, height: 900 });
     await interceptApi(slow, { path: "/outbox", delayMs: 4000 });
+    // Times, in the page, when the hidden label first appears and when the skeleton first shows.
+    await slow.addInitScript(() => {
+      const seen: { label?: number; skeleton?: number } = {};
+      (window as unknown as { __loading: typeof seen }).__loading = seen;
+      const look = () => {
+        const label = [...document.querySelectorAll('[role="status"]')].find(
+          (el) => el.textContent === "Loading the outbox",
+        );
+        if (label && seen.label === undefined) seen.label = performance.now();
+        const skeleton = label?.parentElement?.querySelector(
+          '[aria-hidden="true"]',
+        );
+        if (
+          skeleton &&
+          !skeleton.classList.contains("invisible") &&
+          seen.skeleton === undefined
+        )
+          seen.skeleton = performance.now();
+        if (seen.skeleton === undefined) requestAnimationFrame(look);
+      };
+      requestAnimationFrame(look);
+    });
     await slow.goto("/manage/outbox");
     await expect(
       slow.getByRole("status").filter({ hasText: "Loading the outbox" }),
     ).toBeAttached();
     await slow.waitForTimeout(600);
+    const seen = await slow.evaluate(
+      () =>
+        (
+          window as unknown as {
+            __loading: { label?: number; skeleton?: number };
+          }
+        ).__loading,
+    );
+    // Nothing shows for the first 200 ms; then the skeleton does (one frame of slack).
+    expect(seen.label).toBeDefined();
+    expect(seen.skeleton).toBeDefined();
+    expect(seen.skeleton! - seen.label!).toBeGreaterThanOrEqual(184);
     await expectNoAxeViolations(slow);
     await shot(slow, "loading");
     await slow.close();
@@ -513,37 +558,48 @@ test("message times are London time across the clock change (2026-10-24T10:00Z s
   );
 });
 
-test("a first name with HTML in it is shown as text, and no script runs (SEC-11.AC-2)", async ({
-  page,
-}) => {
-  await asManager(page);
-  const name = `<img/src=x/onerror=window.__xss=1> Tester`;
-  const start = await freeStart(page, "user-staff-london", 5);
-  const booked = await api(page, "/appointments", {
-    user: "user-staff-london",
-    method: "POST",
-    key: crypto.randomUUID(),
-    body: {
-      dealershipId: LONDON,
-      serviceTypeId: "service-oil-change",
-      start,
-      transport: "wait",
-      newCustomer: { name, phone: "+44 7700 900999" },
-      newVehicle: { registration: "XS01SSX", make: "Test", model: "Car" },
-    },
+for (const [name, firstName, registration] of [
+  // The ticket's own name: the first name is its first word, "<img" (Q-0001-219 item 3).
+  [`<img src=x onerror="window.__xss=1">`, "<img", "XS01SSX"],
+  // The whole tag as one word, so the first name carries all of it.
+  [
+    `<img/src=x/onerror=window.__xss=1> Tester`,
+    "<img/src=x/onerror=window.__xss=1>",
+    "XS02SSX",
+  ],
+] as const) {
+  test(`a first name with HTML in it is shown as text, and no script runs (SEC-11.AC-2): ${firstName}`, async ({
+    page,
+  }) => {
+    await asManager(page);
+    const start = await freeStart(page, "user-staff-london", 5);
+    const booked = await api(page, "/appointments", {
+      user: "user-staff-london",
+      method: "POST",
+      key: crypto.randomUUID(),
+      body: {
+        dealershipId: LONDON,
+        serviceTypeId: "service-oil-change",
+        start,
+        transport: "wait",
+        newCustomer: { name, phone: "+44 7700 900999" },
+        newVehicle: { registration, make: "Test", model: "Car" },
+      },
+    });
+    expect(booked.status).toBe(201);
+    await page.reload();
+    await row(page, "Confirmation").click();
+    const pane = page.getByRole("complementary", { name: "Message" });
+    await expect(pane.getByText(`Hi ${firstName},`)).toBeVisible();
+    await expect(pane.getByText(firstName, { exact: true })).toBeVisible();
+    await expect(page.locator("main img")).toHaveCount(0);
+    expect(
+      await page.evaluate(
+        () => (window as unknown as { __xss?: number }).__xss,
+      ),
+    ).toBeUndefined();
   });
-  expect(booked.status).toBe(201);
-  await page.reload();
-  await row(page, "Confirmation").click();
-  const pane = page.getByRole("complementary", { name: "Message" });
-  await expect(
-    pane.getByText("Hi <img/src=x/onerror=window.__xss=1>,"),
-  ).toBeVisible();
-  await expect(page.locator("main img")).toHaveCount(0);
-  expect(
-    await page.evaluate(() => (window as unknown as { __xss?: number }).__xss),
-  ).toBeUndefined();
-});
+}
 
 test("a customer or staff member sees no-permission and the outbox is never asked for; another dealership's outbox is a 403", async ({
   page,
@@ -573,33 +629,107 @@ test("a customer or staff member sees no-permission and the outbox is never aske
   expect(other.status).toBe(403);
 });
 
-test("60 messages: no sideways scroll, one list in reading order", async ({
+test("60 messages: no sideways scroll, one list, each appointment's messages in time order", async ({
   page,
 }) => {
-  const base = Date.parse("2026-11-20T09:00:00Z");
-  const kinds = ["confirmation", "reminder_48h", "reminder_morning"];
-  await interceptApi(page, {
-    path: "/outbox",
-    status: 200,
-    body: Array.from({ length: 60 }, (_, i) => ({
-      id: `m-${String(i).padStart(2, "0")}`,
-      appointmentId:
-        i % 2 ? "appointment-customer-a" : "appointment-customer-b",
-      dealershipId: LONDON,
-      kind: kinds[i % 3],
-      dueAt: new Date(base + i * 3_600_000).toISOString(),
-      status: "pending",
-      links: { cancel: "/x", reschedule: "/y" },
-    })),
-  });
+  test.setTimeout(120_000);
   await page.setViewportSize({ width: 320, height: 800 });
   await asManager(page);
+  // Twenty real bookings, three messages each.
+  for (let i = 0; i < 20; i++) await book(page, i % 2 ? "a" : "b", 3 + i);
+  const outbox = await api(page, `/outbox?dealershipId=${LONDON}`, {
+    user: "user-manager-london",
+  });
+  expect(outbox.status).toBe(200);
+  type Message = {
+    id: string;
+    appointmentId: string;
+    kind: string;
+    dueAt: string;
+  };
+  const messages = outbox.body as Message[];
+  expect(messages).toHaveLength(60);
+
+  await page.reload();
   await expect(rows(page)).toHaveCount(60);
   await expectNoSidewaysScroll(page);
+
+  // What the list should be: per appointment the confirmation, then its reminders by due time; the
+  // appointments newest booking first (Q-0001-219 item 1).
+  const due = (m: Message) => Date.parse(m.dueAt);
+  const byAppointment = new Map<string, Message[]>();
+  for (const m of messages)
+    byAppointment.set(m.appointmentId, [
+      ...(byAppointment.get(m.appointmentId) ?? []),
+      m,
+    ]);
+  const expected = [...byAppointment.entries()]
+    .map(([id, list]) => ({
+      id,
+      booked: due(list.find((m) => m.kind === "confirmation")!),
+      ids: [
+        ...list.filter((m) => m.kind === "confirmation"),
+        ...list
+          .filter((m) => m.kind !== "confirmation")
+          .sort((x, y) => due(x) - due(y) || x.id.localeCompare(y.id)),
+      ].map((m) => m.id),
+    }))
+    .sort((x, y) => y.booked - x.booked || x.id.localeCompare(y.id))
+    .flatMap((g) => g.ids);
+  const shown = await rows(page).evaluateAll((all) =>
+    all.map((b) => b.getAttribute("data-message-id")),
+  );
+  expect(shown).toEqual(expected);
+  // One column: each row sits below the one before it.
   const tops = await rows(page).evaluateAll((all) =>
     all.map((b) => b.getBoundingClientRect().top),
   );
-  expect(tops).toEqual([...tops].sort((a, b) => a - b));
+  for (let i = 1; i < tops.length; i++)
+    expect(tops[i]!).toBeGreaterThan(tops[i - 1]!);
+});
+
+test("on desktop a row opens the message in the pane, says so to a screen reader, and closes when pressed again", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await asManager(page);
+  await book(page, "a", 5);
+  await page.reload();
+  const pane = page.getByRole("complementary", { name: "Message" });
+  const opener = row(page, "Confirmation");
+  await expect(opener).toHaveAttribute("aria-pressed", "false");
+  await opener.click();
+  await expect(opener).toHaveAttribute("aria-pressed", "true");
+  await expect(pane.getByRole("status")).toHaveText(
+    /^Confirmation, .+, is shown beside the list\.$/,
+  );
+  await opener.click();
+  await expect(opener).toHaveAttribute("aria-pressed", "false");
+  await expect(
+    pane.getByRole("heading", { name: "Choose a message" }),
+  ).toBeVisible();
+});
+
+test("a filter chosen for the whole outbox does not carry over to one appointment's messages", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await asManager(page);
+  const booked = await book(page, "a", 5);
+  // In-app moves only (no page load), so the screen keeps its state between them.
+  await page.goto(`/manage/outbox?appointmentId=${booked.body.id}`);
+  await expect(rows(page)).toHaveCount(3);
+  await page.getByRole("button", { name: "Show all messages" }).click();
+  await page.getByRole("button", { name: /^Scheduled \(\d+\)$/ }).click();
+  await expect(rows(page)).toHaveCount(2);
+  await page.goBack();
+  await expect(page.getByText(/^Showing the messages for/)).toBeVisible();
+  await expect(rows(page)).toHaveCount(3);
+  await page.getByRole("button", { name: "Show all messages" }).click();
+  await expect(
+    page.getByRole("button", { name: /^All \(3\)$/ }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await expect(rows(page)).toHaveCount(3);
 });
 
 test("phone and desktop: no sideways scroll at every width, one list below 1024, two panes from 1024", async ({
