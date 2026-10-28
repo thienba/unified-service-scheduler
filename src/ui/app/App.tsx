@@ -1,15 +1,64 @@
-export function App() {
+import { QueryClientProvider, type QueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { BrowserRouter, MemoryRouter } from "react-router";
+import { createApiClient } from "../../api/client";
+import { config, mockEnabled } from "../../config";
+import { ToastProvider } from "../components/Toast";
+import { createQueryClient } from "../data/query-client";
+import { createDemoSupport, type DemoSupport } from "../demo/demo-session";
+import { SessionProvider } from "../session/session";
+import { AppRoutes } from "./routes";
+
+export interface AppProps {
+  /** For tests: where the API answers, and the `fetch` that answers. */
+  baseUrl?: string;
+  fetch?: typeof fetch;
+  /** For tests: start in memory at these addresses instead of the browser's. */
+  initialEntries?: string[];
+  /** For tests: the demo's user support, or `null` for none. */
+  demo?: DemoSupport | null;
+  /** For tests: the query cache to use, so a test can look inside it. */
+  queryClient?: QueryClient;
+}
+
+export function App(props: AppProps = {}) {
+  const baseUrl = props.baseUrl ?? config.apiBaseUrl;
+  const [demo] = useState<DemoSupport | null>(() =>
+    props.demo !== undefined
+      ? props.demo
+      : mockEnabled
+        ? createDemoSupport({
+            baseUrl,
+            ...(props.fetch ? { fetch: props.fetch } : {}),
+          })
+        : null,
+  );
+  const [client] = useState(() =>
+    createApiClient({
+      baseUrl,
+      ...(props.fetch ? { fetch: props.fetch } : {}),
+      ...(demo ? { headers: demo.headers } : {}),
+    }),
+  );
+  const [queryClient] = useState(
+    () => props.queryClient ?? createQueryClient(),
+  );
+  const routes = (
+    <ToastProvider>
+      <SessionProvider client={client} demo={demo}>
+        <AppRoutes />
+      </SessionProvider>
+    </ToastProvider>
+  );
   return (
-    <main className="min-h-screen bg-surface-page p-6 font-sans text-text">
-      <h1 className="font-heading text-2xl font-bold leading-heading text-text sm:text-3xl">
-        Keyloop Service Scheduler
-      </h1>
-      <p className="mt-2 text-text-secondary">
-        The app is set up. Screens come next.
-      </p>
-      <span className="mt-4 inline-block rounded-pill bg-primary px-4 py-1 text-sm font-semibold text-text-on-primary">
-        Scaffold ready
-      </span>
-    </main>
+    <QueryClientProvider client={queryClient}>
+      {props.initialEntries ? (
+        <MemoryRouter initialEntries={props.initialEntries}>
+          {routes}
+        </MemoryRouter>
+      ) : (
+        <BrowserRouter>{routes}</BrowserRouter>
+      )}
+    </QueryClientProvider>
   );
 }

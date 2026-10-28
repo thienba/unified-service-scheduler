@@ -24,6 +24,7 @@ const layerFolders = [
   "src/api/mock",
   "src/api/client",
   "src/ui",
+  "src/ui/demo",
   "src/config",
 ];
 
@@ -100,6 +101,55 @@ describe("no raw colours or arbitrary values in src/ui (AD-16, D-0000-12)", () =
       },
     );
     expect(result?.errorCount).toBe(0);
+  });
+});
+
+describe("no raw sizes or fonts in src/ui (AD-16, D-0000-12)", () => {
+  it("fails on a raw size in a style value", async () => {
+    await fails("src/ui/a.tsx", 'export const s = { width: "13px" };', syntax);
+  });
+  it("fails on a raw font family or font size in a style object", async () => {
+    await fails(
+      "src/ui/a.tsx",
+      'export const s = { fontFamily: "x" };',
+      syntax,
+    );
+    await fails("src/ui/a.tsx", "export const s = { fontSize: 12 };", syntax);
+  });
+  it("passes on a size that is a token", async () => {
+    await passes(
+      "src/ui/a.tsx",
+      'export const s = { width: "var(--size-target)" };',
+    );
+  });
+});
+
+describe("browser storage in one module only (SEC-13.AC-1, SEC-10.AC-4)", () => {
+  const rule = "no-restricted-globals";
+  const property = "no-restricted-properties";
+  it("fails on localStorage and sessionStorage anywhere else in src", async () => {
+    await fails("src/ui/a.tsx", 'localStorage.setItem("a", "b");', rule);
+    await fails("src/ui/a.tsx", "export const s = sessionStorage;", rule);
+    await fails("src/application/a.ts", "export const s = localStorage;", rule);
+  });
+  it("fails on window.localStorage, globalThis.sessionStorage and document.cookie", async () => {
+    await fails(
+      "src/ui/a.tsx",
+      "export const s = window.localStorage;",
+      property,
+    );
+    await fails(
+      "src/ui/a.tsx",
+      "export const s = globalThis.sessionStorage;",
+      property,
+    );
+    await fails("src/ui/a.tsx", 'document.cookie = "a=b";', property);
+  });
+  it("passes in src/ui/demo/saved-user.ts, the one module that saves the user id", async () => {
+    await passes(
+      "src/ui/demo/saved-user.ts",
+      'export const save = (id: string) => localStorage.setItem("user", id);',
+    );
   });
 });
 
