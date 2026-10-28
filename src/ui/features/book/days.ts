@@ -81,8 +81,10 @@ function tooSoon(
   const earliest = now + dealership.policies.leadTimeMinutes * 60_000;
   const earliestDate = localDateIn(earliest, dealership.timeZone);
   if (earliestDate !== date) return earliestDate > date;
-  return minutesOf(formatTime(earliest, dealership.timeZone)) + minutes >
-    minutesOf(close);
+  return (
+    minutesOf(formatTime(earliest, dealership.timeZone)) + minutes >
+    minutesOf(close)
+  );
 }
 
 /**
@@ -213,7 +215,10 @@ export function closestOpenDays(
     Math.abs(Date.parse(`${d}T00:00:00Z`) - Date.parse(`${date}T00:00:00Z`));
   return days
     .filter((d) => d.kind === "open" && d.date !== date)
-    .sort((a, b) => distance(a.date) - distance(b.date) || a.date.localeCompare(b.date));
+    .sort(
+      (a, b) =>
+        distance(a.date) - distance(b.date) || a.date.localeCompare(b.date),
+    );
 }
 
 /** The instant of a local date and clock time in a zone (`2026-10-30`, `08:00`, `Europe/London`). */

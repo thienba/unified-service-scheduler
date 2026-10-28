@@ -70,8 +70,8 @@ export function ConfirmedPage() {
           </>
         }
       >
-        Your booking went through, but something went wrong on our side while
-        we loaded this page. Open My appointments to see it. If it is not there,
+        Your booking went through, but something went wrong on our side while we
+        loaded this page. Open My appointments to see it. If it is not there,
         try again
         {reference
           ? `; if that keeps happening, quote reference ${reference}.`
@@ -81,9 +81,7 @@ export function ConfirmedPage() {
   }
 
   const data = appointment.data;
-  const dealership = dealerships.data?.find(
-    (d) => d.id === data?.dealershipId,
-  );
+  const dealership = dealerships.data?.find((d) => d.id === data?.dealershipId);
   if (!data || dealerships.isPending) {
     return (
       <div className="max-w-(--measure)">
@@ -213,9 +211,7 @@ function Booked({
               it starts. After that, contact {name}.
             </>
           ) : (
-            <>
-              It is too close to the start to change online. Contact {name}.
-            </>
+            <>It is too close to the start to change online. Contact {name}.</>
           )}
         </p>
         {dealership?.phone && <PhoneLink phone={dealership.phone} />}

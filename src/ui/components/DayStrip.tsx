@@ -87,6 +87,8 @@ export function DayStrip({
         ref={row}
         role="radiogroup"
         aria-label={label}
+        // A row that scrolls must be reachable by keyboard; with no day to choose there is no radio to reach it.
+        tabIndex={days.some((d) => d.kind === "open") ? undefined : 0}
         className="grid snap-x snap-proximity auto-cols-(--size-day) grid-flow-col gap-2 overflow-x-auto pb-2 sm:snap-none sm:grid-flow-row sm:grid-cols-7 sm:overflow-visible sm:pb-0"
       >
         {days.map((day) => {
@@ -146,7 +148,9 @@ export function DayStrip({
                       checked ? "bg-signal" : "bg-surface-selected",
                       grown ? "scale-x-100" : "scale-x-0",
                     )}
-                    style={{ width: `${Math.round((off ? 0 : day.fill) * 100)}%` }}
+                    style={{
+                      width: `${Math.round((off ? 0 : day.fill) * 100)}%`,
+                    }}
                   />
                 </span>
               </span>

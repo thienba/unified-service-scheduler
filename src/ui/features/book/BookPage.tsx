@@ -218,12 +218,15 @@ function CustomerBooking({ customerId }: { customerId: string | null }) {
     dealership && isDate(linkParam) && linkParam >= today
       ? linkParam
       : undefined;
-  const week = weekStart ?? (today ? weekStartFor(today, linkDate ?? today) : "");
+  const week =
+    weekStart ?? (today ? weekStartFor(today, linkDate ?? today) : "");
   const dates = week ? weekDates(week) : [];
   const minutes = service?.durationMinutes ?? 0;
   const queryTransport: Transport = "wait";
   const fetchDates =
-    dealership && service ? dates.filter((d) => needsTimes(dealership, d, now)) : [];
+    dealership && service
+      ? dates.filter((d) => needsTimes(dealership, d, now))
+      : [];
   const results = useWeekAvailability(
     dealership?.id,
     service?.id,
@@ -287,7 +290,12 @@ function CustomerBooking({ customerId }: { customerId: string | null }) {
     if (fromPerson && dealership && service) {
       // A count can be out of date: the chosen day asks again (state `empty-day`).
       void queryClient.refetchQueries({
-        queryKey: availabilityKey(dealership.id, service.id, date, queryTransport),
+        queryKey: availabilityKey(
+          dealership.id,
+          service.id,
+          date,
+          queryTransport,
+        ),
       });
     }
   }
@@ -395,7 +403,8 @@ function CustomerBooking({ customerId }: { customerId: string | null }) {
   if (forbidden) return <ForOtherCustomer />;
 
   const noVehicle =
-    customerId === null || (vehicles.data !== undefined && vehicles.data.length === 0);
+    customerId === null ||
+    (vehicles.data !== undefined && vehicles.data.length === 0);
   const vehicle = vehicles.data?.find((v) => v.id === vehicleId);
   const loadFailure = services.error ?? vehicles.error;
   const confirming = booking.isPending;
@@ -459,7 +468,9 @@ function CustomerBooking({ customerId }: { customerId: string | null }) {
                       onClick={(event) => {
                         event.preventDefault();
                         focusField(
-                          p.name === "start" ? "times-title" : `field-${p.name}`,
+                          p.name === "start"
+                            ? "times-title"
+                            : `field-${p.name}`,
                         );
                       }}
                     >
@@ -839,7 +850,12 @@ function Times({
   day: string | null;
   selected: StripDay | undefined;
   query:
-    | { data?: { slots: TimeSlot[] } | undefined; isError: boolean; error: unknown; refetch: () => unknown }
+    | {
+        data?: { slots: TimeSlot[] } | undefined;
+        isError: boolean;
+        error: unknown;
+        refetch: () => unknown;
+      }
     | undefined;
   conflict: Conflict | null;
   dealership: Dealership;
@@ -878,7 +894,10 @@ function Times({
           </Button>
         }
       >
-        {failureLine(dayQuery.error, `so we cannot show the times for ${dayText}`)}
+        {failureLine(
+          dayQuery.error,
+          `so we cannot show the times for ${dayText}`,
+        )}
       </StateBlock>
     );
   }
@@ -1134,7 +1153,9 @@ function LinkDayNotice({
     const isToday = day.date === todayIn(dealership, now);
     title = `${text} is too soon to book.`;
     body = `It is ${formatTime(now, dealership.timeZone)} in ${placeOfZone(dealership.timeZone)} and bookings need at least ${formatDuration(dealership.policies.leadTimeMinutes)}' notice, so there is no time left ${isToday ? "today" : `on ${text}`}.${
-      offer[0] ? ` The next day with times is ${formatLocalDate(offer[0].date, thisYear)}.` : ""
+      offer[0]
+        ? ` The next day with times is ${formatLocalDate(offer[0].date, thisYear)}.`
+        : ""
     }`;
   } else {
     offer = near.filter((d) => d.date < day.date).slice(0, 1);
