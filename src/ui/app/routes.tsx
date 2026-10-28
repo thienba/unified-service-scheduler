@@ -8,6 +8,7 @@ import { StateBlock } from "../components/StateBlock";
 import { useSelectedDealership } from "../session/dealership";
 import { useSession } from "../session/session";
 import { ComponentSheet } from "../pages/ComponentSheet";
+import { DevPanel } from "../features/dev/DevPanel";
 import {
   devPanelPath,
   homeFor,
@@ -25,7 +26,10 @@ import {
 } from "./states";
 
 /** A screen for each path of `routeRules`. A path with no screen yet shows its title only. */
-const screens: Record<string, ReactElement> = {};
+const screens: Record<string, ReactElement> = {
+  // Demo only: in a remote build `mockEnabled` is false, so the panel is left out of the bundle (SEC-14).
+  ...(mockEnabled ? { [devPanelPath]: <DevPanel /> } : {}),
+};
 
 const rules: readonly RouteRule[] = mockEnabled
   ? [
