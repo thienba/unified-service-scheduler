@@ -10,6 +10,8 @@ import type {
   Metrics,
 } from "../../application/ports";
 import type { Repository } from "../../application/ports";
+import type { LogFields } from "../../application/ports/telemetry";
+import type { TelemetryReader } from "../../infrastructure/telemetry";
 import {
   matchOperation,
   validateRequest,
@@ -17,6 +19,7 @@ import {
 } from "../contract/validator";
 import { actorOf } from "./actor";
 import { DEMO_USER_HEADER } from "./demo-user";
+import { bayUtilisation } from "../../application/utilisation";
 import { handlers, type Reply } from "./operations";
 import { problemResponse, type ProblemSpec } from "./problems";
 import { traceIdOf } from "./trace";
@@ -28,17 +31,17 @@ export interface MockServices {
   ids: IdGenerator;
   logger: Logger;
   metrics: Metrics;
+  /** What the dev panel reads (`GET /_demo/telemetry`). */
+  telemetry: TelemetryReader;
+  /** Puts the stored data back to the seed (`POST /_demo/reset`). */
+  resetData: () => Promise<void>;
   /** Makes a trace id when the request has none. Tests pass a fixed one. */
   newTraceId?: () => string;
 }
 
-/** Every log line of one request carries its trace id (AD-12). */
-function tracedLogger(logger: Logger, traceId: string): Logger {
-  return {
-    info: (msg, fields) => logger.info(msg, { ...fields, traceId }),
-    step: (name, work) => logger.step(name, work),
-  };
-}
+/** A confirmed booking is logged as `confirmed`, not as the command's `ok` (section 7.7). */
+const outcomeOf = (msg: string, outcome: string | undefined) =>
+  msg === "appointment.book" && outcome === "ok" ? "confirmed" : outcome;
 
 async function readBody(request: Request): Promise<BodyInput> {
   const text = await request.text();
@@ -62,10 +65,28 @@ export function createApi(
       request.headers.get("traceparent"),
       services.newTraceId,
     );
-    const log = tracedLogger(logger, traceId);
+    const traced = logger.withTrace(traceId);
+    // The commands' own lines wait until the answer is known, so that they carry the route and the status.
+    const held: { msg: string; fields: LogFields }[] = [];
+    const log: Logger = {
+      ...traced,
+      info: (msg, fields = {}) => {
+        held.push({ msg, fields });
+      },
+    };
     let route = "unmatched";
+    let dealershipId: string | undefined;
     let actorRole: "customer" | "staff" | "manager" | undefined;
     let outcome: string;
+    // An appointment in the answer names its dealership, technician and bay: ids, never contact details.
+    let appointment:
+      | {
+          id?: unknown;
+          dealershipId?: unknown;
+          technicianId?: unknown;
+          serviceBayId?: unknown;
+        }
+      | undefined;
 
     const reply = async (): Promise<Reply> => {
       const matched = url.pathname.startsWith("/api/")
@@ -100,6 +121,12 @@ export function createApi(
         };
       }
 
+      const named =
+        checked.path.dealershipId ??
+        checked.query.dealershipId ??
+        (checked.body as { dealershipId?: unknown } | undefined)?.dealershipId;
+      if (typeof named === "string") dealershipId = named;
+
       const deps: CommandDeps = {
         uow: repository,
         clock,
@@ -116,6 +143,11 @@ export function createApi(
         body: checked.body,
         idempotencyKey: request.headers.get("Idempotency-Key") ?? undefined,
         origin: url.origin,
+        demo: {
+          telemetry: services.telemetry,
+          resetData: services.resetData,
+          bayUtilisation: () => bayUtilisation({ uow: repository, clock }),
+        },
       });
     };
 
@@ -128,26 +160,69 @@ export function createApi(
         response = problemResponse(spec, traceId);
       } else {
         outcome = "ok";
-        response = new Response(JSON.stringify(result.body), {
-          status: result.status,
-          headers: {
-            "Content-Type": "application/json",
-            "X-Trace-Id": traceId,
-          },
-        });
+        appointment = result.body as typeof appointment;
+        response =
+          result.body === undefined
+            ? new Response(null, {
+                status: result.status,
+                headers: { "X-Trace-Id": traceId },
+              })
+            : new Response(JSON.stringify(result.body), {
+                status: result.status,
+                headers: {
+                  "Content-Type": "application/json",
+                  "X-Trace-Id": traceId,
+                },
+              });
       }
     } catch {
       // The error is not logged or sent: its message could hold a name or a phone number (SEC-9, SEC-10).
       outcome = "internal";
       response = problemResponse({ code: "INTERNAL" }, traceId);
     }
-    log.info("http.request", {
+    const status = response.status;
+    const durationMs = clock.now() - began;
+    if (typeof appointment?.dealershipId === "string") {
+      dealershipId ??= appointment.dealershipId;
+    }
+    for (const { msg, fields } of held) {
+      const same = fields.appointmentId === appointment?.id;
+      traced.info(msg, {
+        ...fields,
+        route,
+        method: request.method,
+        status,
+        dealershipId: fields.dealershipId ?? dealershipId,
+        outcome: outcomeOf(msg, fields.outcome),
+        ...(same && typeof appointment?.technicianId === "string"
+          ? { technicianId: appointment.technicianId }
+          : {}),
+        ...(same && typeof appointment?.serviceBayId === "string"
+          ? { serviceBayId: appointment.serviceBayId }
+          : {}),
+      });
+    }
+    const line: LogFields = {
       route,
       method: request.method,
-      status: response.status,
-      durationMs: clock.now() - began,
+      status,
+      durationMs,
+      dealershipId,
       actorRole,
       outcome,
+    };
+    if (status >= 500) traced.error("http.request", line);
+    else traced.info("http.request", line);
+    metrics.increment("http_requests_total", {
+      route,
+      method: request.method,
+      status: String(status),
+    });
+    // A 5xx is a failure; every other answer, a 409 included, is an expected one (section 7.7).
+    metrics.observe("http_request_duration_ms", durationMs, {
+      route,
+      method: request.method,
+      outcome: status >= 500 ? "failed" : "ok",
     });
     return response;
   };

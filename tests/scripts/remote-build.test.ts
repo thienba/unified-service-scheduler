@@ -26,6 +26,7 @@ describe("findMockLeaks (SEC-14.AC-1)", () => {
           "assets/b.js": "fetch('/api/_demo/reset') // /_demo/",
           "assets/c.js": "import 'msw'",
           "assets/d.js": "name: 'Fakeford Motors (demo)'",
+          "assets/e.js": "increment('http_requests_total')",
         }),
       ),
     ).toEqual([
@@ -35,6 +36,7 @@ describe("findMockLeaks (SEC-14.AC-1)", () => {
       'assets/b.js contains "/_demo/"',
       'assets/c.js contains "msw"',
       'assets/d.js contains "Fakeford Motors"',
+      'assets/e.js contains "http_requests_total"',
     ]);
   });
 });

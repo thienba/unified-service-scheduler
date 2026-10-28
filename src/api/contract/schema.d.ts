@@ -366,6 +366,47 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/_demo/telemetry": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Recent log lines and metric values
+     * @description Demo only, for the dev panel. Any signed-in user. The log lines hold the allowed fields only and the
+     *     metrics are counted in this browser tab (architecture.md section 7.7).
+     */
+    get: operations["getDemoTelemetry"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/_demo/reset": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Put the demo data back to the seed
+     * @description Demo only. Any signed-in user. Everything stored in this browser is replaced by the seed.
+     */
+    post: operations["resetDemoData"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -708,6 +749,51 @@ export interface components {
       text?: string;
       phone?: components["schemas"]["Phone"];
       registration?: components["schemas"]["Registration"];
+    };
+    /** @description One JSON log line. Only these fields can appear (architecture.md section 7.7). */
+    LogLine: {
+      ts: components["schemas"]["Instant"];
+      /** @enum {string} */
+      level: "info" | "error";
+      msg: string;
+      traceId?: components["schemas"]["TraceId"];
+      route?: string;
+      method?: string;
+      status?: number;
+      durationMs?: number;
+      dealershipId?: components["schemas"]["Id"];
+      actorRole?: components["schemas"]["Role"];
+      outcome?: string;
+      code?: string;
+      reasons?: string[];
+      appointmentId?: components["schemas"]["Id"];
+      technicianId?: components["schemas"]["Id"];
+      serviceBayId?: components["schemas"]["Id"];
+      candidates?: number;
+    };
+    MetricLabels: {
+      [key: string]: string;
+    };
+    MetricSample: {
+      name: string;
+      labels: components["schemas"]["MetricLabels"];
+      value: number;
+    };
+    HistogramSample: {
+      name: string;
+      labels: components["schemas"]["MetricLabels"];
+      count: number;
+      sum: number;
+      p50: number;
+      p95: number;
+      max: number;
+    };
+    Telemetry: {
+      logs: components["schemas"]["LogLine"][];
+      counters: components["schemas"]["MetricSample"][];
+      histograms: components["schemas"]["HistogramSample"][];
+      /** @description Worked out when read, for example `bay_utilisation_ratio`. */
+      gauges: components["schemas"]["MetricSample"][];
     };
   };
   responses: {
@@ -1449,6 +1535,58 @@ export interface operations {
       401: components["responses"]["Unauthorized"];
       403: components["responses"]["Forbidden"];
       404: components["responses"]["NotFound"];
+      422: components["responses"]["ValidationFailed"];
+      500: components["responses"]["Internal"];
+    };
+  };
+  getDemoTelemetry: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description W3C trace context, `00-<32 hex>-<16 hex>-<2 hex>`. A value that does not match is ignored and a new trace id is made. */
+        traceparent?: components["parameters"]["Traceparent"];
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description The newest log lines (at most 500) and the metrics. */
+      200: {
+        headers: {
+          "X-Trace-Id": components["headers"]["TraceId"];
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Telemetry"];
+        };
+      };
+      401: components["responses"]["Unauthorized"];
+      422: components["responses"]["ValidationFailed"];
+      500: components["responses"]["Internal"];
+    };
+  };
+  resetDemoData: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description W3C trace context, `00-<32 hex>-<16 hex>-<2 hex>`. A value that does not match is ignored and a new trace id is made. */
+        traceparent?: components["parameters"]["Traceparent"];
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Reset. */
+      204: {
+        headers: {
+          "X-Trace-Id": components["headers"]["TraceId"];
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      401: components["responses"]["Unauthorized"];
       422: components["responses"]["ValidationFailed"];
       500: components["responses"]["Internal"];
     };
