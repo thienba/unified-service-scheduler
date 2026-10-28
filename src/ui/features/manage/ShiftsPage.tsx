@@ -69,7 +69,7 @@ type Technician = components["schemas"]["Technician"];
 const TITLE = "Shifts";
 const LIST_PATH = "/manage/shifts";
 
-/** Skills in the words the screens use (Q-0001-213). An unknown skill shows as it is stored. */
+/** Skills in the words the screens use (Q-0001-210). An unknown skill shows as it is stored. */
 const skillWords: Record<string, string> = {
   mechanic: "Service",
   ev: "Electric cars",
@@ -83,8 +83,10 @@ export function ShiftsPage() {
   const [params, setParams] = useSearchParams();
   const id = selected?.id;
   const zone = selected?.timeZone;
-  const [today] = useState(() =>
-    zone ? localDateIn(Date.now(), zone) : undefined,
+  // The dealership arrives after the first render, so today is worked out once its zone is known.
+  const today = useMemo(
+    () => (zone ? localDateIn(Date.now(), zone) : undefined),
+    [zone],
   );
   const technicians = useQuery({
     queryKey: ["technicians", id, today],

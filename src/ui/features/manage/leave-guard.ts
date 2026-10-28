@@ -5,12 +5,12 @@ import { useLocation, useNavigate } from "react-router";
 
 export function useLeaveGuard(dirty: boolean) {
   const navigate = useNavigate();
-  const location = useLocation();
+  const where = useLocation();
   const [pending, setPending] = useState<string | null>(null);
 
   useEffect(() => {
     if (!dirty) return;
-    const here = location.pathname + location.search;
+    const here = where.pathname + where.search;
     // Capture, so this runs before the router's own link handler, which then sees the click as handled.
     const onClick = (event: MouseEvent) => {
       if (event.defaultPrevented || event.button !== 0) return;
@@ -35,7 +35,7 @@ export function useLeaveGuard(dirty: boolean) {
       window.removeEventListener("click", onClick, true);
       window.removeEventListener("beforeunload", onUnload);
     };
-  }, [dirty, location.pathname, location.search]);
+  }, [dirty, where.pathname, where.search]);
 
   const stay = useCallback(() => setPending(null), []);
   const leave = useCallback(() => {
