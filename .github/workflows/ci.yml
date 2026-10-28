@@ -43,6 +43,8 @@ jobs:
       - name: All tests with coverage
         run: npm run test:coverage
       - run: npm run build
+      - name: A remote-mode build holds nothing that is only for the demo
+        run: npm run check:remote-build
 
       - run: npx playwright install --with-deps chromium firefox webkit
       - name: End-to-end tests in Chromium

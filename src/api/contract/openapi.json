@@ -1,0 +1,1574 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Keyloop Service Scheduler API",
+    "version": "1.0.0",
+    "contact": { "name": "Keyloop Service Scheduler demo" },
+    "description": "The one contract between the screens and the backend (architecture.md AD-2, section 7.3).\nThe mock in this repository and a real backend both answer exactly this file.\n\nEvery request names its user in `X-Demo-User` (a real backend uses `Authorization: Bearer`).\nEvery response carries `X-Trace-Id`. Every 4xx and 5xx answer is `application/problem+json`.\nTimes on the wire are UTC instants such as `2026-11-03T09:00:00Z`; local dates are `YYYY-MM-DD`\nand local times are `HH:mm` in the dealership's zone.\n"
+  },
+  "servers": [{ "url": "/api" }],
+  "security": [{ "demoUser": [] }],
+  "tags": [
+    { "name": "session" },
+    { "name": "dealerships" },
+    { "name": "availability" },
+    { "name": "appointments" },
+    { "name": "customers" },
+    { "name": "outbox" }
+  ],
+  "paths": {
+    "/me": {
+      "get": {
+        "operationId": "getMe",
+        "tags": ["session"],
+        "summary": "The current demo user",
+        "description": "Gives the role, the customer id and the dealerships of the user named in `X-Demo-User`.",
+        "parameters": [{ "$ref": "#/components/parameters/Traceparent" }],
+        "responses": {
+          "200": {
+            "description": "The current user.",
+            "headers": {
+              "X-Trace-Id": { "$ref": "#/components/headers/TraceId" }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Me" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "422": { "$ref": "#/components/responses/ValidationFailed" },
+          "500": { "$ref": "#/components/responses/Internal" }
+        }
+      }
+    },
+    "/dealerships": {
+      "get": {
+        "operationId": "listDealerships",
+        "tags": ["dealerships"],
+        "summary": "All dealerships",
+        "description": "Every role may list the dealerships. Each has its time zone and, when it has one, a phone number.",
+        "parameters": [{ "$ref": "#/components/parameters/Traceparent" }],
+        "responses": {
+          "200": {
+            "description": "The dealerships, by id.",
+            "headers": {
+              "X-Trace-Id": { "$ref": "#/components/headers/TraceId" }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Dealership" }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "422": { "$ref": "#/components/responses/ValidationFailed" },
+          "500": { "$ref": "#/components/responses/Internal" }
+        }
+      }
+    },
+    "/dealerships/{dealershipId}": {
+      "get": {
+        "operationId": "getDealership",
+        "tags": ["dealerships"],
+        "summary": "One dealership with its hours and policies",
+        "description": "Every role may read a dealership.",
+        "parameters": [
+          { "$ref": "#/components/parameters/Traceparent" },
+          { "$ref": "#/components/parameters/DealershipId" }
+        ],
+        "responses": {
+          "200": {
+            "description": "The dealership.",
+            "headers": {
+              "X-Trace-Id": { "$ref": "#/components/headers/TraceId" }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Dealership" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "422": { "$ref": "#/components/responses/ValidationFailed" },
+          "500": { "$ref": "#/components/responses/Internal" }
+        }
+      }
+    },
+    "/dealerships/{dealershipId}/settings": {
+      "put": {
+        "operationId": "updateDealershipSettings",
+        "tags": ["dealerships"],
+        "summary": "Save hours, date overrides and policies",
+        "description": "Manager of the dealership only. Appointments that no longer fit are flagged, never moved or\ndeleted. With `preview=true` nothing is saved and the answer lists what would be flagged.\n",
+        "parameters": [
+          { "$ref": "#/components/parameters/Traceparent" },
+          { "$ref": "#/components/parameters/DealershipId" },
+          { "$ref": "#/components/parameters/Preview" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SettingsRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Saved (or previewed). The appointments that are flagged after the change.",
+            "headers": {
+              "X-Trace-Id": { "$ref": "#/components/headers/TraceId" }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/FlaggedResult" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "422": { "$ref": "#/components/responses/ValidationFailed" },
+          "500": { "$ref": "#/components/responses/Internal" }
+        }
+      }
+    },
+    "/service-types": {
+      "get": {
+        "operationId": "listServiceTypes",
+        "tags": ["dealerships"],
+        "summary": "All service types",
+        "description": "Every role may list the service types with their duration and required skill.",
+        "parameters": [{ "$ref": "#/components/parameters/Traceparent" }],
+        "responses": {
+          "200": {
+            "description": "The service types, by id.",
+            "headers": {
+              "X-Trace-Id": { "$ref": "#/components/headers/TraceId" }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/ServiceType" }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "422": { "$ref": "#/components/responses/ValidationFailed" },
+          "500": { "$ref": "#/components/responses/Internal" }
+        }
+      }
+    },
+    "/dealerships/{dealershipId}/technicians": {
+      "get": {
+        "operationId": "listTechnicians",
+        "tags": ["dealerships"],
+        "summary": "Technicians with their shifts and booked times",
+        "description": "Staff and managers of the dealership. Each technician comes with skills, weekly pattern,\ndate exceptions and the booked intervals between `from` and `to` (both included, at most 31 days).\n",
+        "parameters": [
+          { "$ref": "#/components/parameters/Traceparent" },
+          { "$ref": "#/components/parameters/DealershipId" },
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": { "$ref": "#/components/schemas/LocalDate" }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": { "$ref": "#/components/schemas/LocalDate" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The technicians, by id.",
+            "headers": {
+              "X-Trace-Id": { "$ref": "#/components/headers/TraceId" }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Technician" }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "422": { "$ref": "#/components/responses/ValidationFailed" },
+          "500": { "$ref": "#/components/responses/Internal" }
+        }
+      }
+    },
+    "/technicians/{technicianId}/shifts": {
+      "put": {
+        "operationId": "updateTechnicianShifts",
+        "tags": ["dealerships"],
+        "summary": "Save a technician's weekly pattern and date exceptions",
+        "description": "Manager of the technician's dealership only; a technician of another dealership is not found.\nAppointments that no longer fit are flagged. With `preview=true` nothing is saved.\n",
+        "parameters": [
+          { "$ref": "#/components/parameters/Traceparent" },
+          {
+            "name": "technicianId",
+            "in": "path",
+            "required": true,
+            "schema": { "$ref": "#/components/schemas/Id" }
+          },
+          { "$ref": "#/components/parameters/Preview" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ShiftsRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Saved (or previewed). The appointments that are flagged after the change.",
+            "headers": {
+              "X-Trace-Id": { "$ref": "#/components/headers/TraceId" }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/FlaggedResult" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "422": { "$ref": "#/components/responses/ValidationFailed" },
+          "500": { "$ref": "#/components/responses/Internal" }
+        }
+      }
+    },
+    "/dealerships/{dealershipId}/service-bays": {
+      "get": {
+        "operationId": "listServiceBays",
+        "tags": ["dealerships"],
+        "summary": "The service bays of a dealership",
+        "description": "Staff and managers of the dealership.",
+        "parameters": [
+          { "$ref": "#/components/parameters/Traceparent" },
+          { "$ref": "#/components/parameters/DealershipId" }
+        ],
+        "responses": {
+          "200": {
+            "description": "The bays, by id.",
+            "headers": {
+              "X-Trace-Id": { "$ref": "#/components/headers/TraceId" }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/ServiceBay" }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "422": { "$ref": "#/components/responses/ValidationFailed" },
+          "500": { "$ref": "#/components/responses/Internal" }
+        }
+      }
+    },
+    "/dealerships/{dealershipId}/availability": {
+      "get": {
+        "operationId": "searchAvailability",
+        "tags": ["availability"],
+        "summary": "Free start times on one local date",
+        "description": "Every role. `technicianId` is for staff and managers only; a customer who sends it is refused.\nStaff and managers ask about their own dealerships.\n",
+        "parameters": [
+          { "$ref": "#/components/parameters/Traceparent" },
+          { "$ref": "#/components/parameters/DealershipId" },
+          {
+            "name": "serviceTypeId",
+            "in": "query",
+            "required": true,
+            "schema": { "$ref": "#/components/schemas/Id" }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": true,
+            "schema": { "$ref": "#/components/schemas/LocalDate" }
+          },
+          {
+            "name": "transport",
+            "in": "query",
+            "required": true,
+            "schema": { "$ref": "#/components/schemas/Transport" }
+          },
+          {
+            "name": "technicianId",
+            "in": "query",
+            "required": false,
+            "schema": { "$ref": "#/components/schemas/Id" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The free start times.",
+            "headers": {
+              "X-Trace-Id": { "$ref": "#/components/headers/TraceId" }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Availability" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "422": { "$ref": "#/components/responses/ValidationFailed" },
+          "500": { "$ref": "#/components/responses/Internal" }
+        }
+      }
+    },
+    "/availability-checks": {
+      "post": {
+        "operationId": "checkAvailability",
+        "tags": ["availability"],
+        "summary": "Check one start time",
+        "description": "Says whether one start time is free. It never answers 409: a taken time is a normal answer\n(`available: false`, with reasons and suggested times). `technicianId` is for staff and managers only.\n",
+        "parameters": [{ "$ref": "#/components/parameters/Traceparent" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AvailabilityCheckRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Free, or taken with reasons and suggestions.",
+            "headers": {
+              "X-Trace-Id": { "$ref": "#/components/headers/TraceId" }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AvailabilityCheck" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "422": { "$ref": "#/components/responses/ValidationFailed" },
+          "500": { "$ref": "#/components/responses/Internal" }
+        }
+      }
+    },
+    "/appointments": {
+      "get": {
+        "operationId": "listAppointments",
+        "tags": ["appointments"],
+        "summary": "List appointments",
+        "description": "Staff and managers: the appointments of one dealership on one local date (`dealershipId` and\n`date`), or with `flagged=true` every flagged appointment of the dealership from now on, soonest first.\nCustomers: only their own. Without a date a customer gets their own appointments from now on,\nsoonest first. Cancelled appointments are left out unless `includeCancelled=true`.\n",
+        "parameters": [
+          { "$ref": "#/components/parameters/Traceparent" },
+          {
+            "name": "dealershipId",
+            "in": "query",
+            "required": false,
+            "schema": { "$ref": "#/components/schemas/Id" }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "schema": { "$ref": "#/components/schemas/LocalDate" }
+          },
+          {
+            "name": "flagged",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "boolean" }
+          },
+          {
+            "name": "includeCancelled",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "boolean" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The appointments, with a `display` block.",
+            "headers": {
+              "X-Trace-Id": { "$ref": "#/components/headers/TraceId" }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Appointment" }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "422": { "$ref": "#/components/responses/ValidationFailed" },
+          "500": { "$ref": "#/components/responses/Internal" }
+        }
+      },
+      "post": {
+        "operationId": "bookAppointment",
+        "tags": ["appointments"],
+        "summary": "Book an appointment",
+        "description": "A customer books for themselves. Staff and managers book for a customer of their dealership\n(`customerId` with `vehicleId` or `newVehicle`, or `newCustomer` with `newVehicle`) and may fix a\n`technicianId`. Every missing field is named in the 422 answer. A taken time answers 409 with\nreasons and suggested times.\n",
+        "parameters": [
+          { "$ref": "#/components/parameters/Traceparent" },
+          { "$ref": "#/components/parameters/IdempotencyKey" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/BookingRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Booked.",
+            "headers": {
+              "X-Trace-Id": { "$ref": "#/components/headers/TraceId" }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Appointment" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/IdempotencyKeyMissing" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/SlotUnavailable" },
+          "422": { "$ref": "#/components/responses/ValidationFailed" },
+          "500": { "$ref": "#/components/responses/Internal" }
+        }
+      }
+    },
+    "/appointments/{appointmentId}": {
+      "get": {
+        "operationId": "getAppointment",
+        "tags": ["appointments"],
+        "summary": "One appointment",
+        "description": "The owner, and staff or a manager of its dealership. Anyone else gets \"not found\".",
+        "parameters": [
+          { "$ref": "#/components/parameters/Traceparent" },
+          { "$ref": "#/components/parameters/AppointmentId" }
+        ],
+        "responses": {
+          "200": {
+            "description": "The appointment.",
+            "headers": {
+              "X-Trace-Id": { "$ref": "#/components/headers/TraceId" }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Appointment" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "422": { "$ref": "#/components/responses/ValidationFailed" },
+          "500": { "$ref": "#/components/responses/Internal" }
+        }
+      },
+      "patch": {
+        "operationId": "adjustAppointment",
+        "tags": ["appointments"],
+        "summary": "The manager moves or reassigns an appointment",
+        "description": "Manager of the appointment's dealership only. The change is checked like a booking. A technician\nor bay that is not named is kept when free, otherwise picked by the booking rule; `picked` says\nwhich were picked. A clash answers 409 with suggestions and changes nothing.\n",
+        "parameters": [
+          { "$ref": "#/components/parameters/Traceparent" },
+          { "$ref": "#/components/parameters/AppointmentId" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/AdjustRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Changed.",
+            "headers": {
+              "X-Trace-Id": { "$ref": "#/components/headers/TraceId" }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Appointment" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": {
+            "$ref": "#/components/responses/SlotUnavailableOrCancelled"
+          },
+          "422": { "$ref": "#/components/responses/ValidationFailed" },
+          "500": { "$ref": "#/components/responses/Internal" }
+        }
+      }
+    },
+    "/appointments/{appointmentId}/reschedule": {
+      "post": {
+        "operationId": "rescheduleAppointment",
+        "tags": ["appointments"],
+        "summary": "Move an appointment to a new start",
+        "description": "The owner before the cutoff, and a manager of the dealership. The old time stays until the new one\nis written. A customer after the cutoff gets 409 `CHANGE_WINDOW_CLOSED`.\n",
+        "parameters": [
+          { "$ref": "#/components/parameters/Traceparent" },
+          { "$ref": "#/components/parameters/AppointmentId" },
+          { "$ref": "#/components/parameters/IdempotencyKey" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/RescheduleRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Moved. Same id, new time, `version` raised.",
+            "headers": {
+              "X-Trace-Id": { "$ref": "#/components/headers/TraceId" }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Appointment" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/IdempotencyKeyMissing" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/ConflictOnChange" },
+          "422": { "$ref": "#/components/responses/ValidationFailed" },
+          "500": { "$ref": "#/components/responses/Internal" }
+        }
+      }
+    },
+    "/appointments/{appointmentId}/cancel": {
+      "post": {
+        "operationId": "cancelAppointment",
+        "tags": ["appointments"],
+        "summary": "Cancel an appointment",
+        "description": "The owner before the cutoff, and a manager of the dealership. A second cancel answers 200 with\nthe same cancelled appointment.\n",
+        "parameters": [
+          { "$ref": "#/components/parameters/Traceparent" },
+          { "$ref": "#/components/parameters/AppointmentId" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Cancelled.",
+            "headers": {
+              "X-Trace-Id": { "$ref": "#/components/headers/TraceId" }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Appointment" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/ChangeWindowClosed" },
+          "422": { "$ref": "#/components/responses/ValidationFailed" },
+          "500": { "$ref": "#/components/responses/Internal" }
+        }
+      }
+    },
+    "/customers/search": {
+      "post": {
+        "operationId": "searchCustomers",
+        "tags": ["customers"],
+        "summary": "Find customers",
+        "description": "Staff and managers. Send `text` (3 to 50 characters; part of a name, a phone or a registration),\nor `phone` and/or `registration` to look for an exact match (the new-customer duplicate hint).\nThe search text travels in the body, never in the URL. At most 10 customers come back.\n",
+        "parameters": [{ "$ref": "#/components/parameters/Traceparent" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CustomerSearchRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The matching customers with their vehicles.",
+            "headers": {
+              "X-Trace-Id": { "$ref": "#/components/headers/TraceId" }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CustomerWithVehicles"
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "422": { "$ref": "#/components/responses/ValidationFailed" },
+          "500": { "$ref": "#/components/responses/Internal" }
+        }
+      }
+    },
+    "/customers/{customerId}/vehicles": {
+      "get": {
+        "operationId": "listCustomerVehicles",
+        "tags": ["customers"],
+        "summary": "A customer's vehicles",
+        "description": "The customer themselves, and staff or a manager. Anyone else gets \"not found\".",
+        "parameters": [
+          { "$ref": "#/components/parameters/Traceparent" },
+          {
+            "name": "customerId",
+            "in": "path",
+            "required": true,
+            "schema": { "$ref": "#/components/schemas/Id" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The vehicles, by id.",
+            "headers": {
+              "X-Trace-Id": { "$ref": "#/components/headers/TraceId" }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Vehicle" }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "422": { "$ref": "#/components/responses/ValidationFailed" },
+          "500": { "$ref": "#/components/responses/Internal" }
+        }
+      }
+    },
+    "/outbox": {
+      "get": {
+        "operationId": "listOutbox",
+        "tags": ["outbox"],
+        "summary": "The messages the system would send",
+        "description": "Managers only, for their own dealerships. Each message has its cancel and reschedule links, made\nfrom the origin of the request, a fixed path and the appointment id.\n",
+        "parameters": [
+          { "$ref": "#/components/parameters/Traceparent" },
+          {
+            "name": "dealershipId",
+            "in": "query",
+            "required": false,
+            "schema": { "$ref": "#/components/schemas/Id" }
+          },
+          {
+            "name": "appointmentId",
+            "in": "query",
+            "required": false,
+            "schema": { "$ref": "#/components/schemas/Id" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The messages.",
+            "headers": {
+              "X-Trace-Id": { "$ref": "#/components/headers/TraceId" }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/OutboxMessage" }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "422": { "$ref": "#/components/responses/ValidationFailed" },
+          "500": { "$ref": "#/components/responses/Internal" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "demoUser": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Demo-User",
+        "description": "A seeded user id. A real backend replaces this with a bearer token."
+      }
+    },
+    "headers": {
+      "TraceId": {
+        "description": "The trace id the request was handled under, 32 lower-case hex characters.",
+        "schema": { "$ref": "#/components/schemas/TraceId" }
+      }
+    },
+    "parameters": {
+      "Traceparent": {
+        "name": "traceparent",
+        "in": "header",
+        "required": false,
+        "description": "W3C trace context, `00-<32 hex>-<16 hex>-<2 hex>`. A value that does not match is ignored and a new trace id is made.",
+        "schema": { "type": "string", "maxLength": 100 }
+      },
+      "IdempotencyKey": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "required": true,
+        "description": "One UUID per Confirm press. The same key and body again gives the saved answer.",
+        "schema": { "$ref": "#/components/schemas/Uuid" }
+      },
+      "DealershipId": {
+        "name": "dealershipId",
+        "in": "path",
+        "required": true,
+        "schema": { "$ref": "#/components/schemas/Id" }
+      },
+      "AppointmentId": {
+        "name": "appointmentId",
+        "in": "path",
+        "required": true,
+        "schema": { "$ref": "#/components/schemas/Id" }
+      },
+      "Preview": {
+        "name": "preview",
+        "in": "query",
+        "required": false,
+        "description": "When true, work out what would be flagged and save nothing.",
+        "schema": { "type": "boolean" }
+      }
+    },
+    "responses": {
+      "Unauthorized": {
+        "description": "No `X-Demo-User`, or one that is not a known user.",
+        "headers": { "X-Trace-Id": { "$ref": "#/components/headers/TraceId" } },
+        "content": {
+          "application/problem+json": {
+            "schema": { "$ref": "#/components/schemas/Problem" }
+          }
+        }
+      },
+      "Forbidden": {
+        "description": "The role or the dealership may not do this.",
+        "headers": { "X-Trace-Id": { "$ref": "#/components/headers/TraceId" } },
+        "content": {
+          "application/problem+json": {
+            "schema": { "$ref": "#/components/schemas/Problem" }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "There is no such record, or it is another customer's.",
+        "headers": { "X-Trace-Id": { "$ref": "#/components/headers/TraceId" } },
+        "content": {
+          "application/problem+json": {
+            "schema": { "$ref": "#/components/schemas/Problem" }
+          }
+        }
+      },
+      "ValidationFailed": {
+        "description": "A field is missing or wrong (`VALIDATION_FAILED` with `errors`), a key was reused, or a date range is too large.",
+        "headers": { "X-Trace-Id": { "$ref": "#/components/headers/TraceId" } },
+        "content": {
+          "application/problem+json": {
+            "schema": { "$ref": "#/components/schemas/Problem" }
+          }
+        }
+      },
+      "IdempotencyKeyMissing": {
+        "description": "The `Idempotency-Key` header is missing.",
+        "headers": { "X-Trace-Id": { "$ref": "#/components/headers/TraceId" } },
+        "content": {
+          "application/problem+json": {
+            "schema": { "$ref": "#/components/schemas/Problem" }
+          }
+        }
+      },
+      "SlotUnavailable": {
+        "description": "The time cannot be booked now. `reasons` and `suggestions` are always present.",
+        "headers": { "X-Trace-Id": { "$ref": "#/components/headers/TraceId" } },
+        "content": {
+          "application/problem+json": {
+            "schema": { "$ref": "#/components/schemas/Problem" }
+          }
+        }
+      },
+      "ConflictOnChange": {
+        "description": "`SLOT_UNAVAILABLE` (the new time is taken), `CHANGE_WINDOW_CLOSED` (a customer after the cutoff)\nor `ALREADY_CANCELLED`.\n",
+        "headers": { "X-Trace-Id": { "$ref": "#/components/headers/TraceId" } },
+        "content": {
+          "application/problem+json": {
+            "schema": { "$ref": "#/components/schemas/Problem" }
+          }
+        }
+      },
+      "SlotUnavailableOrCancelled": {
+        "description": "`SLOT_UNAVAILABLE` (the new time is taken) or `ALREADY_CANCELLED`.",
+        "headers": { "X-Trace-Id": { "$ref": "#/components/headers/TraceId" } },
+        "content": {
+          "application/problem+json": {
+            "schema": { "$ref": "#/components/schemas/Problem" }
+          }
+        }
+      },
+      "ChangeWindowClosed": {
+        "description": "`CHANGE_WINDOW_CLOSED`: a customer after the cutoff.",
+        "headers": { "X-Trace-Id": { "$ref": "#/components/headers/TraceId" } },
+        "content": {
+          "application/problem+json": {
+            "schema": { "$ref": "#/components/schemas/Problem" }
+          }
+        }
+      },
+      "Internal": {
+        "description": "Anything unexpected. The body never says how the system is built.",
+        "headers": { "X-Trace-Id": { "$ref": "#/components/headers/TraceId" } },
+        "content": {
+          "application/problem+json": {
+            "schema": { "$ref": "#/components/schemas/Problem" }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "Id": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9_-]{1,64}$",
+        "maxLength": 64
+      },
+      "Uuid": {
+        "type": "string",
+        "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$",
+        "maxLength": 36
+      },
+      "TraceId": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{32}$",
+        "maxLength": 32
+      },
+      "Instant": {
+        "type": "string",
+        "description": "A UTC instant, `2026-11-03T09:00:00Z`.",
+        "pattern": "^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])T([01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(\\.\\d{1,3})?Z$",
+        "maxLength": 24
+      },
+      "LocalDate": {
+        "type": "string",
+        "description": "A date in the dealership's zone, `YYYY-MM-DD`.",
+        "pattern": "^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$",
+        "maxLength": 10
+      },
+      "LocalTime": {
+        "type": "string",
+        "description": "A clock time in the dealership's zone, `HH:mm`.",
+        "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+        "maxLength": 5
+      },
+      "TimeZone": {
+        "type": "string",
+        "description": "An IANA zone name such as `Europe/London`."
+      },
+      "Transport": {
+        "type": "string",
+        "enum": ["wait", "drop_off", "courtesy_car"]
+      },
+      "Role": { "type": "string", "enum": ["customer", "staff", "manager"] },
+      "UnavailableReason": {
+        "type": "string",
+        "enum": [
+          "TECHNICIAN_BUSY",
+          "NO_QUALIFIED_TECHNICIAN_ON_SHIFT",
+          "BAY_BUSY",
+          "COURTESY_CAR_BUSY",
+          "OUTSIDE_OPENING_HOURS",
+          "DEALERSHIP_CLOSED",
+          "TOO_SOON",
+          "BEYOND_HORIZON"
+        ]
+      },
+      "Phone": {
+        "type": "string",
+        "pattern": "^[0-9\\s()+-]{7,20}$",
+        "maxLength": 20
+      },
+      "Email": {
+        "type": "string",
+        "pattern": "^[^@\\s]+@[^@\\s]+$",
+        "maxLength": 254
+      },
+      "Registration": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9 -]{2,15}$",
+        "maxLength": 15
+      },
+      "PersonName": {
+        "type": "string",
+        "pattern": "^[^\\r\\n]{1,100}$",
+        "maxLength": 100
+      },
+      "TimeSlot": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["start", "end"],
+        "properties": {
+          "start": { "$ref": "#/components/schemas/Instant" },
+          "end": { "$ref": "#/components/schemas/Instant" }
+        }
+      },
+      "FieldError": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["field", "message"],
+        "properties": {
+          "field": { "type": "string" },
+          "message": { "type": "string" }
+        }
+      },
+      "Problem": {
+        "type": "object",
+        "description": "RFC 9457 problem details with a fixed `code` and the `traceId`.",
+        "additionalProperties": false,
+        "required": ["type", "title", "status", "code", "traceId"],
+        "properties": {
+          "type": { "type": "string" },
+          "title": { "type": "string" },
+          "status": { "type": "integer" },
+          "code": {
+            "type": "string",
+            "enum": [
+              "VALIDATION_FAILED",
+              "IDEMPOTENCY_KEY_MISSING",
+              "IDEMPOTENCY_KEY_REUSED",
+              "UNKNOWN_USER",
+              "FORBIDDEN",
+              "NOT_FOUND",
+              "SLOT_UNAVAILABLE",
+              "CHANGE_WINDOW_CLOSED",
+              "ALREADY_CANCELLED",
+              "SEARCH_RANGE_TOO_LARGE",
+              "INTERNAL"
+            ]
+          },
+          "detail": { "type": "string" },
+          "traceId": { "$ref": "#/components/schemas/TraceId" },
+          "errors": {
+            "type": "array",
+            "description": "With `VALIDATION_FAILED`: one entry for each field that is missing or wrong.",
+            "items": { "$ref": "#/components/schemas/FieldError" }
+          },
+          "reasons": {
+            "type": "array",
+            "description": "With `SLOT_UNAVAILABLE`.",
+            "items": { "$ref": "#/components/schemas/UnavailableReason" }
+          },
+          "suggestions": {
+            "type": "array",
+            "description": "With `SLOT_UNAVAILABLE`. Other times that are free, nearest first. May be empty.",
+            "items": { "$ref": "#/components/schemas/TimeSlot" }
+          }
+        }
+      },
+      "Me": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["userId", "name", "role", "customerId", "dealershipIds"],
+        "properties": {
+          "userId": { "$ref": "#/components/schemas/Id" },
+          "name": { "type": "string" },
+          "role": { "$ref": "#/components/schemas/Role" },
+          "customerId": {
+            "oneOf": [{ "$ref": "#/components/schemas/Id" }, { "type": "null" }]
+          },
+          "dealershipIds": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Id" }
+          }
+        }
+      },
+      "OpeningHours": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["open", "close"],
+        "properties": {
+          "open": { "$ref": "#/components/schemas/LocalTime" },
+          "close": { "$ref": "#/components/schemas/LocalTime" }
+        }
+      },
+      "WeeklyHours": {
+        "type": "object",
+        "description": "Opening hours by weekday, `1` Monday to `7` Sunday. A missing weekday is closed.",
+        "additionalProperties": false,
+        "properties": {
+          "1": { "$ref": "#/components/schemas/OpeningHours" },
+          "2": { "$ref": "#/components/schemas/OpeningHours" },
+          "3": { "$ref": "#/components/schemas/OpeningHours" },
+          "4": { "$ref": "#/components/schemas/OpeningHours" },
+          "5": { "$ref": "#/components/schemas/OpeningHours" },
+          "6": { "$ref": "#/components/schemas/OpeningHours" },
+          "7": { "$ref": "#/components/schemas/OpeningHours" }
+        }
+      },
+      "DateOverride": {
+        "description": "The word `closed`, or the day's own hours.",
+        "oneOf": [
+          { "type": "string", "enum": ["closed"] },
+          { "$ref": "#/components/schemas/OpeningHours" }
+        ]
+      },
+      "DateOverrides": {
+        "type": "object",
+        "description": "Opening hours for single dates, by local date.",
+        "propertyNames": { "$ref": "#/components/schemas/LocalDate" },
+        "maxProperties": 400,
+        "additionalProperties": { "$ref": "#/components/schemas/DateOverride" }
+      },
+      "Policies": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "leadTimeMinutes",
+          "horizonDays",
+          "breakMinutes",
+          "gridMinutes"
+        ],
+        "properties": {
+          "leadTimeMinutes": { "type": "integer", "minimum": 0 },
+          "horizonDays": { "type": "integer", "minimum": 1 },
+          "breakMinutes": { "type": "integer", "minimum": 0 },
+          "gridMinutes": { "type": "integer", "minimum": 1 }
+        }
+      },
+      "Dealership": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "timeZone",
+          "weeklyHours",
+          "dateOverrides",
+          "policies"
+        ],
+        "properties": {
+          "id": { "$ref": "#/components/schemas/Id" },
+          "name": { "type": "string" },
+          "timeZone": { "$ref": "#/components/schemas/TimeZone" },
+          "phone": {
+            "type": "string",
+            "description": "Shown to customers who are told to call the dealership."
+          },
+          "weeklyHours": { "$ref": "#/components/schemas/WeeklyHours" },
+          "dateOverrides": { "$ref": "#/components/schemas/DateOverrides" },
+          "policies": { "$ref": "#/components/schemas/Policies" }
+        }
+      },
+      "ServiceType": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "name", "durationMinutes", "requiredSkill"],
+        "properties": {
+          "id": { "$ref": "#/components/schemas/Id" },
+          "name": { "type": "string" },
+          "durationMinutes": { "type": "integer" },
+          "requiredSkill": { "type": "string" }
+        }
+      },
+      "Shift": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["start", "end"],
+        "properties": {
+          "start": { "$ref": "#/components/schemas/LocalTime" },
+          "end": { "$ref": "#/components/schemas/LocalTime" },
+          "breakStart": { "$ref": "#/components/schemas/LocalTime" },
+          "breakEnd": { "$ref": "#/components/schemas/LocalTime" }
+        }
+      },
+      "ShiftPattern": {
+        "type": "object",
+        "description": "The weekly pattern by weekday, `1` Monday to `7` Sunday. A missing weekday is a day off.",
+        "additionalProperties": false,
+        "properties": {
+          "1": { "$ref": "#/components/schemas/Shift" },
+          "2": { "$ref": "#/components/schemas/Shift" },
+          "3": { "$ref": "#/components/schemas/Shift" },
+          "4": { "$ref": "#/components/schemas/Shift" },
+          "5": { "$ref": "#/components/schemas/Shift" },
+          "6": { "$ref": "#/components/schemas/Shift" },
+          "7": { "$ref": "#/components/schemas/Shift" }
+        }
+      },
+      "ShiftException": {
+        "description": "Leave for the date, or a changed shift for the date.",
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind"],
+            "properties": { "kind": { "type": "string", "enum": ["leave"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind", "shift"],
+            "properties": {
+              "kind": { "type": "string", "enum": ["changed"] },
+              "shift": { "$ref": "#/components/schemas/Shift" }
+            }
+          }
+        ]
+      },
+      "ShiftExceptions": {
+        "type": "object",
+        "description": "Date exceptions by local date.",
+        "propertyNames": { "$ref": "#/components/schemas/LocalDate" },
+        "maxProperties": 400,
+        "additionalProperties": {
+          "$ref": "#/components/schemas/ShiftException"
+        }
+      },
+      "BookedInterval": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["appointmentId", "start", "end"],
+        "properties": {
+          "appointmentId": { "$ref": "#/components/schemas/Id" },
+          "start": { "$ref": "#/components/schemas/Instant" },
+          "end": { "$ref": "#/components/schemas/Instant" }
+        }
+      },
+      "Technician": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "dealershipId",
+          "name",
+          "active",
+          "skills",
+          "shiftPattern",
+          "shiftExceptions",
+          "booked"
+        ],
+        "properties": {
+          "id": { "$ref": "#/components/schemas/Id" },
+          "dealershipId": { "$ref": "#/components/schemas/Id" },
+          "name": { "type": "string" },
+          "active": { "type": "boolean" },
+          "skills": { "type": "array", "items": { "type": "string" } },
+          "shiftPattern": { "$ref": "#/components/schemas/ShiftPattern" },
+          "shiftExceptions": { "$ref": "#/components/schemas/ShiftExceptions" },
+          "booked": {
+            "type": "array",
+            "description": "The technician's booked times between `from` and `to`.",
+            "items": { "$ref": "#/components/schemas/BookedInterval" }
+          }
+        }
+      },
+      "ServiceBay": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "dealershipId", "name", "active"],
+        "properties": {
+          "id": { "$ref": "#/components/schemas/Id" },
+          "dealershipId": { "$ref": "#/components/schemas/Id" },
+          "name": { "type": "string" },
+          "active": { "type": "boolean" }
+        }
+      },
+      "Vehicle": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "customerId", "registration", "make", "model"],
+        "properties": {
+          "id": { "$ref": "#/components/schemas/Id" },
+          "customerId": { "$ref": "#/components/schemas/Id" },
+          "registration": { "type": "string" },
+          "make": { "type": "string" },
+          "model": { "type": "string" },
+          "year": { "type": "integer" }
+        }
+      },
+      "CustomerWithVehicles": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "name", "phone", "email", "vehicles"],
+        "properties": {
+          "id": { "$ref": "#/components/schemas/Id" },
+          "name": { "type": "string" },
+          "phone": { "type": "string" },
+          "email": { "type": "string" },
+          "vehicles": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Vehicle" }
+          }
+        }
+      },
+      "Availability": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["date", "timeZone", "gridMinutes", "slots"],
+        "properties": {
+          "date": { "$ref": "#/components/schemas/LocalDate" },
+          "timeZone": { "$ref": "#/components/schemas/TimeZone" },
+          "gridMinutes": { "type": "integer" },
+          "slots": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/TimeSlot" }
+          }
+        }
+      },
+      "AvailabilityCheck": {
+        "description": "Free (with the chosen resources) or taken (with reasons and suggestions).",
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "available",
+              "technicianId",
+              "serviceBayId",
+              "courtesyCarId"
+            ],
+            "properties": {
+              "available": { "type": "boolean", "enum": [true] },
+              "technicianId": { "$ref": "#/components/schemas/Id" },
+              "serviceBayId": { "$ref": "#/components/schemas/Id" },
+              "courtesyCarId": {
+                "oneOf": [
+                  { "$ref": "#/components/schemas/Id" },
+                  { "type": "null" }
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["available", "reasons", "suggestions"],
+            "properties": {
+              "available": { "type": "boolean", "enum": [false] },
+              "reasons": {
+                "type": "array",
+                "items": { "$ref": "#/components/schemas/UnavailableReason" }
+              },
+              "suggestions": {
+                "type": "array",
+                "items": { "$ref": "#/components/schemas/TimeSlot" }
+              }
+            }
+          }
+        ]
+      },
+      "AppointmentFlag": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "since", "reason"],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": ["outside_opening_hours", "outside_shift"]
+          },
+          "since": { "$ref": "#/components/schemas/Instant" },
+          "reason": {
+            "type": "string",
+            "description": "One plain line that says why, for example \"Ash's shift ends at 13:00; this booking ends at 13:45.\""
+          }
+        }
+      },
+      "AppointmentDisplay": {
+        "type": "object",
+        "description": "What a screen shows for the appointment. `technicianName`, `serviceBayName` and `customerName`\nare for staff and managers only.\n",
+        "additionalProperties": false,
+        "required": ["serviceTypeName", "vehicle"],
+        "properties": {
+          "serviceTypeName": { "type": "string" },
+          "vehicle": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["registration", "make", "model"],
+            "properties": {
+              "registration": { "type": "string" },
+              "make": { "type": "string" },
+              "model": { "type": "string" }
+            }
+          },
+          "technicianName": { "type": "string" },
+          "serviceBayName": { "type": "string" },
+          "customerName": { "type": "string" }
+        }
+      },
+      "PickedResources": {
+        "type": "object",
+        "description": "The technician or bay the booking rule picked because the old one was busy.",
+        "additionalProperties": false,
+        "properties": {
+          "technicianId": { "$ref": "#/components/schemas/Id" },
+          "serviceBayId": { "$ref": "#/components/schemas/Id" }
+        }
+      },
+      "Appointment": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "dealershipId",
+          "timeZone",
+          "customerId",
+          "vehicleId",
+          "serviceTypeId",
+          "technicianId",
+          "serviceBayId",
+          "courtesyCarId",
+          "transport",
+          "start",
+          "end",
+          "status",
+          "flags",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "cancelledAt",
+          "display"
+        ],
+        "properties": {
+          "id": { "$ref": "#/components/schemas/Id" },
+          "dealershipId": { "$ref": "#/components/schemas/Id" },
+          "timeZone": { "$ref": "#/components/schemas/TimeZone" },
+          "customerId": { "$ref": "#/components/schemas/Id" },
+          "vehicleId": { "$ref": "#/components/schemas/Id" },
+          "serviceTypeId": { "$ref": "#/components/schemas/Id" },
+          "technicianId": { "$ref": "#/components/schemas/Id" },
+          "serviceBayId": { "$ref": "#/components/schemas/Id" },
+          "courtesyCarId": {
+            "oneOf": [{ "$ref": "#/components/schemas/Id" }, { "type": "null" }]
+          },
+          "transport": { "$ref": "#/components/schemas/Transport" },
+          "start": { "$ref": "#/components/schemas/Instant" },
+          "end": { "$ref": "#/components/schemas/Instant" },
+          "status": { "type": "string", "enum": ["confirmed", "cancelled"] },
+          "flags": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/AppointmentFlag" }
+          },
+          "version": { "type": "integer" },
+          "createdAt": { "$ref": "#/components/schemas/Instant" },
+          "updatedAt": { "$ref": "#/components/schemas/Instant" },
+          "cancelledAt": {
+            "oneOf": [
+              { "$ref": "#/components/schemas/Instant" },
+              { "type": "null" }
+            ]
+          },
+          "display": { "$ref": "#/components/schemas/AppointmentDisplay" },
+          "picked": {
+            "description": "Only on a manager's move (`PATCH /appointments/{appointmentId}`).",
+            "$ref": "#/components/schemas/PickedResources"
+          }
+        }
+      },
+      "FlaggedResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["flagged"],
+        "properties": {
+          "flagged": {
+            "type": "array",
+            "description": "The appointments that are flagged after the change.",
+            "items": { "$ref": "#/components/schemas/Appointment" }
+          }
+        }
+      },
+      "OutboxMessageLinks": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["cancel", "reschedule"],
+        "properties": {
+          "cancel": { "type": "string" },
+          "reschedule": { "type": "string" }
+        }
+      },
+      "OutboxMessage": {
+        "type": "object",
+        "description": "Ids only; a real sender looks the contact details up when it sends.",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "appointmentId",
+          "dealershipId",
+          "kind",
+          "dueAt",
+          "status",
+          "links"
+        ],
+        "properties": {
+          "id": { "$ref": "#/components/schemas/Id" },
+          "appointmentId": { "$ref": "#/components/schemas/Id" },
+          "dealershipId": { "$ref": "#/components/schemas/Id" },
+          "kind": { "type": "string" },
+          "dueAt": { "$ref": "#/components/schemas/Instant" },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "sent", "cancelled"]
+          },
+          "links": { "$ref": "#/components/schemas/OutboxMessageLinks" }
+        }
+      },
+      "NewCustomer": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": { "$ref": "#/components/schemas/PersonName" },
+          "phone": { "$ref": "#/components/schemas/Phone" },
+          "email": { "$ref": "#/components/schemas/Email" }
+        }
+      },
+      "NewVehicle": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "registration": { "$ref": "#/components/schemas/Registration" },
+          "make": { "type": "string", "maxLength": 50, "minLength": 1 },
+          "model": { "type": "string", "maxLength": 50, "minLength": 1 },
+          "year": { "type": "integer", "minimum": 1900, "maximum": 2200 }
+        }
+      },
+      "BookingRequest": {
+        "type": "object",
+        "description": "No field is marked required here on purpose: the server names every missing field in one 422\nanswer. A booking needs `dealershipId`, `serviceTypeId`, `start`, `transport` and a vehicle:\n`vehicleId`, or `newVehicle` (with `customerId` for an existing customer, or with `newCustomer`).\nStaff and managers send `customerId` or `newCustomer`; a customer sends neither `newCustomer`,\n`newVehicle` nor `technicianId`.\n",
+        "additionalProperties": false,
+        "properties": {
+          "dealershipId": { "$ref": "#/components/schemas/Id" },
+          "serviceTypeId": { "$ref": "#/components/schemas/Id" },
+          "start": { "$ref": "#/components/schemas/Instant" },
+          "transport": { "$ref": "#/components/schemas/Transport" },
+          "customerId": { "$ref": "#/components/schemas/Id" },
+          "vehicleId": { "$ref": "#/components/schemas/Id" },
+          "newCustomer": { "$ref": "#/components/schemas/NewCustomer" },
+          "newVehicle": { "$ref": "#/components/schemas/NewVehicle" },
+          "technicianId": { "$ref": "#/components/schemas/Id" }
+        }
+      },
+      "AvailabilityCheckRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["dealershipId", "serviceTypeId", "start", "transport"],
+        "properties": {
+          "dealershipId": { "$ref": "#/components/schemas/Id" },
+          "serviceTypeId": { "$ref": "#/components/schemas/Id" },
+          "start": { "$ref": "#/components/schemas/Instant" },
+          "transport": { "$ref": "#/components/schemas/Transport" },
+          "technicianId": { "$ref": "#/components/schemas/Id" }
+        }
+      },
+      "RescheduleRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["start"],
+        "properties": { "start": { "$ref": "#/components/schemas/Instant" } }
+      },
+      "AdjustRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "start": { "$ref": "#/components/schemas/Instant" },
+          "technicianId": { "$ref": "#/components/schemas/Id" },
+          "serviceBayId": { "$ref": "#/components/schemas/Id" }
+        }
+      },
+      "SettingsRequest": {
+        "type": "object",
+        "description": "The whole settings are sent together. The time zone and the start-time grid cannot be changed.",
+        "additionalProperties": false,
+        "required": ["weeklyHours", "dateOverrides", "policies"],
+        "properties": {
+          "weeklyHours": { "$ref": "#/components/schemas/WeeklyHours" },
+          "dateOverrides": { "$ref": "#/components/schemas/DateOverrides" },
+          "policies": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["leadTimeMinutes", "horizonDays", "breakMinutes"],
+            "properties": {
+              "leadTimeMinutes": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 525600
+              },
+              "horizonDays": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 730
+              },
+              "breakMinutes": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1440
+              }
+            }
+          }
+        }
+      },
+      "ShiftsRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["shiftPattern", "shiftExceptions"],
+        "properties": {
+          "shiftPattern": { "$ref": "#/components/schemas/ShiftPattern" },
+          "shiftExceptions": { "$ref": "#/components/schemas/ShiftExceptions" }
+        }
+      },
+      "CustomerSearchRequest": {
+        "type": "object",
+        "description": "Either `text` (3 to 50 characters), or `phone` and/or `registration` for an exact match.\nNever both kinds in one request.\n",
+        "additionalProperties": false,
+        "properties": {
+          "text": { "type": "string", "minLength": 3, "maxLength": 50 },
+          "phone": { "$ref": "#/components/schemas/Phone" },
+          "registration": { "$ref": "#/components/schemas/Registration" }
+        }
+      }
+    }
+  }
+}

@@ -9,3 +9,6 @@ docs/licenses
 .state
 # The README is written by a later ticket.
 README.md
+
+# Ajv writes these checks out as plain code (scripts/generate-contract.mjs).
+src/api/contract/validators.*.js

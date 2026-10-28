@@ -6,6 +6,7 @@ import {
   dealership,
   technician,
 } from "../availability/fixtures";
+import { flagReason } from "./flag-reason";
 import { flagKinds, withFlags } from "./flags";
 
 const MONDAY_NIGHT = "2026-11-07";
@@ -110,5 +111,76 @@ describe("withFlags (AD-14, D-0001-22 c)", () => {
     expect(withFlags(a, d, t, 9 * MIN).flags).toEqual([
       { kind: "outside_shift", since: 2 },
     ]);
+  });
+});
+
+describe("flagReason (D-0001-34)", () => {
+  const d = dealership();
+  const at1 = (hhmm: string) => at(hhmm);
+  const shift = { start: "08:00", end: "13:00" };
+  const t = technician("t1", { name: "Ash" }, shift);
+
+  it("says the shift ends before the booking does", () => {
+    expect(
+      flagReason(
+        "outside_shift",
+        { start: at1("12:00"), end: at1("13:45") },
+        d,
+        t,
+      ),
+    ).toBe("Ash's shift ends at 13:00; this booking ends at 13:45.");
+  });
+
+  it("says the shift starts after the booking starts", () => {
+    expect(
+      flagReason(
+        "outside_shift",
+        { start: at1("07:30"), end: at1("08:30") },
+        d,
+        t,
+      ),
+    ).toBe("Ash's shift starts at 08:00; this booking starts at 07:30.");
+  });
+
+  it("says when the technician is not working that day, or is unknown", () => {
+    const leave = technician(
+      "t1",
+      { name: "Ash", shiftExceptions: { "2026-11-02": { kind: "leave" } } },
+      shift,
+    );
+    const slot = { start: at1("09:00"), end: at1("10:00") };
+    expect(flagReason("outside_shift", slot, d, leave)).toBe(
+      "Ash is not working on 2026-11-02.",
+    );
+    expect(flagReason("outside_shift", slot, d, undefined)).toBe(
+      "The technician for this booking can no longer be found.",
+    );
+  });
+
+  it("says the booking overlaps the technician's break", () => {
+    const withBreak = technician(
+      "t1",
+      { name: "Ash" },
+      { start: "08:00", end: "17:00", breakStart: "12:00", breakEnd: "13:00" },
+    );
+    expect(
+      flagReason(
+        "outside_shift",
+        { start: at1("11:30"), end: at1("12:30") },
+        d,
+        withBreak,
+      ),
+    ).toBe("Ash is on a break during this booking.");
+  });
+
+  it("says the opening hours, or that the dealership is closed", () => {
+    const late = { start: at1("17:30"), end: at1("18:30") };
+    expect(flagReason("outside_opening_hours", late, d, t)).toBe(
+      "The dealership is open 08:00 to 18:00 that day; this booking runs 17:30 to 18:30.",
+    );
+    const closed = dealership({ dateOverrides: { "2026-11-02": "closed" } });
+    expect(flagReason("outside_opening_hours", late, closed, t)).toBe(
+      "The dealership is closed on 2026-11-02.",
+    );
   });
 });

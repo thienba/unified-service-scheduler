@@ -496,6 +496,12 @@ export function describeStoreContract(
       expect((await read((s) => s.scheduling.getDealership("d2")))?.id).toBe(
         "d2",
       );
+      expect(
+        (await read((s) => s.scheduling.listDealerships())).map((d) => d.id),
+      ).toEqual(["d1", "d2"]);
+      expect(
+        (await read((s) => s.scheduling.listServiceTypes())).map((t) => t.id),
+      ).toEqual(["st1"]);
       const leave = { kind: "leave" as const };
       expect(
         await read((s) =>

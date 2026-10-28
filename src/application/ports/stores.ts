@@ -35,6 +35,8 @@ export type DealershipSettings = Pick<
 
 export interface SchedulingReader {
   getDealership(id: string): Promise<Dealership | undefined>;
+  listDealerships(): Promise<Dealership[]>;
+  listServiceTypes(): Promise<ServiceType[]>;
   listTechnicians(dealershipId: string): Promise<Technician[]>;
   /** Both dates are included. */
   listShiftExceptions(

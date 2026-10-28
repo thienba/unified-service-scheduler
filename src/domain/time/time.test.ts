@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { addDays, dayBounds, instantAt, localDateOf, weekdayOf } from ".";
+import {
+  addDays,
+  dayBounds,
+  instantAt,
+  localDateOf,
+  localTimeOf,
+  weekdayOf,
+} from ".";
 
 const London = "Europe/London";
 const HoChiMinh = "Asia/Ho_Chi_Minh";
@@ -92,5 +99,16 @@ describe("dates", () => {
     expect(addDays("2026-11-03", 30)).toBe("2026-12-03");
     expect(addDays("2026-12-31", 1)).toBe("2027-01-01");
     expect(addDays("2026-03-01", -1)).toBe("2026-02-28");
+  });
+});
+
+describe("localTimeOf", () => {
+  it("gives the clock time in the zone, summer and winter", () => {
+    const summer = Date.parse("2026-07-01T12:30:00Z");
+    expect(localTimeOf(summer, "Europe/London")).toBe("13:30");
+    expect(localTimeOf(summer, "Asia/Ho_Chi_Minh")).toBe("19:30");
+    expect(
+      localTimeOf(Date.parse("2026-01-01T09:05:00Z"), "Europe/London"),
+    ).toBe("09:05");
   });
 });

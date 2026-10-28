@@ -19,6 +19,13 @@ export function localDateOf(instant: EpochMs, zone: TimeZone): LocalDate {
     .toString();
 }
 
+/** The local clock time, `HH:mm`, that an instant shows in the zone. */
+export function localTimeOf(instant: EpochMs, zone: TimeZone): LocalTime {
+  const time =
+    Temporal.Instant.fromEpochMilliseconds(instant).toZonedDateTimeISO(zone);
+  return `${String(time.hour).padStart(2, "0")}:${String(time.minute).padStart(2, "0")}`;
+}
+
 /**
  * The instant of a local date and time in the zone (architecture.md section 7.6).
  *
