@@ -1,0 +1,11 @@
+# tokens.css is a copy of the design file and keeps its own layout.
+src/styles/tokens.css
+package-lock.json
+dist
+coverage
+playwright-report
+test-results
+docs/licenses
+.state
+# The README is written by a later ticket.
+README.md
