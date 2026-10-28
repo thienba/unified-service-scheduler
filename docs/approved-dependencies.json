@@ -3,6 +3,7 @@
   "runtimeDependencies": {
     "react": "D-0000-5",
     "react-dom": "D-0000-5",
-    "@js-temporal/polyfill": "D-0000-31"
+    "@js-temporal/polyfill": "D-0000-31",
+    "dexie": "D-0000-8"
   }
 }

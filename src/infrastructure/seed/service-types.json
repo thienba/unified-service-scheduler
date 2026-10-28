@@ -1,0 +1,20 @@
+[
+  {
+    "id": "service-oil-change",
+    "name": "Oil and filter change",
+    "durationMinutes": 60,
+    "requiredSkill": "mechanic"
+  },
+  {
+    "id": "service-full",
+    "name": "Full service",
+    "durationMinutes": 180,
+    "requiredSkill": "mechanic"
+  },
+  {
+    "id": "service-ev-check",
+    "name": "Battery and EV systems check",
+    "durationMinutes": 60,
+    "requiredSkill": "ev"
+  }
+]

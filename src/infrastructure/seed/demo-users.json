@@ -1,0 +1,51 @@
+[
+  {
+    "id": "user-customer-a",
+    "name": "Demo Customer A",
+    "role": "customer",
+    "customerId": "customer-a",
+    "dealershipIds": []
+  },
+  {
+    "id": "user-customer-b",
+    "name": "Demo Customer B",
+    "role": "customer",
+    "customerId": "customer-b",
+    "dealershipIds": []
+  },
+  {
+    "id": "user-staff-london",
+    "name": "Demo Staff London",
+    "role": "staff",
+    "customerId": null,
+    "dealershipIds": ["dealership-london"]
+  },
+  {
+    "id": "user-manager-london",
+    "name": "Demo Manager London",
+    "role": "manager",
+    "customerId": null,
+    "dealershipIds": ["dealership-london"]
+  },
+  {
+    "id": "user-staff-saigon",
+    "name": "Demo Staff Saigon",
+    "role": "staff",
+    "customerId": null,
+    "dealershipIds": ["dealership-saigon"]
+  },
+  {
+    "id": "user-manager-saigon",
+    "name": "Demo Manager Saigon",
+    "role": "manager",
+    "customerId": null,
+    "dealershipIds": ["dealership-saigon"]
+  },
+  {
+    "id": "user-staff-both",
+    "name": "Demo Staff Both Sites",
+    "role": "staff",
+    "customerId": null,
+    "dealershipIds": ["dealership-london", "dealership-saigon"]
+  }
+]

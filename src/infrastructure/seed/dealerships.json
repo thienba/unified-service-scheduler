@@ -1,0 +1,82 @@
+[
+  {
+    "id": "dealership-london",
+    "name": "Fakeford Motors (demo)",
+    "timeZone": "Europe/London",
+    "weeklyHours": {
+      "1": {
+        "open": "08:00",
+        "close": "18:00"
+      },
+      "2": {
+        "open": "08:00",
+        "close": "18:00"
+      },
+      "3": {
+        "open": "08:00",
+        "close": "18:00"
+      },
+      "4": {
+        "open": "08:00",
+        "close": "18:00"
+      },
+      "5": {
+        "open": "08:00",
+        "close": "18:00"
+      },
+      "6": {
+        "open": "09:00",
+        "close": "16:00"
+      },
+      "7": {
+        "open": "09:00",
+        "close": "16:00"
+      }
+    },
+    "dateOverrides": {},
+    "policies": {
+      "leadTimeMinutes": 120,
+      "horizonDays": 30,
+      "breakMinutes": 15,
+      "gridMinutes": 15
+    }
+  },
+  {
+    "id": "dealership-saigon",
+    "name": "Demo Saigon Autos (demo)",
+    "timeZone": "Asia/Ho_Chi_Minh",
+    "weeklyHours": {
+      "1": {
+        "open": "07:30",
+        "close": "17:00"
+      },
+      "2": {
+        "open": "07:30",
+        "close": "17:00"
+      },
+      "3": {
+        "open": "07:30",
+        "close": "17:00"
+      },
+      "4": {
+        "open": "07:30",
+        "close": "17:00"
+      },
+      "5": {
+        "open": "07:30",
+        "close": "17:00"
+      },
+      "6": {
+        "open": "07:30",
+        "close": "17:00"
+      }
+    },
+    "dateOverrides": {},
+    "policies": {
+      "leadTimeMinutes": 120,
+      "horizonDays": 30,
+      "breakMinutes": 15,
+      "gridMinutes": 15
+    }
+  }
+]
