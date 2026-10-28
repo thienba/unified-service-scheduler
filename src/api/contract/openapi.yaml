@@ -605,6 +605,31 @@ paths:
         "422": { $ref: "#/components/responses/ValidationFailed" }
         "500": { $ref: "#/components/responses/Internal" }
 
+  /_demo/users:
+    get:
+      operationId: getDemoUsers
+      tags: [demo-only]
+      # The one operation that needs no X-Demo-User (D-0001-57): the role switcher lists the users before anyone is picked.
+      security: []
+      summary: The seeded demo users
+      description: |
+        Demo only, for the role switcher. Answers without `X-Demo-User`, because nobody is picked yet. Each user
+        is an id, a name, a role and dealership ids, and nothing else (no customer id, phone or email).
+      parameters:
+        - $ref: "#/components/parameters/Traceparent"
+      responses:
+        "200":
+          description: Every seeded demo user.
+          headers:
+            X-Trace-Id: { $ref: "#/components/headers/TraceId" }
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/DemoUserListing" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+        "500": { $ref: "#/components/responses/Internal" }
+
   /_demo/reset:
     post:
       operationId: resetDemoData
@@ -871,6 +896,17 @@ components:
           oneOf:
             - $ref: "#/components/schemas/Id"
             - type: "null"
+        dealershipIds:
+          type: array
+          items: { $ref: "#/components/schemas/Id" }
+    DemoUserListing:
+      type: object
+      additionalProperties: false
+      required: [id, name, role, dealershipIds]
+      properties:
+        id: { $ref: "#/components/schemas/Id" }
+        name: { type: string }
+        role: { $ref: "#/components/schemas/Role" }
         dealershipIds:
           type: array
           items: { $ref: "#/components/schemas/Id" }

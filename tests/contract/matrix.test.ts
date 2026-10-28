@@ -26,6 +26,12 @@ interface Row {
   idempotent?: boolean;
   /** The status each caller gets. The unknown user always gets 401. */
   expect: Record<UserKey, number>;
+  /**
+   * The one exception to SEC-1.AC-1 (D-0001-57 A): the role switcher has to list the demo users before
+   * anyone is picked, so there is no X-Demo-User to send. Only `getDemoUsers` sets this, and its answer
+   * holds ids, names, roles and dealership ids only (SEC-9, SEC-10).
+   */
+  answersWithoutUser?: true;
 }
 
 const only = (
@@ -213,6 +219,12 @@ export const matrix: Record<string, Row> = {
     path: "/_demo/telemetry",
     expect: only({}, 200),
   },
+  getDemoUsers: {
+    method: "GET",
+    path: "/_demo/users",
+    expect: only({}, 200),
+    answersWithoutUser: true,
+  },
   resetDemoData: {
     method: "POST",
     path: "/_demo/reset",
@@ -264,7 +276,7 @@ describe.each([directTransport(), clientTransport("https://first.mock.test")])(
         if (reply.status === 404) expect(reply.body.code).toBe("NOT_FOUND");
       });
 
-      it("an unknown user gets 401 UNKNOWN_USER in the Problem shape", async () => {
+      it("an unknown user gets 401 UNKNOWN_USER in the Problem shape (except the demo users list)", async () => {
         const { call } = await transport.start();
         for (const user of [undefined, "user-nobody"]) {
           const reply = await call(row.path, {
@@ -277,6 +289,10 @@ describe.each([directTransport(), clientTransport("https://first.mock.test")])(
             body: row.body?.("managerLondon"),
           });
           expect(reply.problems).toEqual([]);
+          if (row.answersWithoutUser) {
+            expect(reply.status).toBe(200);
+            continue;
+          }
           expect(reply.status).toBe(401);
           expect(reply.body).toMatchObject({
             code: "UNKNOWN_USER",
@@ -287,3 +303,13 @@ describe.each([directTransport(), clientTransport("https://first.mock.test")])(
     });
   },
 );
+
+describe("only the demo users list answers without X-Demo-User (SEC-1.AC-1)", () => {
+  it("is the single operation that is not 401 without the header", () => {
+    expect(
+      Object.entries(matrix)
+        .filter(([, row]) => row.answersWithoutUser)
+        .map(([id]) => id),
+    ).toEqual(["getDemoUsers"]);
+  });
+});
