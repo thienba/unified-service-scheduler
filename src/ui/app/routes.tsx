@@ -8,6 +8,7 @@ import { StateBlock } from "../components/StateBlock";
 import { useSelectedDealership } from "../session/dealership";
 import { useSession } from "../session/session";
 import { ComponentSheet } from "../pages/ComponentSheet";
+import { OutboxScreen } from "../features/outbox/OutboxScreen";
 import {
   devPanelPath,
   homeFor,
@@ -25,7 +26,9 @@ import {
 } from "./states";
 
 /** A screen for each path of `routeRules`. A path with no screen yet shows its title only. */
-const screens: Record<string, ReactElement> = {};
+const screens: Record<string, ReactElement> = {
+  "/manage/outbox": <OutboxScreen />,
+};
 
 const rules: readonly RouteRule[] = mockEnabled
   ? [
