@@ -283,6 +283,18 @@ describe("technician free test with a break", () => {
     expect(afternoon).toBeDefined();
     expect(contains(afternoon!, lastJob)).toBe(true);
     expect(isTechnicianFree(lastJob, [job], 15)).toBe(true);
+    // Another job right before it still needs its break: ending at 15:00 is fine, 15:50 is not.
+    const before = (endTime: string) => ({
+      start: utc("2026-11-02T14:00:00Z"),
+      end: utc(`2026-11-02T${endTime}:00Z`),
+    });
+    expect(isTechnicianFree(lastJob, [before("15:00")], 15)).toBe(true);
+    expect(isTechnicianFree(lastJob, [before("15:50")], 15)).toBe(false);
+    // Nothing is needed after it: a job that starts at the segment end is outside the segment,
+    // and the segment check (not the break) refuses it. Combining both is checkStart's work (A3).
+    expect(
+      contains(afternoon!, { start: lastJob.end, end: lastJob.end + 60 * MIN }),
+    ).toBe(false);
   });
 
   it("a changed break length gives a new answer and reads no stored appointment", () => {
@@ -297,10 +309,124 @@ describe("technician free test with a break", () => {
   });
 });
 
-describe("work segments across a DST day", () => {
-  it("counts a 120-minute job in real minutes on the fall-back day", () => {
+describe("work segments and opening hours across DST in Europe/London", () => {
+  const sunday = (open = "00:00", close = "23:00") =>
+    dealership({
+      timeZone: London,
+      weeklyHours: {
+        6: { open, close },
+        7: { open, close },
+      },
+    });
+  const withShift = (shift: Technician["shiftPattern"][1]) =>
+    technician({ shiftPattern: { 6: shift, 7: shift } });
+
+  it("the 08:00 to 17:00 window is 07:00 to 16:00 UTC on the spring-forward day, and 08:00 UTC the day before", () => {
+    const d = sunday("08:00", "17:00");
+    expect(openingWindow(d, "2026-03-29")).toEqual({
+      start: utc("2026-03-29T07:00:00Z"),
+      end: utc("2026-03-29T16:00:00Z"),
+    });
+    expect(openingWindow(d, "2026-03-28")).toEqual({
+      start: utc("2026-03-28T08:00:00Z"),
+      end: utc("2026-03-28T17:00:00Z"),
+    });
+  });
+
+  it("the 08:00 to 17:00 window is 08:00 to 17:00 UTC on the fall-back day, and 07:00 UTC the day before", () => {
+    const d = sunday("08:00", "17:00");
+    expect(openingWindow(d, "2026-10-25")).toEqual({
+      start: utc("2026-10-25T08:00:00Z"),
+      end: utc("2026-10-25T17:00:00Z"),
+    });
+    expect(openingWindow(d, "2026-10-24")?.start).toBe(
+      utc("2026-10-24T07:00:00Z"),
+    );
+  });
+
+  it("a shift 00:30 to 03:30 across the spring-forward gap lasts two real hours", () => {
+    const t = withShift({ start: "00:30", end: "03:30" });
+    expect(workSegments(t, sunday(), "2026-03-29")).toEqual([
+      { start: utc("2026-03-29T00:30:00Z"), end: utc("2026-03-29T02:30:00Z") },
+    ]);
+  });
+
+  it("a break 01:30 to 02:30 on the spring-forward day is 30 real minutes (01:00 to 01:30 UTC)", () => {
+    const t = withShift({
+      start: "00:30",
+      end: "03:30",
+      breakStart: "01:30",
+      breakEnd: "02:30",
+    });
+    expect(workSegments(t, sunday(), "2026-03-29")).toEqual([
+      { start: utc("2026-03-29T00:30:00Z"), end: utc("2026-03-29T01:00:00Z") },
+      { start: utc("2026-03-29T01:30:00Z"), end: utc("2026-03-29T02:30:00Z") },
+    ]);
+  });
+
+  it("a break 01:00 to 02:00 is exactly the gap, takes no time, and splits nothing", () => {
+    const t = withShift({
+      start: "00:30",
+      end: "03:30",
+      breakStart: "01:00",
+      breakEnd: "02:00",
+    });
+    expect(workSegments(t, sunday(), "2026-03-29")).toEqual([
+      { start: utc("2026-03-29T00:30:00Z"), end: utc("2026-03-29T02:30:00Z") },
+    ]);
+  });
+
+  it("a shift 00:30 to 03:30 on the fall-back day lasts four real hours", () => {
+    const t = withShift({ start: "00:30", end: "03:30" });
+    expect(workSegments(t, sunday(), "2026-10-25")).toEqual([
+      { start: utc("2026-10-24T23:30:00Z"), end: utc("2026-10-25T03:30:00Z") },
+    ]);
+  });
+
+  it("a break 01:30 to 02:30 on the fall-back day is two real hours (00:30 to 02:30 UTC)", () => {
+    const t = withShift({
+      start: "00:30",
+      end: "03:30",
+      breakStart: "01:30",
+      breakEnd: "02:30",
+    });
+    expect(workSegments(t, sunday(), "2026-10-25")).toEqual([
+      { start: utc("2026-10-24T23:30:00Z"), end: utc("2026-10-25T00:30:00Z") },
+      { start: utc("2026-10-25T02:30:00Z"), end: utc("2026-10-25T03:30:00Z") },
+    ]);
+  });
+
+  it("counts a 120-minute job in real minutes: it starts at 01:30 BST and ends at 02:30 GMT", () => {
     const start = instantAt("2026-10-25", "01:30", London);
     expect(start).toBe(utc("2026-10-25T00:30:00Z"));
     expect(start + 120 * MIN).toBe(utc("2026-10-25T02:30:00Z"));
+  });
+});
+
+describe("odd shifts", () => {
+  it("a break with only a start or only an end is ignored", () => {
+    const whole = [
+      { start: utc("2026-11-02T08:00:00Z"), end: utc("2026-11-02T17:00:00Z") },
+    ];
+    const onlyStart = technician({
+      shiftPattern: {
+        1: { start: "08:00", end: "17:00", breakStart: "12:00" },
+      },
+    });
+    const onlyEnd = technician({
+      shiftPattern: { 1: { start: "08:00", end: "17:00", breakEnd: "13:00" } },
+    });
+    expect(workSegments(onlyStart, dealership(), MONDAY)).toEqual(whole);
+    expect(workSegments(onlyEnd, dealership(), MONDAY)).toEqual(whole);
+  });
+
+  it("a shift that ends at or before its start gives no segments", () => {
+    for (const shift of [
+      { start: "17:00", end: "08:00" },
+      { start: "09:00", end: "09:00" },
+    ]) {
+      const t = technician({ shiftPattern: { 1: shift } });
+      expect(workSegments(t, dealership(), MONDAY)).toEqual([]);
+    }
   });
 });

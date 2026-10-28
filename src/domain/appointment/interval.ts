@@ -25,7 +25,8 @@ export function intersect(a: Interval, b: Interval): Interval | null {
 
 /** What is left of `interval` once `hole` is taken out: zero, one or two intervals. */
 export function subtract(interval: Interval, hole: Interval): Interval[] {
-  if (!overlaps(interval, hole)) return [interval];
+  // A hole with no length (for example a break inside a clock gap) takes nothing out.
+  if (hole.start >= hole.end || !overlaps(interval, hole)) return [interval];
   const left = { start: interval.start, end: hole.start };
   const right = { start: hole.end, end: interval.end };
   return [left, right].filter((part) => part.start < part.end);

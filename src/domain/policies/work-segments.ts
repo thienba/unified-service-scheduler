@@ -29,7 +29,9 @@ export function workSegments(
     },
     window,
   );
+  // A shift that ends at or before its start gives no segments.
   if (shiftSpan === null) return [];
+  // A break needs both its start and its end; with only one of them there is no break.
   if (shift.breakStart === undefined || shift.breakEnd === undefined) {
     return [shiftSpan];
   }

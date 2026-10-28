@@ -51,10 +51,11 @@ describe("DST in Europe/London", () => {
   });
 
   it("a job is counted in real minutes across the change", () => {
-    const start = Date.parse("2026-10-25T00:30:00Z"); // 01:30 BST
+    const start = instantAt("2026-10-25", "01:30", London); // 01:30 BST
     const end = start + 120 * 60_000;
     expect(iso(end)).toBe("2026-10-25T02:30:00.000Z");
-    expect(localDateOf(end, London)).toBe("2026-10-25");
+    // 02:30 UTC is 02:30 on the GMT clock, so the job reads 01:30 to 02:30 but lasts two hours.
+    expect(instantAt("2026-10-25", "02:30", London)).toBe(end);
   });
 
   it("localDateOf follows the zone, not the machine", () => {

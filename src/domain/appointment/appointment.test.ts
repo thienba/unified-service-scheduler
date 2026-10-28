@@ -64,6 +64,9 @@ describe("interval helpers", () => {
       { start: at("09:00"), end: at("17:00") },
     ]);
     expect(subtract(day, { start: at("07:00"), end: at("18:00") })).toEqual([]);
+    expect(subtract(day, { start: at("12:00"), end: at("12:00") })).toEqual([
+      day,
+    ]);
     expect(subtract(day, { start: at("18:00"), end: at("19:00") })).toEqual([
       day,
     ]);
