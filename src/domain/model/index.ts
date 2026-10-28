@@ -131,3 +131,29 @@ export interface Appointment {
   updatedAt: EpochMs;
   cancelledAt: EpochMs | null;
 }
+
+export type Role = "customer" | "staff" | "manager";
+
+/** A seeded user the role switcher can pick. There is no real login (Q-0001-9, D-0001-14). */
+export interface DemoUser {
+  id: string;
+  name: string;
+  role: Role;
+  /** Set for a customer, null for staff and managers. */
+  customerId: string | null;
+  /** The dealerships a staff member or manager works for. */
+  dealershipIds: string[];
+}
+
+/** Everything the demo starts with, with the appointments already turned into instants. */
+export interface SeedData {
+  dealerships: Dealership[];
+  technicians: Technician[];
+  serviceBays: ServiceBay[];
+  courtesyCars: CourtesyCar[];
+  serviceTypes: ServiceType[];
+  customers: Customer[];
+  vehicles: Vehicle[];
+  demoUsers: DemoUser[];
+  appointments: Appointment[];
+}

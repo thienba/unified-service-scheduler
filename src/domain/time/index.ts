@@ -62,3 +62,20 @@ export function dayBounds(
     end: instantAt(addDays(localDate, 1), "00:00", zone),
   };
 }
+
+/** True when the zone's offset differs between January and July of the instant's local year. */
+export function zoneHasDst(zone: TimeZone, instant: EpochMs): boolean {
+  const year =
+    Temporal.Instant.fromEpochMilliseconds(instant).toZonedDateTimeISO(
+      zone,
+    ).year;
+  const offsetIn = (month: number) =>
+    Temporal.ZonedDateTime.from({
+      timeZone: zone,
+      year,
+      month,
+      day: 1,
+      hour: 12,
+    }).offsetNanoseconds;
+  return offsetIn(1) !== offsetIn(7);
+}

@@ -1,0 +1,45 @@
+{
+  "customers": [
+    {
+      "id": "customer-a",
+      "name": "Demo Customer A",
+      "phone": "+44 7700 900101",
+      "email": "customer.a@demo.example"
+    },
+    {
+      "id": "customer-b",
+      "name": "Demo Customer B",
+      "phone": "+44 7700 900102",
+      "email": "customer.b@demo.example"
+    },
+    {
+      "id": "customer-c",
+      "name": "Demo Walk-in Carol",
+      "phone": "+44 7700 900103",
+      "email": "customer.c@demo.example"
+    }
+  ],
+  "vehicles": [
+    {
+      "id": "vehicle-a",
+      "customerId": "customer-a",
+      "registration": "AB00 DMA",
+      "make": "Demo Motors",
+      "model": "Hatch"
+    },
+    {
+      "id": "vehicle-b",
+      "customerId": "customer-b",
+      "registration": "CD11 DMB",
+      "make": "Demo Motors",
+      "model": "Estate"
+    },
+    {
+      "id": "vehicle-c",
+      "customerId": "customer-c",
+      "registration": "EF22 DMC",
+      "make": "Demo Motors",
+      "model": "Coupe"
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+[
+  {
+    "id": "appointment-customer-a",
+    "dealershipId": "dealership-london",
+    "customerId": "customer-a",
+    "vehicleId": "vehicle-a",
+    "serviceTypeId": "service-ev-check",
+    "technicianId": "tech-lon-ash",
+    "serviceBayId": "bay-lon-1",
+    "courtesyCarId": null,
+    "transport": "wait",
+    "daysFromToday": 3,
+    "localTime": "10:00"
+  },
+  {
+    "id": "appointment-customer-b",
+    "dealershipId": "dealership-london",
+    "customerId": "customer-b",
+    "vehicleId": "vehicle-b",
+    "serviceTypeId": "service-oil-change",
+    "technicianId": "tech-lon-birch",
+    "serviceBayId": "bay-lon-2",
+    "courtesyCarId": "car-lon-1",
+    "transport": "courtesy_car",
+    "daysFromToday": 4,
+    "localTime": "14:00"
+  }
+]
