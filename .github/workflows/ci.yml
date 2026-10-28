@@ -5,7 +5,8 @@ on:
   pull_request:
 
 # Read-only for the whole workflow (SEC-16.AC-4).
-permissions: read-all
+permissions:
+  contents: read
 
 jobs:
   checks:
