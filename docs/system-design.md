@@ -22,6 +22,15 @@ Contents:
 
 How to read the ids. `D-0000-n` and `D-0001-n` are decisions the human made. `Q-` files are open questions where we took a reasonable option and wrote it down. `AD-n` are architecture decisions. `REQ-BOOK-n` are requirements. `SEC-n` are security requirements. `NFR-n` are non-functional requirements. These files live in the work repo (`context/`), not in this repo.
 
+Words used below, in plain terms:
+
+- **Actor**: who is making the call (their role, customer id and list of dealerships), built by the mock from the chosen demo user.
+- **Ring buffer**: a fixed-size list in memory that drops the oldest line when full.
+- **Idempotency key**: a random id sent with a booking, so that sending the same booking twice gives one appointment.
+- **GiST**: the kind of PostgreSQL index that can compare time ranges for overlap.
+- **SQLSTATE**: the five-character error code PostgreSQL gives with an error. `23P01` means an exclusion constraint was broken.
+- **p95**: the time that 95 out of 100 requests beat.
+
 ## Overview and scope
 
 **The problem.** A dealership service department books by hand. The scheduler replaces that. A customer asks for a service for a vehicle, at a dealership, at a time. The system confirms it only when a **service bay** and a **qualified technician** are both free for the **whole job**. If they are not, it suggests other times. A confirmed **appointment** links the customer, the vehicle, the technician and the bay, and it is kept.
@@ -315,7 +324,7 @@ Browser features used with no library: `Intl.DateTimeFormat` with a `timeZone` (
 
 Other decided choices. Hosting is a free static host linked to the private repo, but only after everything else is finished (D-0000-25). Library checks in CI are the light set (D-0000-30, see [Security and privacy](#security-and-privacy)). The code is in English, in plain words (D-0000-10).
 
-The new-technology budget is 0.5 of 1. It is spent on two unusual uses that the constraints force: the browser's IndexedDB transaction as the booking order, and MSW shipped as the backend of a hosted demo. No version numbers are in this document. Versions come from the lockfile.
+The new-technology budget is 0.5 of 1. It is spent on two unusual uses that the constraints force: the browser's IndexedDB transaction as the booking order, and MSW shipped as the backend of a hosted demo. Version numbers appear only where a test or a decision fixed them. Other versions come from the lockfile.
 
 ## Observability
 
@@ -397,7 +406,7 @@ Each point is tied to the architecture decision that holds it.
 
 **Stateless API instances (AD-2, AD-6; real backend).** The real API holds no state in memory. The rules are in the shared `domain` and `application` code, and all state is in PostgreSQL. So instances can be added behind a load balancer. The client already works only through the contract.
 
-**Per-dealership day queries (AD-4; real backend).** A search or a confirm reads one dealership and one local day, a small read. Indexes cover the day queries. Partitioning the appointment table by dealership or by month is a later step, only when volume needs it.
+**Per-dealership day queries (AD-4; real backend).** A search or a confirm reads one dealership and one local day, a small read. The schema has only an index on the customer today. An index on `(dealership_id, during)` is a proposed addition for the real backend, not in `schema.sql` yet. Partitioning the appointment table by dealership or by month is a later step, only when volume needs it.
 
 **The search budget (AD-19; S7).** For 10 technicians, 6 bays and 60 appointments a day: one day's search under 50 ms and 14-day suggestions under 200 ms, measured in Node on the CI machine. Work segments and busy lists are built once per day, so each start costs a few comparisons. A timed test reports it as a warning, not a blocker.
 
@@ -419,7 +428,7 @@ The schema is in [docs/postgres/schema.sql](postgres/schema.sql). It is a design
 - **Three exclusion constraints on the `appointment` table**, one for each resource:
   - `appointment_bay_no_overlap`: the same service bay cannot have two overlapping time ranges.
   - `appointment_technician_no_overlap`: the same technician cannot have two overlapping ranges. This one uses a second range, `technician_busy`, which is the job plus the break after it. Two jobs closer together than the break are refused on both sides.
-  - `appointment_courtesy_car_no_overlap`: the same courtesy car cannot have two overlapping ranges. It applies only when a car is chosen.
+  - `appointment_courtesy_car_no_overlap`: the same courtesy car cannot have two overlapping ranges. Its predicate is `status <> 'cancelled' AND courtesy_car_id IS NOT NULL`, so it applies only when a car is chosen.
 - **A partial predicate on each: `WHERE (status <> 'cancelled')`.** Cancelled rows stop blocking a bay, technician or car. The predicate says "not cancelled" and not "confirmed", so later statuses such as checked in or in progress would still block.
 - **Half-open ranges.** `during` is a `tstzrange` stored as `[start, end)`. A check constraint insists on an inclusive start and an exclusive end. So a job ending at 10:00 and a job starting at 10:00 do not clash (REQ-BOOK-002.AC-5).
 - **`btree_gist`.** This extension lets the GiST index compare ids with `=`, so "same bay and overlapping time" is one constraint.
@@ -461,7 +470,7 @@ Times are where scheduling goes wrong, so the rules are strict (D-0001-10, AD-9)
 
 | Date | What happens | Effect |
 |---|---|---|
-| Sunday 2026-03-29 | At 01:00 UTC the clocks jump from 01:00 GMT to 02:00 BST. The day has 23 hours. | Local 01:30 does not exist. It moves later, to 02:00 BST, which is 01:00 UTC. |
+| Sunday 2026-03-29 | At 01:00 UTC the clocks jump from 01:00 GMT to 02:00 BST. The day has 23 hours. | Local 01:30 does not exist. It moves to the first real time after the gap, as the time module defines and tests it. |
 | Sunday 2026-10-25 | At 01:00 UTC the clocks go back from 02:00 BST to 01:00 GMT. The day has 25 hours. | Local 01:30 happens twice. We use the earlier one, 01:30 BST, which is 00:30 UTC. |
 
 The seed has at least one zone with DST (`Europe/London`) and one without (`Asia/Ho_Chi_Minh`). The start-time grid is walked in real time from the opening instant, so a DST day keeps the right slots.
