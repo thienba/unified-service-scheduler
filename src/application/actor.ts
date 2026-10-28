@@ -34,3 +34,8 @@ export function canReach(
     ? actor.customerId === appointment.customerId
     : servesDealership(actor, appointment.dealershipId);
 }
+
+/** Hours, shifts and manager moves belong to managers only (SEC-3, REQ-BOOK-005.AC-3, REQ-BOOK-008.AC-3). */
+export function isManager(actor: Actor): boolean {
+  return actor.role === "manager";
+}

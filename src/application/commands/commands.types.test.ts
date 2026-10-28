@@ -15,9 +15,12 @@ describe("AD-3: every command takes an Actor first", () => {
     // Fails the build (typecheck) when a command is added whose first parameter is not an Actor.
     expectTypeOf<FirstParam[keyof FirstParam]>().toEqualTypeOf<Actor>();
     expect(Object.keys(commands).sort()).toEqual([
+      "adjustAppointment",
       "bookAppointment",
       "cancelAppointment",
       "rescheduleAppointment",
+      "updateDealershipSettings",
+      "updateTechnicianShifts",
     ]);
   });
 });
