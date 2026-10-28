@@ -6,7 +6,13 @@
 // with VIDEO_DIR set, the video test saves the main flow there.
 import { mkdirSync } from "node:fs";
 import path from "node:path";
-import { expect, test, type BrowserContext, type Page } from "@playwright/test";
+import {
+  expect,
+  test,
+  type BrowserContext,
+  type Locator,
+  type Page,
+} from "@playwright/test";
 import {
   expectNoAxeViolations,
   expectNoSidewaysScroll,
@@ -221,6 +227,10 @@ for (const width of [390, 1440]) {
       await expect(
         page.getByRole("button", { name: "Previous week" }),
       ).toHaveAttribute("title", "You cannot book a day that has passed");
+      // The reason also reaches screen readers, not only a mouse hover (design.md 8.7).
+      await expect(
+        page.getByRole("button", { name: "Previous week" }),
+      ).toHaveAccessibleDescription("You cannot book a day that has passed");
       await shot(page, "deep-link");
 
       await chooseAll(page);
@@ -384,8 +394,9 @@ for (const width of [390, 1440]) {
           available: false,
           reasons: ["TECHNICIAN_BUSY"],
           suggestions: [
-            { start: "2026-10-31T09:00:00Z", end: "2026-10-31T12:00:00Z" },
+            // Nearest first, as the API sends them.
             { start: "2026-10-29T13:00:00Z", end: "2026-10-29T16:00:00Z" },
+            { start: "2026-10-31T09:00:00Z", end: "2026-10-31T12:00:00Z" },
             { start: "2026-11-02T08:00:00Z", end: "2026-11-02T11:00:00Z" },
           ],
         },
@@ -462,6 +473,10 @@ for (const width of [390, 1440]) {
       await expect(
         page.getByRole("button", { name: "Next week" }),
       ).toHaveAttribute("title", "Bookings open up to 30 days ahead");
+      // The reason also reaches screen readers, not only a mouse hover (design.md 8.7).
+      await expect(
+        page.getByRole("button", { name: "Next week" }),
+      ).toHaveAccessibleDescription("Bookings open up to 30 days ahead");
       await shot(page, "day-too-far");
 
       const late = await context.newPage();
@@ -905,38 +920,109 @@ test("NFR-7: no sideways scroll at any width, 44 px targets, the strip scrolls i
   expect(firstRow).toBeLessThanOrEqual(3);
 });
 
-test("NFR-4: the whole booking can be done with the keyboard, and focus is never behind the ActionBar", async ({
+/**
+ * Presses Tab (or Shift+Tab) until `target` has focus, at most `max` times, so the test fails if the control is
+ * not in the Tab order. At every stop on the way, the focused control is checked to be in view and not behind the
+ * phone's ActionBar (NFR-4, design.md 10).
+ */
+async function tabTo(page: Page, target: Locator, back = false, max = 40) {
+  for (let presses = 0; presses < max; presses += 1) {
+    await page.keyboard.press(back ? "Shift+Tab" : "Tab");
+    await expectFocusClearOfBar(page);
+    if (await target.evaluate((el) => el === document.activeElement)) return;
+  }
+  throw new Error(`Not reached with ${max} presses of Tab: ${String(target)}`);
+}
+
+/** The focused control is on screen and, unless it sits in the ActionBar itself, wholly above the bar. */
+async function expectFocusClearOfBar(page: Page) {
+  const place = await page.evaluate(() => {
+    const el = document.activeElement;
+    if (!el || el === document.body) return null;
+    // A radio is drawn by its label; the input itself is a see-through layer over it.
+    const drawn = el.closest("label") ?? el;
+    const box = drawn.getBoundingClientRect();
+    const bar = [...document.querySelectorAll<HTMLElement>(".sticky")].find(
+      (b) =>
+        getComputedStyle(b).bottom === "0px" &&
+        getComputedStyle(b).display !== "none",
+    );
+    return {
+      top: box.top,
+      bottom: box.bottom,
+      inBar: Boolean(bar?.contains(el)),
+      barTop: bar ? bar.getBoundingClientRect().top : window.innerHeight,
+    };
+  });
+  if (!place || place.inBar) return;
+  expect(place.top).toBeGreaterThanOrEqual(0);
+  expect(place.bottom).toBeLessThanOrEqual(place.barTop + 0.5);
+}
+
+const focusedIs = (target: Locator) =>
+  expect
+    .poll(() => target.evaluate((el) => el === document.activeElement))
+    .toBe(true);
+
+test("NFR-4: the whole booking can be done with the keyboard, the error links move focus, and focus is never behind the ActionBar", async ({
   page,
 }) => {
   await start(page, 390, DEEP);
-  await page.getByRole("combobox", { name: /^Car/ }).focus();
-  await page.getByRole("combobox", { name: /^Car/ }).selectOption({ index: 1 });
-  await day(page, "Wed 28 Oct").focus();
+  await expect(day(page, "Wed 28 Oct")).toBeChecked();
+
+  // The day strip is one Tab stop; the arrow keys move the day.
+  await tabTo(page, day(page, "Wed 28 Oct"));
   await page.keyboard.press("ArrowRight");
   await expect(day(page, "Thu 29 Oct")).toBeChecked();
-  await page.keyboard.press("Tab");
 
-  const focused = page.locator(":focus");
-  await expect(focused).toHaveAttribute("name", "start");
-  await expect(focused).toHaveAccessibleName(/^\d\d:\d\d to \d\d:\d\d$/);
+  // The times are one Tab stop per group; Space chooses.
+  await page.keyboard.press("Tab");
+  await expectFocusClearOfBar(page);
+  const firstChip = page.locator(":focus");
+  await expect(firstChip).toHaveAttribute("name", "start");
+  await expect(firstChip).toHaveAccessibleName(/^\d\d:\d\d to \d\d:\d\d$/);
   await page.keyboard.press("Space");
-  await expect(focused).toBeChecked();
-  await page.getByRole("radio", { name: "Wait on site" }).focus();
+  await expect(firstChip).toBeChecked();
+
+  // Confirm with the car and the car choice missing: the Alert takes focus and links to each field.
+  await tabTo(page, confirm(page));
+  await page.keyboard.press("Enter");
+  const alert = page.getByRole("heading", {
+    name: "2 things need fixing before we can book this.",
+  });
+  await focusedIs(alert);
+  const carLink = page.getByRole("link", {
+    name: "Car: choose which car is coming in.",
+  });
+  await tabTo(page, carLink);
+  await page.keyboard.press("Enter");
+  const car = page.getByRole("combobox", { name: /^Car/ });
+  await focusedIs(car);
+  // A closed select takes the first letters of an option as typed.
+  await page.keyboard.type("Demo");
+  await expect(car).not.toHaveValue("");
+
+  const choiceLink = page.getByRole("link", {
+    name: "What you will do with the car: choose one.",
+  });
+  await tabTo(page, choiceLink, true);
+  await page.keyboard.press("Enter");
+  const wait = page.getByRole("radio", { name: "Wait on site" });
+  await focusedIs(wait);
+  await expectFocusClearOfBar(page);
   await page.keyboard.press("Space");
-  await expect(page.getByRole("radio", { name: "Wait on site" })).toBeChecked();
-  // Focus on the last thing above the bar stays in view, above the bar.
-  await page.getByRole("radio", { name: "Drop it off" }).focus();
-  const option = await page
-    .getByRole("radio", { name: "Drop it off" })
-    .locator("..")
-    .boundingBox();
-  const inBar = await confirm(page).boundingBox();
-  expect(option!.y + option!.height).toBeLessThanOrEqual(inBar!.y);
-  await confirm(page).focus();
+  await expect(wait).toBeChecked();
+  // The arrow keys move inside the car choice; the last option is still above the bar.
+  await page.keyboard.press("ArrowDown");
+  await expect(page.getByRole("radio", { name: "Drop it off" })).toBeChecked();
+  await expectFocusClearOfBar(page);
+
+  await tabTo(page, confirm(page));
   await page.keyboard.press("Enter");
   await expect(
     page.getByRole("heading", { level: 1, name: "You are booked" }),
   ).toBeVisible();
+  await expect(page.getByText("You will drop it off")).toBeVisible();
 });
 
 test("video: a customer books end to end, then a second page gets the just-taken apology", async ({

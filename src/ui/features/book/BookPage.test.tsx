@@ -169,6 +169,11 @@ describe("book", () => {
     expect(
       screen.getByRole("button", { name: "Previous week" }),
     ).toHaveProperty("title", "You cannot book a day that has passed");
+    const previous = screen.getByRole("button", { name: "Previous week" });
+    expect(
+      document.getElementById(previous.getAttribute("aria-describedby") ?? "")
+        ?.textContent,
+    ).toBe("You cannot book a day that has passed");
   });
 
   it("SEC-12.AC-1: an unknown dealership or service in the link is ignored and never shown", async () => {
@@ -335,6 +340,12 @@ describe("book", () => {
       name: "Same time, another day",
     });
     expect(within(same).getByText("Sat 31 Oct · ends 13:00")).toBeTruthy();
+    // Each group is its own native radio group: its own Tab stop, arrows stay inside it.
+    const groupName = (group: HTMLElement) =>
+      within(group).getAllByRole("radio")[0]!.getAttribute("name");
+    expect(groupName(closest)).not.toBe(groupName(same));
+    // The heading takes focus and so is announced once; the Alert is not also a live region.
+    expect(heading.closest("[role=alert], [role=status]")).toBeNull();
 
     fireEvent.click(
       within(closest).getByRole("radio", { name: "10:15 to 13:15" }),
@@ -529,6 +540,30 @@ describe("book-confirmed", () => {
         .getAllByRole("link", { name: /\+44 113 496 0123/ })[0]!
         .getAttribute("href"),
     ).toMatch(/^tel:/);
+  });
+
+  it("D-0001-26 C: shows a Technician row only when the API sends the name (it hides it from customers until Q-0001-208 is answered)", async () => {
+    open(
+      "/book/confirmed/ap-1",
+      bookingApi({ "GET /appointments/ap-1": () => json(appointment) }),
+    );
+    await screen.findByRole("heading", { level: 1, name: "You are booked" });
+    expect(screen.queryByText("Technician")).toBeNull();
+    cleanup();
+    open(
+      "/book/confirmed/ap-1",
+      bookingApi({
+        "GET /appointments/ap-1": () =>
+          json({
+            ...appointment,
+            display: { ...appointment.display, technicianName: "Sam Patel" },
+          }),
+      }),
+    );
+    await screen.findByRole("heading", { level: 1, name: "You are booked" });
+    expect(screen.getByText("Technician")).toBeTruthy();
+    expect(screen.getByText("Sam Patel")).toBeTruthy();
+    expect(screen.queryByText("Service bay")).toBeNull();
   });
 
   it("not-found and error states", async () => {

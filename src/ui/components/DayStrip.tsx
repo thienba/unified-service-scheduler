@@ -1,6 +1,6 @@
 // design.md 8.7. A week stepper, then seven days as one native radio group: one Tab stop, arrow keys move.
 // On a phone the days scroll sideways inside their own row; from 640 wide they are seven equal columns.
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { formatLocalDate } from "../format/format";
 import { Button } from "./Button";
 import { cx } from "./cx";
@@ -18,7 +18,8 @@ export interface DayTile {
 
 export interface WeekStep {
   disabled: boolean;
-  /** Why it is off, as the button's title: "You cannot book a day that has passed". */
+  /** Why it is off: "You cannot book a day that has passed". The button's title, and its description for
+   * screen readers (a title alone reaches no keyboard, touch or screen-reader user). */
   reason?: string;
   onClick: () => void;
 }
@@ -52,6 +53,9 @@ export function DayStrip({
     return () => cancelAnimationFrame(frame);
   }, []);
 
+  const previousWhy = useId();
+  const nextWhy = useId();
+
   // The chosen day scrolls into view inside its row on a phone.
   const row = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -71,15 +75,29 @@ export function DayStrip({
           aria-label="Previous week"
           disabled={previous.disabled}
           title={previous.disabled ? previous.reason : undefined}
+          aria-describedby={
+            previous.disabled && previous.reason ? previousWhy : undefined
+          }
           onClick={previous.onClick}
         />
         <b className="num text-center font-heading">{weekLabel}</b>
+        {previous.disabled && previous.reason && (
+          <span id={previousWhy} className="sr-only">
+            {previous.reason}
+          </span>
+        )}
+        {next.disabled && next.reason && (
+          <span id={nextWhy} className="sr-only">
+            {next.reason}
+          </span>
+        )}
         <Button
           size="icon"
           icon="right"
           aria-label="Next week"
           disabled={next.disabled}
           title={next.disabled ? next.reason : undefined}
+          aria-describedby={next.disabled && next.reason ? nextWhy : undefined}
           onClick={next.onClick}
         />
       </div>

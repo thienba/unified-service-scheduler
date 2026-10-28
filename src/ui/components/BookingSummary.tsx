@@ -19,8 +19,8 @@ export function BookingSummary({
   transportRef,
   confirm,
 }: {
-  /** `staff` and `reschedule` are added by their own screens. */
-  variant?: "customer" | "staff" | "reschedule";
+  /** Only `customer` so far: the staff-booking and reschedule screens add their variant and its approved words. */
+  variant?: "customer";
   rows: readonly SummaryRow[];
   /** One list: the courtesy car is added to it by its own ticket. */
   transportChoices: readonly Choice[];
@@ -31,11 +31,13 @@ export function BookingSummary({
   /** The Confirm button, when it is drawn here (from 1024 wide). */
   confirm?: ReactNode;
 }) {
-  const title = variant === "customer" ? "Your booking" : "Booking";
-  const legend =
-    variant === "staff"
-      ? "What will the customer do with the car?"
-      : "What will you do with the car?";
+  const words = {
+    customer: {
+      title: "Your booking",
+      legend: "What will you do with the car?",
+    },
+  }[variant];
+  const { title, legend } = words;
   return (
     <aside
       aria-labelledby="summary-title"

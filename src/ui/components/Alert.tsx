@@ -52,7 +52,8 @@ export function Alert({
   actions?: ReactNode;
   /** The 409 apology takes focus on its heading when it appears. */
   focusTitle?: boolean;
-  role?: "alert" | "status";
+  /** `null`: no live role, for an Alert that takes focus on its heading (focus already announces it). */
+  role?: "alert" | "status" | null;
   headingLevel?: 2 | 3;
 }) {
   const heading = useRef<HTMLHeadingElement>(null);
@@ -63,7 +64,11 @@ export function Alert({
   const Heading = headingLevel === 2 ? "h2" : "h3";
   return (
     <section
-      role={role ?? (kind === "danger" ? "alert" : "status")}
+      role={
+        role === null
+          ? undefined
+          : (role ?? (kind === "danger" ? "alert" : "status"))
+      }
       className={cx(
         "cols-icon-text grid gap-x-3 gap-y-2 rounded-card border p-5 *:min-w-0",
         k.box,

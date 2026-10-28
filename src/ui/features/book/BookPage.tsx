@@ -457,6 +457,7 @@ function CustomerBooking({ customerId }: { customerId: string | null }) {
             <Alert
               key={`v${message}`}
               kind="danger"
+              role={null}
               focusTitle
               title={`${problems.length === 1 ? "1 thing needs" : `${problems.length} things need`} fixing before we can book this.`}
             >
@@ -498,6 +499,7 @@ function CustomerBooking({ customerId }: { customerId: string | null }) {
             <Alert
               key={`f${message}`}
               kind="danger"
+              role={null}
               focusTitle
               title={
                 failure.status === 0
@@ -1083,7 +1085,8 @@ function ConflictAlert({
         ? `Bookings now open up to ${dealership.policies.horizonDays} days ahead, which is ${formatLocalDate(lastDay(dealership, now), thisYear)}. ${kept} day.`
         : `Another customer confirmed that time a moment before you. ${kept} time.`;
   return (
-    <Alert kind="warning" role="alert" focusTitle title={title}>
+    // Focus moves to the heading, which announces it; a live role as well would read it twice.
+    <Alert kind="warning" role={null} focusTitle title={title}>
       <p>{body}</p>
       {conflict.suggestions.length === 0 ? (
         <>
@@ -1101,7 +1104,7 @@ function ConflictAlert({
               items={closest.map(toItem)}
               value={value || null}
               onChange={onChoose}
-              name={SUGGESTED}
+              name={`${SUGGESTED}-closest`}
               label={label}
             />
           )}
@@ -1111,7 +1114,7 @@ function ConflictAlert({
               items={sameTime.map(toItem)}
               value={value || null}
               onChange={onChoose}
-              name={SUGGESTED}
+              name={`${SUGGESTED}-same-time`}
               label={label}
             />
           )}
