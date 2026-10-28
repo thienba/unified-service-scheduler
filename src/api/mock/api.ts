@@ -125,7 +125,15 @@ export function createApi(
         checked.path.dealershipId ??
         checked.query.dealershipId ??
         (checked.body as { dealershipId?: unknown } | undefined)?.dealershipId;
-      if (typeof named === "string") dealershipId = named;
+      // Only an id that names a stored dealership is logged: a value the caller typed could be a phone number.
+      if (
+        typeof named === "string" &&
+        (await repository.read((stores) =>
+          stores.scheduling.getDealership(named),
+        ))
+      ) {
+        dealershipId = named;
+      }
 
       const deps: CommandDeps = {
         uow: repository,
@@ -192,7 +200,7 @@ export function createApi(
         route,
         method: request.method,
         status,
-        dealershipId: fields.dealershipId ?? dealershipId,
+        dealershipId,
         outcome: outcomeOf(msg, fields.outcome),
         ...(same && typeof appointment?.technicianId === "string"
           ? { technicianId: appointment.technicianId }

@@ -524,17 +524,44 @@ describe("no personal data in telemetry (SEC-10, S6)", () => {
 
   it("whole-run output holds no seeded name, phone, email or registration", async () => {
     await canaryFlow();
+    let sawData = false;
     for (const user of Object.values(users)) {
-      await call("/customers/search", {
+      const search = await call("/customers/search", {
         user,
         method: "POST",
         body: { text: "Demo" },
       });
-      await call("/customers/customer-a/vehicles", { user });
+      const vehicles = await call("/customers/customer-a/vehicles", { user });
       await call("/appointments", { user });
+      // The sweep must meet the data it says is absent: staff and managers see customers and vehicles.
+      const sees = user !== users.customerA && user !== users.customerB;
+      if (sees) expect(search.body.length).toBeGreaterThan(0);
+      if (user === users.staffLondon) {
+        expect(vehicles.body.length).toBeGreaterThan(0);
+        sawData = true;
+      }
     }
+    expect(sawData).toBe(true);
     const text = [world.output.join("\n"), JSON.stringify(lines())].join("\n");
     for (const value of seeded) expect(text).not.toContain(value);
+  });
+});
+
+describe("an unknown dealership id is not logged (SEC-10)", () => {
+  it("digits typed as a dealership id appear in no line and no metric label, and the answer is 404", async () => {
+    const reply = await call("/dealerships/0912345678/availability", {
+      user: users.customerA,
+      query: { serviceTypeId: OIL, date: "2026-11-09", transport: "wait" },
+    });
+    expect(reply.status).toBe(404);
+    const text = [
+      world.output.join("\n"),
+      JSON.stringify(lines()),
+      JSON.stringify(counters()),
+      JSON.stringify(world.telemetry.reader.histograms()),
+    ].join("\n");
+    expect(text).not.toContain("0912345678");
+    expect(lines().some((l) => l.msg === "http.request")).toBe(true);
   });
 });
 
