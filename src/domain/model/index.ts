@@ -83,6 +83,8 @@ export interface Vehicle {
   registration: string;
   make: string;
   model: string;
+  /** Optional (Q-0001-23 A). */
+  year?: number;
 }
 
 export interface ServiceType {
