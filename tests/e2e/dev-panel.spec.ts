@@ -43,7 +43,7 @@ type Refusal = { code: string; reasons: string[] };
 async function api<T = unknown>(
   page: Page,
   url: string,
-  options: { user: string; method?: string; body?: unknown },
+  options: { user: string; method?: string; body?: unknown; key?: string },
 ): Promise<Answer<T>> {
   return (await page.evaluate(
     async ({ url, options }) => {
@@ -52,7 +52,7 @@ async function api<T = unknown>(
         headers: {
           "X-Demo-User": options.user,
           ...(options.method === "POST" && url === "/appointments"
-            ? { "Idempotency-Key": crypto.randomUUID() }
+            ? { "Idempotency-Key": options.key ?? crypto.randomUUID() }
             : {}),
           ...(options.body ? { "Content-Type": "application/json" } : {}),
         },
@@ -101,26 +101,33 @@ const londonDate = (instant: string) =>
 
 interface Story {
   contested: string;
+  /** The Idempotency-Key of the customer's booking, to show after a reset that its record is gone. */
+  bookedKey: string;
   booked: Answer<Id>;
   refused: Answer<Refusal>;
-  canary: Answer<Id>;
+  canary: Answer<Id> | null;
 }
 
 /**
  * The real use the ticket asks for, from this tab: one customer booking, a second booking for the same time
  * (409 SLOT_UNAVAILABLE), one day search with no free time, one failed call, and a staff booking for a new
- * customer with the canary details of SEC-10.
+ * customer with the canary details of SEC-10 (left out where a test counts the customer's booking alone).
  */
-async function tellTheStory(page: Page): Promise<Story> {
+async function tellTheStory(
+  page: Page,
+  { canary: withCanary = true } = {},
+): Promise<Story> {
   const mine = await api<{ start: string }[]>(page, "/appointments", {
     user: "user-customer-a",
   });
   const contested = mine.body[0]!.start;
   // Cedar is the one free EV technician then: the first booking takes them, the second is refused.
+  const bookedKey = crypto.randomUUID();
   const booked = await api<Id>(page, "/appointments", {
     user: "user-customer-a",
     method: "POST",
     body: booking(contested),
+    key: bookedKey,
   });
   expect(booked.status).toBe(201);
   const refused = await api<Refusal>(page, "/appointments", {
@@ -140,6 +147,8 @@ async function tellTheStory(page: Page): Promise<Story> {
     user: "user-customer-a",
   });
   expect(missing.status).toBe(404);
+  if (!withCanary)
+    return { contested, bookedKey, booked, refused, canary: null };
   const later = new Date(new Date(contested).getTime() + 3 * 3_600_000)
     .toISOString()
     .replace(".000Z", "Z");
@@ -160,7 +169,7 @@ async function tellTheStory(page: Page): Promise<Story> {
     },
   });
   expect(canary.status).toBe(201);
-  return { contested, booked, refused, canary };
+  return { contested, bookedKey, booked, refused, canary };
 }
 
 /** Opens the panel from the footer link, inside the same tab. */
@@ -209,7 +218,7 @@ test("after a booking, a 409 and an empty search the numbers equal the API's, an
   page,
 }) => {
   await start(page);
-  const story = await tellTheStory(page);
+  const story = await tellTheStory(page, { canary: false });
   await openPanel(page);
 
   const telemetry = (
@@ -221,16 +230,16 @@ test("after a booking, a 409 and an empty search the numbers equal the API's, an
     telemetry.counters
       .filter((c) => c.name === name)
       .reduce((n, c) => n + c.value, 0);
-  expect(value("appointments_confirmed_total")).toBe(2);
+  // Exactly the ticket's numbers: 1 booking confirmed, 1 time refused, 1 search with no free time.
+  expect(value("appointments_confirmed_total")).toBe(1);
   expect(value("appointment_conflicts_total")).toBe(1);
-  const empty = value("availability_search_empty_total");
-  expect(empty).toBeGreaterThanOrEqual(1);
+  expect(value("availability_search_empty_total")).toBe(1);
 
   const numbers = page.getByRole("region", { name: "Numbers" });
   const metric = (name: string) =>
     numbers.getByRole("heading", { level: 3, name }).locator("..");
   await expect(metric("Bookings confirmed")).toContainText(
-    "2 bookings1 by customers, 1 by staff.",
+    "1 booking1 by customers, 0 by staff.",
   );
   await expect(
     metric("Times refused because they were just taken"),
@@ -239,7 +248,7 @@ test("after a booking, a 409 and an empty search the numbers equal the API's, an
     metric("Times refused because they were just taken"),
   ).toContainText(/: 1\.$/);
   await expect(metric("Searches that found no free time")).toContainText(
-    `${empty} ${empty === 1 ? "search" : "searches"}`,
+    "1 search",
   );
   await expect(metric("Time to find free times")).toContainText(
     /Day search\d+ search(es)? · middle \d+\sms · slowest 5% from \d+\smsTarget: under 50\sms (Within|Over) target/,
@@ -252,9 +261,12 @@ test("after a booking, a 409 and an empty search the numbers equal the API's, an
     .getByRole("searchbox", { name: "Find a reference" })
     .fill(reference);
   const total = await lines(page).count();
+  await expect(page.getByText(/^\d+ of \d+ lines$/)).toHaveText(
+    new RegExp(`^${total} of \\d+ lines$`),
+  );
   await expect(
-    page.getByRole("status").filter({ hasText: / of \d+ lines$/ }),
-  ).toHaveText(new RegExp(`^${total} of \\d+ lines$`));
+    page.getByRole("status").filter({ hasText: /^Showing / }),
+  ).toHaveText(new RegExp(`^Showing ${total} of \\d+ lines$`));
   const line = lines(page).filter({ hasText: "appointment.book409" });
   await expect(line).toHaveCount(1);
   await expect(line).toContainText(
@@ -347,12 +359,49 @@ test("reset: the dialog starts on Keep my data, the reset empties what this brow
   page,
 }) => {
   await start(page);
+  const mine = await api<{ start: string }[]>(page, "/appointments", {
+    user: "user-customer-a",
+  });
+  const day = `/appointments?dealershipId=${LONDON}&date=${londonDate(mine.body[0]!.start)}`;
+  /** What the screens read: the schedule, both customers' appointments, customers and vehicles, the outbox. */
+  const data = async () => ({
+    schedule: (await api(page, day, { user: "user-staff-london" })).body,
+    customerA: (await api(page, "/appointments", { user: "user-customer-a" }))
+      .body,
+    customerB: (await api(page, "/appointments", { user: "user-customer-b" }))
+      .body,
+    customers: (
+      await api(page, "/customers/search", {
+        user: "user-staff-london",
+        method: "POST",
+        body: { text: "Demo" },
+      })
+    ).body,
+    vehicles: (
+      await api(page, "/customers/customer-a/vehicles", {
+        user: "user-staff-london",
+      })
+    ).body,
+    outbox: (
+      await api(page, `/outbox?dealershipId=${LONDON}`, {
+        user: "user-manager-london",
+      })
+    ).body,
+  });
+  // A fresh browser holds the seed. The seed stamps createdAt and updatedAt (and an outbox row's queue time)
+  // with the moment it is loaded, so those are left out of the comparison.
+  const stamps = new Set(["createdAt", "updatedAt", "queuedAt"]);
+  const withoutStamps = (value: unknown): unknown =>
+    JSON.parse(
+      JSON.stringify(value, (k, v: unknown) => (stamps.has(k) ? undefined : v)),
+    );
+  const seed = withoutStamps(await data());
   const story = await tellTheStory(page);
-  const day = `/appointments?dealershipId=${LONDON}&date=${londonDate(story.contested)}`;
   const schedule = async () =>
     (await api<Id[]>(page, day, { user: "user-staff-london" })).body.map(
       (a) => a.id,
     );
+  expect(withoutStamps(await data())).not.toEqual(seed);
   const before = await schedule();
   expect(before).toContain(story.booked.body.id);
   await openPanel(page);
@@ -374,7 +423,7 @@ test("reset: the dialog starts on Keep my data, the reset empties what this brow
 
   const after = await schedule();
   expect(after).not.toContain(story.booked.body.id);
-  expect(after).not.toContain(story.canary.body.id);
+  expect(after).not.toContain(story.canary!.body.id);
   const myAppointments = await api<
     { id: string; start: string; status: string }[]
   >(page, "/appointments", {
@@ -398,6 +447,17 @@ test("reset: the dialog starts on Keep my data, the reset empties what this brow
   });
   expect(JSON.stringify(outbox.body)).not.toMatch(/Canary|ZZ00 CNR/);
   expect(JSON.stringify(outbox.body)).not.toContain(story.booked.body.id);
+  // SEC-13.AC-4: customers, vehicles, appointments and outbox rows equal the seed again...
+  expect(withoutStamps(await data())).toEqual(seed);
+  // ...and the idempotency records are gone: the same key books anew instead of replaying the old answer.
+  const again = await api<Id>(page, "/appointments", {
+    user: "user-customer-a",
+    method: "POST",
+    body: booking(story.contested),
+    key: story.bookedKey,
+  });
+  expect(again.status).toBe(201);
+  expect(again.body.id).not.toBe(story.booked.body.id);
 });
 
 test("a failed reset says so inside the dialog and keeps it open", async ({

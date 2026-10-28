@@ -1,6 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 
-const port = 4173;
+// E2E_PORT lets parallel worktrees each test their own build: with the fixed default, a local run reuses
+// whatever preview server already holds the port, even another branch's.
+const port = Number(process.env["E2E_PORT"] ?? 4173);
 
 export default defineConfig({
   testDir: "tests/e2e",

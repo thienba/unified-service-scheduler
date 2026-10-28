@@ -210,7 +210,46 @@ it("lists the lines newest first with time, level as icon and word, message, sta
   expect(items[1]!.querySelector(".bg-surface use")!.getAttribute("href")).toBe(
     "#i-info",
   );
+  // The 409 is logged as "info", so its status carries the problem mark (Q-0001-224 A).
+  expect(items[1]!.querySelector(".bg-warning-tint-strong")!.textContent).toBe(
+    "409 · 9\u00a0ms",
+  );
+  expect(
+    items[1]!
+      .querySelector(".bg-warning-tint-strong use")!
+      .getAttribute("href"),
+  ).toBe("#i-alert");
+  expect(items[0]!.querySelector(".bg-warning-tint-strong")).toBeNull();
   expect(screen.getByText("4 of 4 lines")).toBeTruthy();
+});
+
+it("Copy reference says so when the browser refuses the clipboard", async () => {
+  const writeText = vi.fn(() => Promise.reject(new Error("denied")));
+  Object.assign(navigator, { clipboard: { writeText } });
+  open();
+  const list = await logList();
+  const line = within(list).getAllByRole("listitem")[1]!;
+  fireEvent.click(line.querySelector("summary")!);
+  fireEvent.click(
+    within(line).getByRole("button", { name: "Copy reference 4bf92f35" }),
+  );
+  expect(
+    await within(line).findByText("Could not copy. The reference is 4bf92f35."),
+  ).toBeTruthy();
+});
+
+it("the line count is said once typing stops, not on every key", async () => {
+  open();
+  await logList();
+  const status = screen
+    .getAllByRole("status")
+    .find((s) => s.className.includes("sr-only") && s.closest("section"))!;
+  expect(status.textContent).toBe("");
+  const search = screen.getByRole("searchbox", { name: "Find a reference" });
+  fireEvent.change(search, { target: { value: "92" } });
+  fireEvent.change(search, { target: { value: "92b1" } });
+  expect(status.textContent).toBe("");
+  await waitFor(() => expect(status.textContent).toBe("Showing 1 of 4 lines"));
 });
 
 it("says once, above the logs, that names, phone numbers, emails and registrations are never logged", async () => {
