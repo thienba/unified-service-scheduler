@@ -33,3 +33,25 @@ export function matchesSearch(
     vehicles.some((v) => squash(v.registration).includes(squashed))
   );
 }
+
+const compare = (a: string | number, b: string | number) =>
+  a < b ? -1 : a > b ? 1 : 0;
+
+/** Lists come back in this order from every store (the port documents it). */
+export const byId = <T extends { id: string }>(rows: T[]): T[] =>
+  [...rows].sort((a, b) => compare(a.id, b.id));
+
+export const byStartThenId = <T extends { id: string; start: number }>(
+  rows: T[],
+): T[] =>
+  [...rows].sort((a, b) => compare(a.start, b.start) || compare(a.id, b.id));
+
+export const byTechnicianThenDate = <
+  T extends { technicianId: string; date: string },
+>(
+  rows: T[],
+): T[] =>
+  [...rows].sort(
+    (a, b) =>
+      compare(a.technicianId, b.technicianId) || compare(a.date, b.date),
+  );

@@ -534,6 +534,94 @@ export function describeStoreContract(
       expect(await repo.read((s) => s.customers.get("none"))).toBeUndefined();
     });
 
+    it("a customer insert with a stored vehicle id, and an outbox message with a stored id, are refused", async () => {
+      const repo = await seeded();
+      await expect(
+        repo.write(async (s) => {
+          await s.customers.insert(
+            customer("c9", "New Demo", "+44 7700 900999"),
+            vehicle("v1", "c9", "ZZ99 DEM"),
+          );
+          return { ok: true, value: null };
+        }),
+      ).rejects.toThrow();
+      expect(await repo.read((s) => s.customers.get("c9"))).toBeUndefined();
+      const message = {
+        id: "m1",
+        appointmentId: "appt-1",
+        kind: "reminder",
+        dedupeKey: "appt-1:reminder:1",
+        dueAt: T0,
+        status: "pending" as const,
+      };
+      await repo.write(async (s) => {
+        await s.outbox.add([message]);
+        return { ok: true, value: null };
+      });
+      await expect(
+        repo.write(async (s) => {
+          await s.outbox.add([{ ...message, dedupeKey: "appt-1:reminder:2" }]);
+          return { ok: true, value: null };
+        }),
+      ).rejects.toThrow();
+    });
+
+    it("lists come back in the same order whatever order they were stored in", async () => {
+      const repo = await seeded();
+      await repo.write(async (s) => {
+        await s.appointments.insert(appointment({ id: "z", start: T0 }));
+        await s.appointments.insert(
+          appointment({ id: "b", start: T0 + 2 * HOUR, end: T0 + 3 * HOUR }),
+        );
+        await s.appointments.insert(appointment({ id: "a", start: T0 }));
+        await s.customers.insert(
+          customer("c0", "Alex Zed", "+44 7700 900000"),
+          vehicle("v0", "c0", "AB00 ZED"),
+        );
+        await s.outbox.add(
+          ["m3", "m1", "m2"].map((id) => ({
+            id,
+            appointmentId: "z",
+            kind: "reminder",
+            dedupeKey: `z:reminder:${id}`,
+            dueAt: T0,
+            status: "pending" as const,
+          })),
+        );
+        return { ok: true, value: null };
+      });
+      const ids = (rows: { id: string }[]) => rows.map((r) => r.id);
+      expect(
+        ids(
+          await repo.read((s) =>
+            s.appointments.listByDealershipDay("d1", 0, T0 * 2),
+          ),
+        ),
+      ).toEqual(["a", "z", "b"]);
+      expect(
+        ids(
+          await repo.read((s) =>
+            s.scheduling.listBlockingAppointments("d1", 0, T0 * 2),
+          ),
+        ),
+      ).toEqual(["a", "z", "b"]);
+      expect(
+        ids(await repo.read((s) => s.appointments.listByCustomer("c1"))),
+      ).toEqual(["a", "z", "b"]);
+      expect(ids(await repo.read((s) => s.customers.search("alex")))).toEqual([
+        "c0",
+        "c1",
+      ]);
+      expect(ids(await repo.read((s) => s.outbox.list()))).toEqual([
+        "m1",
+        "m2",
+        "m3",
+      ]);
+      expect(
+        ids(await repo.read((s) => s.scheduling.listTechnicians("d1"))),
+      ).toEqual(["t1", "t2"]);
+    });
+
     it("replaceAll swaps everything stored for the seed and its version", async () => {
       const repo = await seeded();
       expect(await repo.getSeedVersion()).toBe(1);

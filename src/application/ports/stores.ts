@@ -30,6 +30,9 @@ export type DealershipSettings = Pick<
   "weeklyHours" | "dateOverrides" | "policies"
 >;
 
+// Order of every list a store returns, the same for all stores (AD-8): appointments by `start`,
+// then `id`; shift exceptions by technician id, then date; everything else by `id`.
+
 export interface SchedulingReader {
   getDealership(id: string): Promise<Dealership | undefined>;
   listTechnicians(dealershipId: string): Promise<Technician[]>;
@@ -69,6 +72,7 @@ export interface CustomerStore {
   /** Part of the name (any case), part of the phone, or part of a registration. */
   search(text: string): Promise<CustomerWithVehicles[]>;
   get(id: string): Promise<CustomerWithVehicles | undefined>;
+  /** Fails when the customer id or the vehicle id is already stored. */
   insert(customer: Customer, vehicle: Vehicle): Promise<void>;
   /** Customers with this exact phone, or with a vehicle with this exact registration. */
   findDuplicates(
@@ -117,7 +121,7 @@ export interface OutboxMessage {
 }
 
 export interface OutboxStore {
-  /** A message whose `dedupeKey` is already stored is skipped. */
+  /** A message whose `dedupeKey` is already stored is skipped; a new message with a stored id fails. */
   add(messages: OutboxMessage[]): Promise<void>;
   /** Marks the pending messages of the appointment cancelled. Sent ones stay as they are. */
   cancelPending(appointmentId: string): Promise<void>;

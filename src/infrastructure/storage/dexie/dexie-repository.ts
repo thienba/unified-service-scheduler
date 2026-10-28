@@ -11,7 +11,14 @@ import type {
   ShiftExceptionRecord,
   Stores,
 } from "../../../application/ports";
-import { matchesSearch, nameLower, touchesRange } from "../shared";
+import {
+  byId,
+  byStartThenId,
+  byTechnicianThenDate,
+  matchesSearch,
+  nameLower,
+  touchesRange,
+} from "../shared";
 import {
   SchedulerDb,
   type CustomerRow,
@@ -40,14 +47,16 @@ function buildStores(db: SchedulerDb): Stores {
     row: CustomerRow,
   ): Promise<CustomerWithVehicles> => ({
     ...toCustomer(row),
-    vehicles: await db.vehicles.where("customerId").equals(row.id).toArray(),
+    vehicles: byId(
+      await db.vehicles.where("customerId").equals(row.id).toArray(),
+    ),
   });
   const touching = async (dealershipId: string, from: number, to: number) => {
     const rows = await db.appointments
       .where("[dealershipId+start]")
       .between([dealershipId, Dexie.minKey], [dealershipId, to], true, false)
       .toArray();
-    return rows.filter((a) => touchesRange(a, from, to));
+    return byStartThenId(rows.filter((a) => touchesRange(a, from, to)));
   };
   const exceptionsOf = (technicianId: string, from: string, to: string) =>
     db.shiftExceptions
@@ -73,7 +82,7 @@ function buildStores(db: SchedulerDb): Stores {
             ),
           });
         }
-        return technicians;
+        return byId(technicians);
       },
       listShiftExceptions: async (dealershipId, fromDate, toDate) => {
         const rows = await db.technicians
@@ -84,12 +93,12 @@ function buildStores(db: SchedulerDb): Stores {
         for (const row of rows) {
           records.push(...(await exceptionsOf(row.id, fromDate, toDate)));
         }
-        return records;
+        return byTechnicianThenDate(records);
       },
       listServiceBays: (id) =>
-        db.serviceBays.where("dealershipId").equals(id).toArray(),
+        db.serviceBays.where("dealershipId").equals(id).toArray().then(byId),
       listCourtesyCars: (id) =>
-        db.courtesyCars.where("dealershipId").equals(id).toArray(),
+        db.courtesyCars.where("dealershipId").equals(id).toArray().then(byId),
       getServiceType: (id) => db.serviceTypes.get(id),
       listBlockingAppointments: async (dealershipId, from, to) =>
         (await touching(dealershipId, from, to)).filter(isBlocking),
@@ -107,7 +116,11 @@ function buildStores(db: SchedulerDb): Stores {
       },
       listByDealershipDay: touching,
       listByCustomer: (customerId) =>
-        db.appointments.where("customerId").equals(customerId).toArray(),
+        db.appointments
+          .where("customerId")
+          .equals(customerId)
+          .toArray()
+          .then(byStartThenId),
     },
     customers: {
       search: async (text) => {
@@ -118,7 +131,7 @@ function buildStores(db: SchedulerDb): Stores {
             found.push(customer);
           }
         }
-        return found;
+        return byId(found);
       },
       get: async (id) => {
         const row = await db.customers.get(id);
@@ -149,7 +162,7 @@ function buildStores(db: SchedulerDb): Stores {
         for (const row of rows.values()) {
           found.push(await customerWithVehicles(row));
         }
-        return found;
+        return byId(found);
       },
     },
     settings: {
@@ -232,7 +245,7 @@ export function createDexieRepository(databaseName: string): DexieRepository {
       }
     },
     getSeedVersion: async () => (await db.meta.get("seedVersion"))?.value,
-    listDemoUsers: () => db.demoUsers.toArray(),
+    listDemoUsers: () => db.demoUsers.toArray().then(byId),
     replaceAll: (seed, seedVersion) =>
       db.transaction("rw", db.tables, async () => {
         for (const table of db.tables) await table.clear();

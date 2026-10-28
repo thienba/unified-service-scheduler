@@ -19,7 +19,13 @@ import type {
   Repository,
   Stores,
 } from "../../../application/ports";
-import { matchesSearch, touchesRange } from "../shared";
+import {
+  byId,
+  byStartThenId,
+  byTechnicianThenDate,
+  matchesSearch,
+  touchesRange,
+} from "../shared";
 
 interface Data {
   dealerships: Map<string, Dealership>;
@@ -55,12 +61,12 @@ function emptyData(): Data {
 
 /** Values go in and come out as copies, as they do with IndexedDB. */
 const copy = <T>(value: T): T => structuredClone(value);
-const byId = <T extends { id: string }>(rows: T[]) =>
+const mapById = <T extends { id: string }>(rows: T[]) =>
   new Map(rows.map((row) => [row.id, copy(row)]));
 
 function withVehicles(data: Data, customer: Customer): CustomerWithVehicles {
-  const vehicles = [...data.vehicles.values()].filter(
-    (v) => v.customerId === customer.id,
+  const vehicles = byId(
+    [...data.vehicles.values()].filter((v) => v.customerId === customer.id),
   );
   return copy({ ...customer, vehicles });
 }
@@ -71,24 +77,28 @@ function buildStores(data: Data): Stores {
     dealershipId: string,
   ) => [...rows.values()].filter((r) => r.dealershipId === dealershipId);
   const touching = (dealershipId: string, from: number, to: number) =>
-    listBy(data.appointments, dealershipId).filter((a) =>
-      touchesRange(a, from, to),
+    byStartThenId(
+      listBy(data.appointments, dealershipId).filter((a) =>
+        touchesRange(a, from, to),
+      ),
     );
 
   return {
     scheduling: {
       getDealership: async (id) => copy(data.dealerships.get(id)),
-      listTechnicians: async (id) => copy(listBy(data.technicians, id)),
+      listTechnicians: async (id) => copy(byId(listBy(data.technicians, id))),
       listShiftExceptions: async (dealershipId, fromDate, toDate) =>
-        listBy(data.technicians, dealershipId).flatMap((t) =>
-          Object.entries(t.shiftExceptions)
-            .filter(([date]) => date >= fromDate && date <= toDate)
-            .map(([date, exception]) =>
-              copy({ technicianId: t.id, date, exception }),
-            ),
+        byTechnicianThenDate(
+          listBy(data.technicians, dealershipId).flatMap((t) =>
+            Object.entries(t.shiftExceptions)
+              .filter(([date]) => date >= fromDate && date <= toDate)
+              .map(([date, exception]) =>
+                copy({ technicianId: t.id, date, exception }),
+              ),
+          ),
         ),
-      listServiceBays: async (id) => copy(listBy(data.serviceBays, id)),
-      listCourtesyCars: async (id) => copy(listBy(data.courtesyCars, id)),
+      listServiceBays: async (id) => copy(byId(listBy(data.serviceBays, id))),
+      listCourtesyCars: async (id) => copy(byId(listBy(data.courtesyCars, id))),
       getServiceType: async (id) => copy(data.serviceTypes.get(id)),
       listBlockingAppointments: async (dealershipId, from, to) =>
         copy(touching(dealershipId, from, to).filter(isBlocking)),
@@ -111,16 +121,20 @@ function buildStores(data: Data): Stores {
         copy(touching(dealershipId, from, to)),
       listByCustomer: async (customerId) =>
         copy(
-          [...data.appointments.values()].filter(
-            (a) => a.customerId === customerId,
+          byStartThenId(
+            [...data.appointments.values()].filter(
+              (a) => a.customerId === customerId,
+            ),
           ),
         ),
     },
     customers: {
       search: async (text) =>
-        [...data.customers.values()]
-          .map((c) => withVehicles(data, c))
-          .filter((c) => matchesSearch(text, c, c.vehicles)),
+        byId(
+          [...data.customers.values()]
+            .map((c) => withVehicles(data, c))
+            .filter((c) => matchesSearch(text, c, c.vehicles)),
+        ),
       get: async (id) => {
         const customer = data.customers.get(id);
         return customer && withVehicles(data, customer);
@@ -129,17 +143,22 @@ function buildStores(data: Data): Stores {
         if (data.customers.has(customer.id)) {
           throw new Error(`Customer ${customer.id} is already stored`);
         }
+        if (data.vehicles.has(vehicle.id)) {
+          throw new Error(`Vehicle ${vehicle.id} is already stored`);
+        }
         data.customers.set(customer.id, copy(customer));
         data.vehicles.set(vehicle.id, copy(vehicle));
       },
       findDuplicates: async (phone, registration) =>
-        [...data.customers.values()]
-          .map((c) => withVehicles(data, c))
-          .filter(
-            (c) =>
-              c.phone === phone ||
-              c.vehicles.some((v) => v.registration === registration),
-          ),
+        byId(
+          [...data.customers.values()]
+            .map((c) => withVehicles(data, c))
+            .filter(
+              (c) =>
+                c.phone === phone ||
+                c.vehicles.some((v) => v.registration === registration),
+            ),
+        ),
     },
     settings: {
       saveDealershipSettings: async (id, settings) => {
@@ -169,7 +188,11 @@ function buildStores(data: Data): Stores {
           const known = [...data.outbox.values()].some(
             (m) => m.dedupeKey === message.dedupeKey,
           );
-          if (!known) data.outbox.set(message.id, copy(message));
+          if (known) continue;
+          if (data.outbox.has(message.id)) {
+            throw new Error(`Outbox message ${message.id} is already stored`);
+          }
+          data.outbox.set(message.id, copy(message));
         }
       },
       cancelPending: async (appointmentId) => {
@@ -184,11 +207,13 @@ function buildStores(data: Data): Stores {
       },
       list: async (filter = {}) =>
         copy(
-          [...data.outbox.values()].filter(
-            (m) =>
-              (filter.appointmentId === undefined ||
-                m.appointmentId === filter.appointmentId) &&
-              (filter.status === undefined || m.status === filter.status),
+          byId(
+            [...data.outbox.values()].filter(
+              (m) =>
+                (filter.appointmentId === undefined ||
+                  m.appointmentId === filter.appointmentId) &&
+                (filter.status === undefined || m.status === filter.status),
+            ),
           ),
         ),
     },
@@ -215,19 +240,19 @@ export function createMemoryRepository(): Repository {
         return outcome;
       }),
     getSeedVersion: async () => committed.seedVersion,
-    listDemoUsers: async () => copy([...committed.demoUsers.values()]),
+    listDemoUsers: async () => copy(byId([...committed.demoUsers.values()])),
     replaceAll: (seed, seedVersion) =>
       enqueue(async () => {
         const next = emptyData();
-        next.dealerships = byId(seed.dealerships);
-        next.technicians = byId(seed.technicians);
-        next.serviceBays = byId(seed.serviceBays);
-        next.courtesyCars = byId(seed.courtesyCars);
-        next.serviceTypes = byId(seed.serviceTypes);
-        next.customers = byId(seed.customers);
-        next.vehicles = byId(seed.vehicles);
-        next.appointments = byId(seed.appointments);
-        next.demoUsers = byId(seed.demoUsers);
+        next.dealerships = mapById(seed.dealerships);
+        next.technicians = mapById(seed.technicians);
+        next.serviceBays = mapById(seed.serviceBays);
+        next.courtesyCars = mapById(seed.courtesyCars);
+        next.serviceTypes = mapById(seed.serviceTypes);
+        next.customers = mapById(seed.customers);
+        next.vehicles = mapById(seed.vehicles);
+        next.appointments = mapById(seed.appointments);
+        next.demoUsers = mapById(seed.demoUsers);
         next.seedVersion = seedVersion;
         committed = next;
       }),
