@@ -461,6 +461,17 @@ export function describeStoreContract(
         "m3:cancelled",
         "m4:pending",
       ]);
+      // Without `kinds`, every pending kind is cancelled.
+      await repo.write(async (s) => {
+        await s.outbox.cancelPending("appt-1");
+        return { ok: true, value: null };
+      });
+      expect(await statuses()).toEqual([
+        "m1:cancelled",
+        "m2:cancelled",
+        "m3:cancelled",
+        "m4:cancelled",
+      ]);
     });
 
     it("outbox add twice with one dedupeKey stores one message, and cancelPending marks only pending ones", async () => {

@@ -352,6 +352,15 @@ export function describeOutboxContract(
       ).toEqual(["cancelled", "cancelled"]);
       // D-0001-50: the confirmation keeps its status.
       expect(summary(await rows(ctx.repo))).toContain("confirmation:pending:1");
+
+      // A second move: the earlier "moved" message keeps its status too.
+      const second = await adjustAppointment(manager, ctx.deps, appt.id, {
+        start: at("13:00", NOV_5),
+      });
+      expect(second.kind).toBe("ok");
+      const after = summary(await rows(ctx.repo));
+      expect(after).toContain(`moved:pending:${version}`);
+      expect(after).toContain("confirmation:pending:1");
     });
   });
 }

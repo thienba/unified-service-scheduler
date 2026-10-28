@@ -353,6 +353,26 @@ export function describeManagerContract(
       expect(await world(ctx.repo)).toEqual(before);
     });
 
+    it("D-0001-48 g, Q-0001-160 a: a flagged appointment adjusted to its own slot is not a no-op; it goes the normal way and its flags are cleared", async () => {
+      const ctx = await setup();
+      const appt = await book(ctx, "14:00");
+      await ctx.repo.write(async (s) => {
+        await s.appointments.update({
+          ...appt,
+          flags: [{ kind: "outside_shift", since: 1 }],
+        });
+        return { ok: true, value: undefined };
+      });
+      const result = await adjustAdjustOnly(ctx, appt.id, {
+        start: appt.start,
+      });
+      expect(result).toMatchObject({
+        kind: "ok",
+        appointment: { flags: [], version: appt.version + 1 },
+      });
+      expect((await get(ctx.repo, appt.id))!.flags).toEqual([]);
+    });
+
     it("REQ-BOOK-005.AC-3: a customer or staff member gets forbidden and no store is read", async () => {
       const ctx = await setup();
       const appt = await book(ctx, "14:00");
