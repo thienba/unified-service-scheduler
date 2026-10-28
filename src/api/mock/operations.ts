@@ -19,6 +19,7 @@ import {
   getAppointment,
   getDealership,
   getSchedule,
+  getScheduleDay,
   listDealerships,
   listMyAppointments,
   listOutbox,
@@ -243,6 +244,31 @@ export const handlers: Record<
       c.path.dealershipId as string,
     );
     return result.kind === "ok" ? ok(result.bays.map(bayToWire)) : fail(result);
+  },
+
+  getScheduleDay: async (c) => {
+    const result = await getScheduleDay(c.actor, c.deps, {
+      dealershipId: c.path.dealershipId as string,
+      date: c.query.date as string,
+    });
+    if (result.kind !== "ok") return fail(result);
+    return ok({
+      date: result.date,
+      timeZone: result.timeZone,
+      opening: result.opening && slot(result.opening),
+      nextOpenDate: result.nextOpenDate,
+      technicians: result.technicians.map((t) => ({
+        id: t.technician.id,
+        name: t.technician.name,
+        skills: t.technician.skills,
+        onLeave: t.onLeave,
+        shift: t.shift && slot(t.shift),
+        break: t.break && slot(t.break),
+        free: t.free.map(slot),
+      })),
+      serviceBays: result.bays.map(bayToWire),
+      appointments: result.appointments.map((v) => appointmentToWire(v)),
+    });
   },
 
   searchAvailability: async (c) => {

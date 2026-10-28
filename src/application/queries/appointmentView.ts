@@ -13,6 +13,8 @@ export interface AppointmentDisplay {
   technicianName?: string;
   serviceBayName?: string;
   customerName?: string;
+  /** The courtesy car's name, when the appointment has one (REQ-BOOK-010.AC-2). */
+  courtesyCarName?: string;
 }
 
 export interface AppointmentView {
@@ -57,6 +59,12 @@ async function build(
         model: vehicle.model,
       },
     };
+    if (appointment.courtesyCarId !== null) {
+      const car = (
+        await stores.scheduling.listCourtesyCars(appointment.dealershipId)
+      ).find((c) => c.id === appointment.courtesyCarId);
+      if (car) display.courtesyCarName = car.name;
+    }
     if (actor.role !== "customer") {
       const bays = await stores.scheduling.listServiceBays(
         appointment.dealershipId,
