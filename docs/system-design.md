@@ -120,7 +120,7 @@ Solid arrows exist in the demo. Dashed arrows are later integrations.
 flowchart TB
   people["Customer, garage staff, garage manager<br/>(people)"]
   host["Static host<br/>(container: static files, D-0000-25)<br/>index.html, JS bundle with seed JSON, mockServiceWorker.js"]
-  subgraph browser["Browser, one origin (the demo today)"]
+  subgraph browser["Browser: the demo today"]
     ui["Web UI<br/>(container: React, TypeScript, Tailwind v4)<br/>screens for three roles, role switcher, dev panel"]
     client["API client<br/>(component: typed fetch)<br/>adds traceparent, X-Demo-User, Idempotency-Key"]
     sw["Mock Service Worker<br/>(container: MSW service worker)<br/>catches /api calls"]
@@ -129,7 +129,7 @@ flowchart TB
     tel["Telemetry<br/>(component: logger and metrics)<br/>JSON logs, counters, trace ids"]
     idb[("IndexedDB via Dexie<br/>(container: browser database)<br/>appointments, customers, settings, outbox")]
   end
-  subgraph later["Real backend (described, not built)"]
+  subgraph later["Real backend: described only"]
     api["Scheduler API<br/>(container: TypeScript service)<br/>same core code, implements openapi.yaml"]
     pg[("PostgreSQL<br/>(container: database)<br/>exclusion constraints per bay, technician, car")]
     otel["OpenTelemetry Collector<br/>(container)<br/>logs, metrics, traces"]
