@@ -289,3 +289,33 @@ for (const width of [390, 1440]) {
     await expectNoAxeViolations(page);
   });
 }
+
+for (const width of [360, 390]) {
+  test(`on a phone the role button shows the whole name at ${width} wide, and the sheet names the current user`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 844 });
+    await openApp(page);
+    for (const role of ["Customer", "Staff", "Manager"] as const) {
+      await pickRole(page, role);
+      const label = page
+        .getByRole("button", { name: /^Viewing as/ })
+        .locator(".truncate");
+      await expect(label).toHaveText(new RegExp(`^${role} · Demo `));
+      const cut = await label.evaluate((el) => el.scrollWidth > el.clientWidth);
+      expect(cut).toBe(false);
+      await expectNoSidewaysScroll(page);
+    }
+    // The current role's row in the sheet names the user in use.
+    await page.getByRole("button", { name: /^Viewing as/ }).click();
+    const current = (await page
+      .getByRole("button", { name: /^Viewing as/ })
+      .locator(".truncate")
+      .textContent())!.split(" · ")[1]!;
+    await expect(
+      page
+        .getByRole("dialog")
+        .getByRole("radio", { name: new RegExp(`^Manager, ${current}`) }),
+    ).toBeChecked();
+  });
+}

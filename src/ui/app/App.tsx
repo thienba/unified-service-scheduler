@@ -1,5 +1,5 @@
 import { QueryClientProvider, type QueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { BrowserRouter, MemoryRouter } from "react-router";
 import { createApiClient } from "../../api/client";
 import { config, mockEnabled } from "../../config";
@@ -19,6 +19,8 @@ export interface AppProps {
   demo?: DemoSupport | null;
   /** For tests: the query cache to use, so a test can look inside it. */
   queryClient?: QueryClient;
+  /** For tests: show this inside the providers instead of the routes. */
+  routes?: ReactNode;
 }
 
 export function App(props: AppProps = {}) {
@@ -46,7 +48,7 @@ export function App(props: AppProps = {}) {
   const routes = (
     <ToastProvider>
       <SessionProvider client={client} demo={demo}>
-        <AppRoutes />
+        {props.routes ?? <AppRoutes />}
       </SessionProvider>
     </ToastProvider>
   );

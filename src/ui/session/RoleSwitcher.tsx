@@ -31,6 +31,8 @@ export function RoleSwitcher({ switcher }: { switcher: SwitcherState }) {
   const wide = useMediaQuery(query.sm);
   const [sheetOpen, setSheetOpen] = useState(false);
   const group = useRef<HTMLDivElement>(null);
+  const phoneButton = useRef<HTMLButtonElement>(null);
+  const wasSwitching = useRef(false);
   const role = me?.role ?? null;
   const here = switcher.users.find((u) => u.id === switcher.userId);
   const sameRole = role ? usersOf(switcher, role) : [];
@@ -46,6 +48,24 @@ export function RoleSwitcher({ switcher }: { switcher: SwitcherState }) {
     });
     return () => setFocusSwitcher(null);
   }, [wide, setFocusSwitcher]);
+
+  // While a switch runs the control is disabled, and a disabled control drops focus to the page's
+  // body. When the switch ends, focus goes back to the control if nothing else took it.
+  useEffect(() => {
+    if (switcher.switching) {
+      wasSwitching.current = true;
+      return;
+    }
+    if (!wasSwitching.current) return;
+    wasSwitching.current = false;
+    if (document.activeElement && document.activeElement !== document.body)
+      return;
+    const target = wide
+      ? (group.current?.querySelector<HTMLElement>('[aria-pressed="true"]') ??
+        group.current?.querySelector<HTMLElement>("button"))
+      : phoneButton.current;
+    target?.focus();
+  }, [switcher.switching, wide]);
 
   const pickRole = (next: string) => {
     if (next === role) return;
@@ -82,6 +102,7 @@ export function RoleSwitcher({ switcher }: { switcher: SwitcherState }) {
     return (
       <>
         <Button
+          ref={phoneButton}
           variant="secondary"
           icon="user"
           aria-haspopup="dialog"
@@ -89,7 +110,7 @@ export function RoleSwitcher({ switcher }: { switcher: SwitcherState }) {
           disabled={switcher.switching}
           title={notSignedIn ? undefined : `${roleName[role]} · ${nameOfUser}`}
           onClick={() => setSheetOpen(true)}
-          className="max-w-1/2 min-w-0 justify-between ps-4 pe-3"
+          className="ms-auto max-w-full min-w-0 justify-between ps-4 pe-3"
         >
           <span className="sr-only">Viewing as </span>
           <span className="truncate">
@@ -115,7 +136,7 @@ export function RoleSwitcher({ switcher }: { switcher: SwitcherState }) {
             }}
             choices={roles.map((r) => ({
               value: r,
-              label: `${roleName[r]}, ${usersOf(switcher, r)[0]?.name ?? "…"}`,
+              label: `${roleName[r]}, ${(r === role ? nameOfUser : usersOf(switcher, r)[0]?.name) ?? "…"}`,
               description: roleLine[r],
               disabled: usersOf(switcher, r).length === 0,
             }))}

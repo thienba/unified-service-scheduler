@@ -7,7 +7,8 @@ import {
   waitFor,
   within,
 } from "@testing-library/react";
-import { afterEach, beforeEach, expect, it } from "vitest";
+import { afterEach, beforeEach, expect, it, vi } from "vitest";
+import { TimesNote } from "../session/TimesNote";
 import { App } from "./App";
 import { fakeApi, problem } from "./fake-api";
 import { readSavedUser, saveUser } from "../demo/saved-user";
@@ -266,4 +267,131 @@ it("a 500 from the API shows the words with the reference", async () => {
   expect(
     screen.getByRole("button", { name: "Copy reference 4bf92f35" }),
   ).toBeTruthy();
+});
+
+it("the sheet row of the current role shows the current user's name, not the first user of the role", async () => {
+  saveUser("u-both");
+  window.matchMedia = ((media: string) => ({
+    matches: false,
+    media,
+    addEventListener() {},
+    removeEventListener() {},
+  })) as unknown as typeof window.matchMedia;
+  try {
+    open("/schedule");
+    fireEvent.click(
+      await screen.findByRole("button", {
+        name: /Staff · Dina Both/,
+      }),
+    );
+    const sheet = await screen.findByRole("dialog", { name: "Viewing as" });
+    expect(
+      within(sheet).getByRole("radio", { name: /^Staff, Dina Both/ }),
+    ).toBeTruthy();
+    expect(
+      within(sheet).queryByRole("radio", { name: /^Staff, Daniel Okoye/ }),
+    ).toBeNull();
+  } finally {
+    // @ts-expect-error put back what the test took away
+    delete window.matchMedia;
+  }
+});
+
+it("after a switch from the phone sheet, focus is not lost to the page body", async () => {
+  saveUser("u-customer");
+  window.matchMedia = ((media: string) => ({
+    matches: false,
+    media,
+    addEventListener() {},
+    removeEventListener() {},
+  })) as unknown as typeof window.matchMedia;
+  try {
+    open("/book");
+    const opener = await screen.findByRole("button", {
+      name: /Customer · Aisha/,
+    });
+    opener.focus();
+    fireEvent.click(opener);
+    const sheet = await screen.findByRole("dialog", { name: "Viewing as" });
+    fireEvent.click(within(sheet).getByRole("radio", { name: /^Staff, / }));
+    await screen.findByText("Now viewing as Staff, Daniel Okoye");
+    await waitFor(() => expect(document.activeElement).not.toBe(document.body));
+  } finally {
+    // @ts-expect-error put back what the test took away
+    delete window.matchMedia;
+  }
+});
+
+it("presses are ignored while the control reads Switching…", async () => {
+  saveUser("u-customer");
+  let release: (() => void) | undefined;
+  const api = fakeApi({
+    "GET /me": async (request) => {
+      if (request.headers.get("X-Demo-User") === "u-staff") {
+        await new Promise<void>((done) => (release = done));
+      }
+      const id = request.headers.get("X-Demo-User") ?? "";
+      const name =
+        id === "u-staff"
+          ? "Daniel Okoye"
+          : id === "u-manager"
+            ? "Elena Petrova"
+            : "Aisha Rahman";
+      const role =
+        id === "u-staff"
+          ? "staff"
+          : id === "u-manager"
+            ? "manager"
+            : "customer";
+      return new Response(
+        JSON.stringify({
+          userId: id,
+          name,
+          role,
+          customerId: null,
+          dealershipIds: [],
+        }),
+        {
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+    },
+  });
+  open("/book", api);
+  await heading("Book a service");
+  await pick("Staff");
+  expect(await screen.findByText("Switching…")).toBeTruthy();
+  const group = screen.getByRole("group", { name: "Viewing as" });
+  const manager = within(group).getByRole("button", {
+    name: "Manager",
+  }) as HTMLButtonElement;
+  expect(manager.disabled).toBe(true);
+  fireEvent.click(manager);
+  release?.();
+  await screen.findByText("Now viewing as Staff, Daniel Okoye");
+  expect(
+    api.calls.some((c) => c.headers.get("X-Demo-User") === "u-manager"),
+  ).toBe(false);
+});
+
+it("the dealership note 'Times are in <place> time.' shows only when the viewer's zone differs", async () => {
+  saveUser("u-both");
+  const zone = vi.spyOn(Intl.DateTimeFormat.prototype, "resolvedOptions");
+  try {
+    zone.mockReturnValue({ timeZone: "Pacific/Auckland" } as never);
+    open("/schedule?dealership=d-leeds", fakeApi(), { routes: <TimesNote /> });
+    expect(await screen.findByText("Times are in London time.")).toBeTruthy();
+    cleanup();
+    zone.mockReturnValue({ timeZone: "Europe/London" } as never);
+    const api = open("/schedule?dealership=d-leeds", fakeApi(), {
+      routes: <TimesNote />,
+    });
+    await waitFor(() =>
+      expect(api.calls.some((c) => c.url.endsWith("/dealerships"))).toBe(true),
+    );
+    await new Promise((done) => setTimeout(done, 50));
+    expect(screen.queryByText(/Times are in/)).toBeNull();
+  } finally {
+    zone.mockRestore();
+  }
 });

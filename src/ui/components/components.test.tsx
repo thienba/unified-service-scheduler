@@ -634,7 +634,7 @@ it("Toast: 6rem above a bar when one shows, 1rem when none", () => {
     </ToastProvider>,
   );
   expect(container.firstElementChild!.className).toContain("bottom-24");
-  expect(container.firstElementChild!.className).toContain("lg:top-4");
+  expect(container.firstElementChild!.className).toContain("lg:top-20");
   rerender(
     <ToastProvider>
       <ToastViewport barShowing={false} />
@@ -714,4 +714,23 @@ it("FormSummary: lists each problem as a link to its field, and says how many", 
     screen.getByRole("link", { name: "Registration is missing." }),
   );
   expect(document.activeElement).toBe(screen.getByLabelText("Registration"));
+});
+
+it("Toast: leaving the focus does not restart the timer while the pointer is still over it", () => {
+  vi.useFakeTimers();
+  render(
+    <ToastProvider>
+      <ToastHarness kind="success" />
+    </ToastProvider>,
+  );
+  fireEvent.click(screen.getByText("Show"));
+  const body = screen.getByText("A success toast").parentElement!;
+  fireEvent.mouseEnter(body);
+  fireEvent.focus(body);
+  fireEvent.blur(body);
+  act(() => void vi.advanceTimersByTime(TOAST_MS * 3));
+  expect(screen.getByText("A success toast")).toBeTruthy();
+  fireEvent.mouseLeave(body);
+  act(() => void vi.advanceTimersByTime(TOAST_MS + 1));
+  expect(screen.queryByText("A success toast")).toBeNull();
 });
