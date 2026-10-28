@@ -38,7 +38,7 @@ export function DetailPanel({
         </p>
       ) : (
         <>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <h2 className="text-lg">
               {a.display.serviceTypeName}, {vehicleText(a)}
             </h2>

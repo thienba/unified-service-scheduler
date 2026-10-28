@@ -3,7 +3,7 @@
 import type { CSSProperties } from "react";
 import { Button } from "../../components/Button";
 import { Icon } from "../../components/Icon";
-import { formatTime } from "../../format/format";
+import { formatTime, formatTimeRange } from "../../format/format";
 import {
   appointmentsOf,
   appointmentsWord,
@@ -23,7 +23,6 @@ import {
   NotWorking,
   TimelineBlock,
 } from "./Timeline";
-import { formatTimeRange } from "../../format/format";
 
 function down(axis: Axis, slot: TimeSlot): CSSProperties {
   return {
@@ -90,7 +89,6 @@ export function OneDay({
           key={a.id}
           day={day}
           appointment={a}
-          rows={rows}
           style={down(axis, a)}
           vertical
         />

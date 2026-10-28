@@ -5,7 +5,6 @@ import type { components } from "../../../api/contract/schema";
 import { transportWords, type Transport } from "../../components/Badge";
 import {
   formatDuration,
-  formatDurationShort,
   formatTime,
   formatTimeRange,
 } from "../../format/format";
@@ -78,7 +77,7 @@ export function axisHours(axis: Axis): number {
 export const hourLength = (hours: number) =>
   `calc(var(--size-hour) * ${hours.toFixed(4)})`;
 
-/** Below 44 px (30 minutes) a block shows only its icon; below 7rem (112 px) a gap shows only its plus. */
+/** Below 44 px (30 minutes) a block shows only its icon; below 7rem (112 px) a gap shows only its plus, above it the word Free. */
 export const blockShowsText = (minutes: number) => minutes >= 30;
 export const gapShowsText = (minutes: number) => minutes * (88 / 60) >= 112;
 
@@ -137,9 +136,6 @@ export function blockName(day: ScheduleDay, a: Appointment): string {
 export function gapName(zone: string, gap: TimeSlot, who: string): string {
   return `Free, ${formatTimeRange(gap.start, gap.end, zone)}, ${formatDuration(minutesBetween(gap.start, gap.end))}, ${who}. Book this time.`;
 }
-
-export const gapLabel = (gap: TimeSlot) =>
-  `${formatDurationShort(minutesBetween(gap.start, gap.end))} free`;
 
 /** Where a free gap goes: the booking for a customer, with the time and the technician filled in. No customer details. */
 export function gapHref(gap: TimeSlot, technicianId: string): string {

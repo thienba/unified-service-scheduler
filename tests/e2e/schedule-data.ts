@@ -29,7 +29,9 @@ export async function api(
         headers: {
           "X-Demo-User": user,
           "Content-Type": "application/json",
-          ...(method === "POST" ? { "Idempotency-Key": crypto.randomUUID() } : {}),
+          ...(method === "POST"
+            ? { "Idempotency-Key": crypto.randomUUID() }
+            : {}),
         },
         body: body === undefined ? undefined : JSON.stringify(body),
       });
@@ -90,7 +92,15 @@ export async function changeShift(
   date: string,
   exception:
     | { kind: "leave" }
-    | { kind: "changed"; shift: { start: string; end: string } },
+    | {
+        kind: "changed";
+        shift: {
+          start: string;
+          end: string;
+          breakStart?: string;
+          breakEnd?: string;
+        };
+      },
 ) {
   const list = await api(
     page,
@@ -99,10 +109,27 @@ export async function changeShift(
     `/dealerships/${LONDON}/technicians?from=${date}&to=${date}`,
   );
   const t = (list.body as Technician[]).find((x) => x.id === technicianId)!;
-  const answer = await api(page, MANAGER, "PUT", `/technicians/${technicianId}/shifts`, {
-    shiftPattern: t.shiftPattern,
-    shiftExceptions: { ...t.shiftExceptions, [date]: exception },
-  });
+  const answer = await api(
+    page,
+    MANAGER,
+    "PUT",
+    `/technicians/${technicianId}/shifts`,
+    {
+      shiftPattern: t.shiftPattern,
+      shiftExceptions: { ...t.shiftExceptions, [date]: exception },
+    },
+  );
+  if (answer.status !== 200) throw new Error(JSON.stringify(answer));
+}
+
+/** The manager cancels an appointment, through the API. */
+export async function cancelAsManager(page: Page, appointmentId: string) {
+  const answer = await api(
+    page,
+    MANAGER,
+    "POST",
+    `/appointments/${appointmentId}/cancel`,
+  );
   if (answer.status !== 200) throw new Error(JSON.stringify(answer));
 }
 
@@ -112,17 +139,27 @@ export async function closeDate(page: Page, date: string) {
     .body as {
     weeklyHours: unknown;
     dateOverrides: Record<string, unknown>;
-    policies: { leadTimeMinutes: number; horizonDays: number; breakMinutes: number };
-  };
-  const answer = await api(page, MANAGER, "PUT", `/dealerships/${LONDON}/settings`, {
-    weeklyHours: d.weeklyHours,
-    dateOverrides: { ...d.dateOverrides, [date]: "closed" },
     policies: {
-      leadTimeMinutes: d.policies.leadTimeMinutes,
-      horizonDays: d.policies.horizonDays,
-      breakMinutes: d.policies.breakMinutes,
+      leadTimeMinutes: number;
+      horizonDays: number;
+      breakMinutes: number;
+    };
+  };
+  const answer = await api(
+    page,
+    MANAGER,
+    "PUT",
+    `/dealerships/${LONDON}/settings`,
+    {
+      weeklyHours: d.weeklyHours,
+      dateOverrides: { ...d.dateOverrides, [date]: "closed" },
+      policies: {
+        leadTimeMinutes: d.policies.leadTimeMinutes,
+        horizonDays: d.policies.horizonDays,
+        breakMinutes: d.policies.breakMinutes,
+      },
     },
-  });
+  );
   if (answer.status !== 200) throw new Error(JSON.stringify(answer));
 }
 
@@ -130,24 +167,89 @@ export async function closeDate(page: Page, date: string) {
  * A full day on Wed 28 Oct (and a few on Tue 27 Oct), booked the day before so the lead time allows the
  * morning; one booking is flagged by cutting Ash's shift; Cedar is on leave. Then the clock moves to 10:40.
  */
-export async function seedBusyDay(page: Page) {
+export async function seedBusyDay(page: Page): Promise<SeededIds> {
   await page.clock.setFixedTime(new Date("2026-10-26T07:00:00Z"));
   await page.goto("/");
   await page.getByText("Service Scheduler", { exact: true }).waitFor();
   const ash = "tech-lon-ash";
   const birch = "tech-lon-birch";
   const cedar = "tech-lon-cedar";
-  await book(page, { date: TODAY, time: "08:00", technicianId: ash, transport: "wait", name: "Marta Kowalska", make: "Ford", model: "Focus", registration: "AB12 CDE" });
-  await book(page, { date: TODAY, time: "09:15", technicianId: birch, serviceTypeId: "service-full", name: "Jan Nowak", make: "Vauxhall", model: "Corsa", registration: "CD34 FGH" });
-  await book(page, { date: TODAY, time: "13:15", technicianId: ash, transport: "courtesy_car", name: "Leila Haddad", make: "Kia", model: "Ceed", registration: "EF56 JKL" });
-  await book(page, { date: TODAY, time: "15:00", technicianId: birch, name: "Ravi Menon", make: "Skoda", model: "Octavia", registration: "GH78 MNO" });
-  await book(page, { date: "2026-10-27", time: "09:00", technicianId: ash, name: "Owen Pritchard", make: "Hyundai", model: "Kona", registration: "UV20 WXY" });
-  await book(page, { date: "2026-10-27", time: "11:00", technicianId: birch, transport: "wait", name: "Chidi Eze", make: "Mazda", model: "CX-5", registration: "EF22 GHJ" });
+  await book(page, {
+    date: TODAY,
+    time: "08:00",
+    technicianId: ash,
+    transport: "wait",
+    name: "Marta Kowalska",
+    make: "Ford",
+    model: "Focus",
+    registration: "AB12 CDE",
+  });
+  const jan = await book(page, {
+    date: TODAY,
+    time: "09:15",
+    technicianId: birch,
+    serviceTypeId: "service-full",
+    name: "Jan Nowak",
+    make: "Vauxhall",
+    model: "Corsa",
+    registration: "CD34 FGH",
+  });
+  const leila = await book(page, {
+    date: TODAY,
+    time: "13:15",
+    technicianId: ash,
+    transport: "courtesy_car",
+    name: "Leila Haddad",
+    make: "Kia",
+    model: "Ceed",
+    registration: "EF56 JKL",
+  });
+  await book(page, {
+    date: TODAY,
+    time: "15:00",
+    technicianId: birch,
+    name: "Ravi Menon",
+    make: "Skoda",
+    model: "Octavia",
+    registration: "GH78 MNO",
+  });
+  await book(page, {
+    date: "2026-10-27",
+    time: "09:00",
+    technicianId: ash,
+    name: "Owen Pritchard",
+    make: "Hyundai",
+    model: "Kona",
+    registration: "UV20 WXY",
+  });
+  await book(page, {
+    date: "2026-10-27",
+    time: "11:00",
+    technicianId: birch,
+    transport: "wait",
+    name: "Chidi Eze",
+    make: "Mazda",
+    model: "CX-5",
+    registration: "EF22 GHJ",
+  });
   // Ash's shift on the day is cut to end at 14:00: the 13:15 to 14:15 booking is flagged.
   await changeShift(page, ash, TODAY, {
     kind: "changed",
-    shift: { start: "08:00", end: "14:00" },
+    shift: {
+      start: "08:00",
+      end: "14:00",
+      breakStart: "12:00",
+      breakEnd: "12:30",
+    },
   });
   await changeShift(page, cedar, TODAY, { kind: "leave" });
   await page.clock.setFixedTime(new Date(NOW));
+  return { jan, leila };
+}
+
+export interface SeededIds {
+  /** Jan Nowak, Wed 09:15 to 12:15 with Birch, a full service, drop-off. */
+  jan: string;
+  /** Leila Haddad, Wed 13:15 with Ash, courtesy car, flagged after Ash's shift is cut. */
+  leila: string;
 }

@@ -7,12 +7,16 @@ import {
 } from "../../components/Badge";
 import { Plate } from "../../components/Small";
 import { Icon } from "../../components/Icon";
-import { formatTime, formatTimeRange } from "../../format/format";
+import {
+  formatDuration,
+  formatTime,
+  formatTimeRange,
+} from "../../format/format";
 import {
   bayName,
   flagReason,
   gapHref,
-  gapLabel,
+  minutesBetween,
   gapName,
   technicianName,
   vehicleText,
@@ -80,10 +84,11 @@ export function FreeGapRow({
       <Icon name="plus" />
       <span>
         <b className="num font-semibold">
-          {formatTimeRange(gap.start, gap.end, zone)} · {gapLabel(gap)}
-        </b>
+          Free, {formatTimeRange(gap.start, gap.end, zone)},{" "}
+          {formatDuration(minutesBetween(gap.start, gap.end))},
+        </b>{" "}
         <small className="block text-sm text-text-secondary">
-          {technician.name}. Book this time
+          {technician.name}. Book this time.
         </small>
       </span>
     </span>

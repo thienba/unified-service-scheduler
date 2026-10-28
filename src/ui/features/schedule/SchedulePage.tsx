@@ -317,7 +317,7 @@ function Day({
     );
   }
 
-  const showGaps = rows === "technicians" && !past;
+  const showGaps = rows === "technicians" && !past && !closed;
   const nowOnAxis = date === today ? now : null;
   const flagged = day.appointments.find((a) => a.flags.length > 0);
   const selected = day.appointments.find((a) => a.id === selectedId) ?? null;

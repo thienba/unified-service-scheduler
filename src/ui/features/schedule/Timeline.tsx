@@ -11,19 +11,16 @@ import {
   appointmentsOf,
   appointmentsWord,
   axisHours,
-  bayName,
   blockName,
   blockShowsText,
   flagReason,
   gapHref,
-  gapLabel,
   gapName,
   gapShowsText,
   hourLength,
   hoursFrom,
   minutesBetween,
   railText,
-  technicianName,
   vehicleText,
   type Appointment,
   type Axis,
@@ -46,7 +43,6 @@ const laneItem = "absolute top-2 bottom-2 rounded-control";
 export function TimelineBlock({
   day,
   appointment: a,
-  rows,
   selected,
   onSelect,
   style,
@@ -54,7 +50,6 @@ export function TimelineBlock({
 }: {
   day: ScheduleDay;
   appointment: Appointment;
-  rows: Rows;
   selected?: boolean;
   onSelect?: (id: string) => void;
   style: CSSProperties;
@@ -64,11 +59,13 @@ export function TimelineBlock({
   const reason = flagReason(a);
   const icon = reason ? "alert" : transportWords[a.transport as Transport].icon;
   const minutes = minutesBetween(a.start, a.end);
-  const sub = vertical
-    ? `${formatTimeRange(a.start, a.end, day.timeZone)}, ${a.display.vehicle.registration}`
-    : rows === "technicians"
-      ? `${a.display.vehicle.registration}, ${bayName(day, a)}`
-      : `${a.display.vehicle.registration}, ${technicianName(day, a)}`;
+  // The visible words run in the same order as the name in `aria-label`, so the name contains them
+  // (WCAG 2.5.3, Q-0001-209): service then vehicle on a row, time then service in the one-day view.
+  const time = formatTimeRange(a.start, a.end, day.timeZone);
+  const vehicle = `${vehicleText(a)} ${a.display.vehicle.registration}`;
+  const [top, bottom] = vertical
+    ? [time, a.display.serviceTypeName]
+    : [a.display.serviceTypeName, vehicle];
   const className = cx(
     vertical ? "absolute inset-x-1 justify-start pt-1" : laneItem,
     vertical && "rounded-control",
@@ -84,15 +81,15 @@ export function TimelineBlock({
     <>
       <b className="flex min-w-0 items-center gap-1 text-sm font-semibold">
         <Icon name={icon} />
-        <span className="truncate">{a.display.serviceTypeName}</span>
-      </b>
-      <small className="num block truncate text-xs">{sub}</small>
+        <span className="num truncate">{top}</span>
+      </b>{" "}
+      <small className="num block truncate text-xs">{bottom}</small>
     </>
   ) : (
     <Icon name={icon} />
   );
   const name = blockName(day, a);
-  const title = `${formatTimeRange(a.start, a.end, day.timeZone)}, ${a.display.serviceTypeName}, ${vehicleText(a)}${reason ? " (flagged)" : ""}`;
+  const title = `${time}, ${a.display.serviceTypeName}, ${vehicleText(a)}${reason ? " (flagged)" : ""}`;
   if (vertical) {
     return (
       <Link
@@ -146,7 +143,7 @@ export function FreeGap({
   const content = (
     <>
       <Icon name="plus" />
-      {showText && <span className="num">{gapLabel(gap)}</span>}
+      {showText && <span>Free</span>}
     </>
   );
   const name = gapName(zone, gap, technician.name);
@@ -284,7 +281,6 @@ export function Timeline({
       key={a.id}
       day={day}
       appointment={a}
-      rows={rows}
       selected={a.id === selectedId}
       onSelect={onSelect}
       style={across(axis, a)}
