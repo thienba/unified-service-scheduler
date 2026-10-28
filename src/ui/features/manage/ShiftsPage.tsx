@@ -237,6 +237,9 @@ function ShiftsForm({
   const form = useForm<ShiftsValues>({
     defaultValues: saved,
     resolver: zodResolver(schema),
+    // The screen moves focus to the first problem itself (focusField); the
+    // form's own focus step would otherwise move it again to a later field.
+    shouldFocusError: false,
   });
   const values = form.watch();
   const [lastChange, setLastChange] = useState("");

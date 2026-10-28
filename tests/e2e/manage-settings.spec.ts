@@ -119,6 +119,8 @@ test("six wrong values each show their own message, the summary links to each, a
     page.getByText("6 things need fixing before we can save."),
   ).toBeVisible();
   await expect(page.getByText("Fix the 6 things above to save.")).toBeVisible();
+  // Focus lands on the first problem, Monday's closing time.
+  await expect(day(page, "Monday").getByLabel("Closes")).toBeFocused();
   await expect(
     page.getByText(
       "Monday closes at 07:00, before it opens at 08:00. Choose a closing time after 08:00.",

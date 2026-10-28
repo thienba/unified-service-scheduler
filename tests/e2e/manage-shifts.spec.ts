@@ -116,6 +116,10 @@ test("a half break, a break outside the shift, an end before the start and a las
   await expect(
     page.getByText("4 things need fixing before we can save."),
   ).toBeVisible();
+  // Focus lands on the first problem, Monday's break end.
+  await expect(
+    day(page, "Monday").getByLabel("Break ends (optional)"),
+  ).toBeFocused();
   await expect(
     page.getByText(
       "Monday has a break start but no break end. Add both break times, or leave both empty.",
