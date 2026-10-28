@@ -5,8 +5,14 @@ import type { Outcome } from "../ports";
 import { cancelled } from "../../domain/appointment/cancel";
 import { isBlocking } from "../../domain/appointment/blocking";
 import type { Appointment } from "../../domain/model";
+import { messagesForCancel } from "../../domain/outbox";
 import { customerMayChange } from "../../domain/policies/change-cutoff";
-import { logOutcome, type CommandResult, type Failure } from "./shared";
+import {
+  logOutcome,
+  outboxRows,
+  type CommandResult,
+  type Failure,
+} from "./shared";
 
 export async function cancelAppointment(
   actor: Actor,
@@ -55,7 +61,11 @@ async function cancel(
       return { ok: true, value: { appointment: loaded.value, changed: false } };
     }
     const done = cancelled(loaded.value, now);
-    await deps.logger.step("write", () => stores.appointments.update(done));
+    await deps.logger.step("write", async () => {
+      await stores.appointments.update(done);
+      await stores.outbox.cancelPending(done.id);
+      await stores.outbox.add(outboxRows(deps, messagesForCancel(done, now)));
+    });
     return { ok: true, value: { appointment: done, changed: true } };
   });
 
