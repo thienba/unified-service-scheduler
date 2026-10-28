@@ -103,7 +103,7 @@ export interface ViewContext {
   zone: string;
   now: number;
   dealershipName: string;
-  /** The page's origin. A link that points anywhere else is shown as text, never as a link (SEC-11). */
+  /** The page's origin. A link that points anywhere else is left out, never shown (SEC-11). */
   origin: string;
 }
 

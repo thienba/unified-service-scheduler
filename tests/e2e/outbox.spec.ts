@@ -148,9 +148,11 @@ async function shot(page: Page, state: string) {
   mkdirSync(path.join(dir, "shots"), { recursive: true });
   const width = page.viewportSize()?.width ?? 0;
   await page.waitForTimeout(300);
+  // An open sheet is fixed to the window, so a full-page shot would draw it mid-page.
+  const sheetOpen = (await page.getByRole("dialog").count()) > 0;
   await page.screenshot({
     path: path.join(dir, "shots", `outbox-${state}-${width}.png`),
-    fullPage: true,
+    fullPage: !sheetOpen,
   });
 }
 
