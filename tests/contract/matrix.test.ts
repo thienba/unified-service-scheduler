@@ -1,6 +1,7 @@
 // The role matrix (AD-3 Check, SEC-1.AC-3, SEC-3, SEC-4, SEC-5). The list of operations is read from
 // openapi.yaml, so an operation with no row here fails the suite and is named.
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import contract from "../../src/api/contract/openapi.json";
 import { operations } from "../../src/api/contract/validator";
 import {
   NEW_KEY,
@@ -311,5 +312,26 @@ describe("only the demo users list answers without X-Demo-User (SEC-1.AC-1)", ()
         .filter(([, row]) => row.answersWithoutUser)
         .map(([id]) => id),
     ).toEqual(["getDemoUsers"]);
+  });
+
+  it("is the single operation whose contract says it needs no user (security: [])", () => {
+    const open: string[] = [];
+    for (const methods of Object.values(contract.paths)) {
+      for (const op of Object.values(
+        methods as Record<
+          string,
+          { operationId?: string; security?: unknown[] }
+        >,
+      )) {
+        if (
+          op.operationId &&
+          Array.isArray(op.security) &&
+          op.security.length === 0
+        ) {
+          open.push(op.operationId);
+        }
+      }
+    }
+    expect(open).toEqual(["getDemoUsers"]);
   });
 });
