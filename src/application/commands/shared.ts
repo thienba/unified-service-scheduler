@@ -24,6 +24,7 @@ export type Failure =
   | { kind: "validation_failed"; errors: FieldError[] }
   | { kind: "forbidden" }
   | { kind: "not_found" }
+  | { kind: "already_cancelled" }
   | { kind: "change_window_closed" }
   | { kind: "idempotency_key_missing" }
   | { kind: "idempotency_key_reused" };
@@ -45,7 +46,7 @@ export interface Conflict {
 
 /**
  * Days either side of the wanted time that suggestions look through.
- * Open question Q-0001-90: today it looks both sides; one place to change.
+ * Both sides of the wanted time (D-0001-37); one place to change.
  */
 export const SUGGEST_WINDOW_DAYS = 14;
 

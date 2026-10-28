@@ -25,12 +25,13 @@ export default defineConfig({
     ],
     coverage: {
       provider: "v8",
-      include: ["src/domain/**"],
-      exclude: ["**/*.test.ts", "**/*.d.ts"],
+      include: ["src/domain/**", "src/application/**"],
+      exclude: ["**/*.test.ts", "**/*.d.ts", "src/application/ports/fakes.ts"],
       reporter: ["text", "html", "json-summary"],
       reportsDirectory: "coverage",
       thresholds: {
         "src/domain/**": { lines: 90, branches: 90 },
+        "src/application/**": { lines: 90, branches: 90 },
       },
     },
   },

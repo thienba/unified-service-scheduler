@@ -97,9 +97,12 @@ async function reschedule(
           };
         }
         const current = await stores.appointments.get(appointmentId);
-        // A cancelled appointment is treated as gone. Open question Q-0001-110.
-        if (!current || !canReach(actor, current) || !isBlocking(current)) {
+        if (!current || !canReach(actor, current)) {
           return { ok: false, error: { kind: "not_found" } };
+        }
+        // After the owner check, so it cannot reveal a record (D-0001-39).
+        if (!isBlocking(current)) {
+          return { ok: false, error: { kind: "already_cancelled" } };
         }
         const snapshot = await loadSnapshot(stores, {
           dealershipId: current.dealershipId,

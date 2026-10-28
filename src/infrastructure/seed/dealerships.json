@@ -3,6 +3,7 @@
     "id": "dealership-london",
     "name": "Fakeford Motors (demo)",
     "timeZone": "Europe/London",
+    "phone": "+44 1632 960 123",
     "weeklyHours": {
       "1": {
         "open": "08:00",
@@ -27,10 +28,6 @@
       "6": {
         "open": "09:00",
         "close": "16:00"
-      },
-      "7": {
-        "open": "09:00",
-        "close": "16:00"
       }
     },
     "dateOverrides": {},
@@ -45,6 +42,7 @@
     "id": "dealership-saigon",
     "name": "Demo Saigon Autos (demo)",
     "timeZone": "Asia/Ho_Chi_Minh",
+    "phone": "+84 00 0000 0000",
     "weeklyHours": {
       "1": {
         "open": "07:30",

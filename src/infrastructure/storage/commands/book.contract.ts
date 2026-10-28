@@ -10,6 +10,7 @@ import type { Repository } from "../../../application/ports";
 import { checkStart, searchDay } from "../../../domain/availability";
 import {
   KEY,
+  MIN,
   MONDAY,
   NOW,
   OTHER_KEY,
@@ -23,6 +24,7 @@ import {
   newCustomerRequest,
   seed,
   seededRepo,
+  spyOnStore,
   staffActor,
 } from "./fixtures";
 
@@ -552,20 +554,10 @@ export function describeBookContract(
 
     it("SEC-3: a refused command leaves the stores as they were, and the actor is checked before any store is read", async () => {
       const { repo, deps } = await setup();
-      const calls: string[] = [];
-      const spied = {
-        read: (w: Parameters<Repository["read"]>[0]) => (
-          calls.push("read"),
-          repo.read(w)
-        ),
-        write: (w: Parameters<Repository["write"]>[0]) => (
-          calls.push("write"),
-          repo.write(w)
-        ),
-      } as Repository;
+      const { uow, calls } = spyOnStore(repo);
       const result = await bookAppointment(
         customerActor("c1"),
-        { ...deps, uow: spied },
+        { ...deps, uow },
         bookRequest({ customerId: "c2" }),
         KEY,
       );
@@ -604,13 +596,11 @@ export function describeBookContract(
       );
       expect(result.kind).toBe("ok");
       if (result.kind !== "ok") return;
-      const search = (text: string) =>
-        repo.read((s) => s.customers.search(text));
-      const found = {
-        name: await search("test person"),
-        phone: await search("7700 900123"),
-        registration: await search("zz99tst"),
-      };
+      const found = await repo.read(async (s) => ({
+        name: await s.customers.search("test person"),
+        phone: await s.customers.search("7700 900123"),
+        registration: await s.customers.search("zz99tst"),
+      }));
       for (const list of Object.values(found)) {
         expect(list).toHaveLength(1);
         expect(list[0]).toMatchObject({
@@ -677,7 +667,7 @@ export function describeBookContract(
       expect(await dump(repo)).toEqual(before);
     });
 
-    it("REQ-BOOK-014: a new customer needs both halves, and not an existing customer too", async () => {
+    it("REQ-BOOK-014: a new customer needs a new vehicle, and cannot be sent with an existing customer or vehicle", async () => {
       const { deps } = await setup();
       const noVehicle = await bookAppointment(
         staffActor(),
@@ -689,13 +679,6 @@ export function describeBookContract(
         kind: "validation_failed",
         errors: [{ field: "newVehicle" }],
       });
-      const noCustomer = await bookAppointment(
-        staffActor(),
-        deps,
-        newCustomerRequest({ newCustomer: undefined, customerId: "c1" }),
-        KEY,
-      );
-      expect(noCustomer).toMatchObject({ kind: "validation_failed" });
       const both = await bookAppointment(
         staffActor(),
         deps,
@@ -704,8 +687,131 @@ export function describeBookContract(
       );
       expect(both).toMatchObject({
         kind: "validation_failed",
-        errors: [{ field: "newCustomer" }],
+        errors: [{ field: "customerId" }],
       });
+      const twoVehicles = await bookAppointment(
+        staffActor(),
+        deps,
+        newCustomerRequest({ vehicleId: "v1" }),
+        KEY,
+      );
+      expect(twoVehicles).toMatchObject({
+        kind: "validation_failed",
+        errors: [{ field: "vehicleId" }],
+      });
+    });
+
+    it("D-0001-29: staff add a new vehicle to the customer they picked; it is stored with the appointment, once, and the customer keeps one record", async () => {
+      const { deps, repo } = await setup();
+      const request = bookRequest({
+        customerId: "c1",
+        vehicleId: undefined,
+        newVehicle: {
+          registration: "NW 22 CAR",
+          make: "Kia",
+          model: "Ceed",
+          year: 2019,
+        },
+      });
+      const first = await bookAppointment(staffActor(), deps, request, KEY);
+      const second = await bookAppointment(staffActor(), deps, request, KEY);
+      expect(first.kind).toBe("ok");
+      expect(second).toEqual(first);
+      if (first.kind !== "ok") return;
+      const customer = await repo.read((s) => s.customers.get("c1"));
+      expect(customer?.vehicles.map((v) => v.id)).toEqual(
+        ["v1", first.appointment.vehicleId].sort(),
+      );
+      expect(
+        customer?.vehicles.find((v) => v.id === first.appointment.vehicleId),
+      ).toMatchObject({
+        customerId: "c1",
+        registration: "NW 22 CAR",
+        year: 2019,
+      });
+      expect(await repo.read((s) => s.customers.search("alex"))).toHaveLength(
+        1,
+      );
+    });
+
+    it("D-0001-29: the new vehicle of an existing customer gets the same checks, and an unknown customer is not_found; nothing is stored", async () => {
+      const { deps, repo } = await setup();
+      const before = await dump(repo);
+      const bad = await bookAppointment(
+        staffActor(),
+        deps,
+        bookRequest({
+          customerId: "c1",
+          vehicleId: undefined,
+          newVehicle: { registration: "!", make: "", model: "m" },
+        }),
+        KEY,
+      );
+      expect(bad).toMatchObject({ kind: "validation_failed" });
+      expect(
+        (bad as { errors: { field: string }[] }).errors.map((e) => e.field),
+      ).toEqual(["newVehicle.registration", "newVehicle.make"]);
+      const unknown = await bookAppointment(
+        staffActor(),
+        deps,
+        bookRequest({
+          customerId: "nope",
+          vehicleId: undefined,
+          newVehicle: { registration: "AB12", make: "m", model: "m" },
+        }),
+        KEY,
+      );
+      expect(unknown).toEqual({ kind: "not_found" });
+      expect(await dump(repo)).toEqual(before);
+    });
+
+    it("D-0001-29: a customer still cannot send a new vehicle, also for their own customer id", async () => {
+      const { deps } = await setup();
+      const result = await bookAppointment(
+        customerActor("c1"),
+        deps,
+        bookRequest({
+          customerId: "c1",
+          vehicleId: undefined,
+          newVehicle: { registration: "AB12", make: "m", model: "m" },
+        }),
+        KEY,
+      );
+      expect(result).toEqual({ kind: "forbidden" });
+    });
+
+    it("D-0001-31: with a fixed technician the suggestions follow that technician", async () => {
+      const { deps } = await setup(seed(2, 2));
+      const first = await bookAppointment(
+        customerActor("c1"),
+        deps,
+        bookRequest(),
+        KEY,
+      );
+      expect(first).toMatchObject({
+        kind: "ok",
+        appointment: { technicianId: "t1" },
+      });
+      const pinned = await bookAppointment(
+        staffActor(),
+        deps,
+        bookRequest({ customerId: "c2", vehicleId: "v2", technicianId: "t1" }),
+        OTHER_KEY,
+      );
+      expect(pinned).toMatchObject({
+        kind: "slot_unavailable",
+        reasons: ["TECHNICIAN_BUSY"],
+      });
+      const { suggestions } = pinned as {
+        suggestions: { start: number; end: number }[];
+      };
+      expect(suggestions.length).toBeGreaterThan(0);
+      for (const { start, end } of suggestions) {
+        // t1 works 10:00 to 11:00 and rests 15 minutes after it.
+        expect(end <= at("10:00") - 15 * MIN || start >= at("11:15")).toBe(
+          true,
+        );
+      }
     });
 
     it("REQ-BOOK-014.AC-4: a time taken while staff fill the form is slot_unavailable and no customer, vehicle or appointment is stored", async () => {

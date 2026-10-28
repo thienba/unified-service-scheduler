@@ -203,3 +203,13 @@ export async function dump(repo: UnitOfWork, idempotencyOf: Actor[] = []) {
 
 export const appointmentsOf = (repo: UnitOfWork) =>
   repo.read((s) => s.appointments.listByDealershipDay("d1", 0, 2 ** 52));
+
+/** A unit of work that records each read and write it is asked for. */
+export function spyOnStore(repo: UnitOfWork) {
+  const calls: string[] = [];
+  const uow: UnitOfWork = {
+    read: (work) => (calls.push("read"), repo.read(work)),
+    write: (work) => (calls.push("write"), repo.write(work)),
+  };
+  return { uow, calls };
+}

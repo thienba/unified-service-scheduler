@@ -20,6 +20,7 @@ import {
   managerActor,
   seed,
   seededRepo,
+  spyOnStore,
   staffActor,
 } from "./fixtures";
 
@@ -184,9 +185,11 @@ export function describeChangeContract(
       const ctx = await setup();
       const appt = await booked(ctx);
       const before = await dump(ctx.repo);
-      expect(await cancelAppointment(staffActor(), ctx.deps, appt.id)).toEqual({
-        kind: "forbidden",
-      });
+      const { uow, calls } = spyOnStore(ctx.repo);
+      expect(
+        await cancelAppointment(staffActor(), { ...ctx.deps, uow }, appt.id),
+      ).toEqual({ kind: "forbidden" });
+      expect(calls).toEqual([]);
       expect(await dump(ctx.repo)).toEqual(before);
     });
 
@@ -383,7 +386,7 @@ export function describeChangeContract(
       expect(result).toMatchObject({ kind: "ok", appointment: { flags: [] } });
     });
 
-    it("staff cannot reschedule, a missing start is validation_failed, and a cancelled appointment is not_found", async () => {
+    it("staff cannot reschedule, a missing start is validation_failed, and a cancelled appointment is already_cancelled, but not_found for someone else", async () => {
       const ctx = await setup();
       const appt = await booked(ctx);
       const before = await dump(ctx.repo);
@@ -417,6 +420,16 @@ export function describeChangeContract(
           appt.id,
           { start: at("16:00") },
           KEY,
+        ),
+      ).toEqual({ kind: "already_cancelled" });
+      // The owner check still comes first (D-0001-39).
+      expect(
+        await rescheduleAppointment(
+          customerActor("c2"),
+          ctx.deps,
+          appt.id,
+          { start: at("16:00") },
+          OTHER_KEY,
         ),
       ).toEqual({ kind: "not_found" });
     });

@@ -40,12 +40,12 @@ export interface BookRequest {
   /** An existing customer and one of their vehicles... */
   customerId?: string;
   vehicleId?: string;
-  /** ...or a new customer and vehicle, for staff and managers (Q-0001-23 A). */
+  /** ...or a new customer and vehicle (Q-0001-23 A), or a new vehicle for the picked customer (D-0001-29), for staff and managers. */
   newCustomer?: NewCustomerInput;
   newVehicle?: NewVehicleInput;
   /**
-   * Staff and managers may fix the technician (D-0001-20 B). Open question Q-0001-63: the day
-   * search and the suggestions do not follow it beyond this one booking.
+   * Staff and managers may fix the technician (D-0001-20 B). The check and the suggestions
+   * follow it (D-0001-31 A).
    */
   technicianId?: string;
 }
@@ -94,32 +94,38 @@ function validate(
     });
   }
 
-  // Open question Q-0001-61: a new vehicle for an existing customer is not accepted yet.
-  const isNew =
-    request.newCustomer !== undefined || request.newVehicle !== undefined;
-  if (isNew) {
-    if (request.newCustomer === undefined)
-      missing("newCustomer", "New customer");
-    else errors.push(...validateNewCustomer(request.newCustomer));
-    if (request.newVehicle === undefined) missing("newVehicle", "New vehicle");
-    else errors.push(...validateNewVehicle(request.newVehicle, now));
-    if (request.customerId !== undefined || request.vehicleId !== undefined) {
+  // Either an existing vehicle, or a new vehicle (D-0001-29: for a new customer, or for the
+  // existing customer staff picked). A new customer always comes with a new vehicle.
+  if (request.newCustomer !== undefined) {
+    errors.push(...validateNewCustomer(request.newCustomer));
+    if (request.customerId !== undefined) {
       errors.push({
-        field: "newCustomer",
-        message:
-          "Send an existing customer and vehicle, or a new customer and vehicle, not both.",
+        field: "customerId",
+        message: "Send a new customer or an existing customer, not both.",
       });
     }
-  } else {
-    if (actor.role !== "customer" && request.customerId === undefined)
-      missing("customerId", "Customer");
-    if (request.vehicleId === undefined) missing("vehicleId", "Vehicle");
+  } else if (actor.role !== "customer" && request.customerId === undefined) {
+    missing("customerId", "Customer");
+  }
+  if (request.newVehicle !== undefined) {
+    errors.push(...validateNewVehicle(request.newVehicle, now));
+    if (request.vehicleId !== undefined) {
+      errors.push({
+        field: "vehicleId",
+        message: "Send a new vehicle or an existing vehicle, not both.",
+      });
+    }
+  } else if (request.newCustomer !== undefined) {
+    missing("newVehicle", "New vehicle");
+  } else if (request.vehicleId === undefined) {
+    missing("vehicleId", "Vehicle");
   }
   return errors;
 }
 
-interface NewPair {
-  customer: Customer;
+/** What is stored with the appointment: a new vehicle, and a new customer when there is one. */
+interface NewPeople {
+  customer?: Customer;
   vehicle: Vehicle;
 }
 
@@ -127,7 +133,7 @@ interface Loaded {
   snapshot: SchedulingSnapshot;
   customerId: string;
   vehicleId: string;
-  created?: NewPair;
+  created?: NewPeople;
 }
 
 interface Replayed {
@@ -193,51 +199,58 @@ async function book(
 
         let customerId: string;
         let vehicleId: string;
-        let created: NewPair | undefined;
+        let created: NewPeople | undefined;
+        const newVehicle = (owner: string): Vehicle => {
+          const { registration, make, model, year } = request.newVehicle!;
+          return {
+            id: deps.ids.next(),
+            customerId: owner,
+            registration: registration!.trim(),
+            make: make!.trim(),
+            model: model!.trim(),
+            ...(year === undefined ? {} : { year }),
+          };
+        };
         if (request.newCustomer !== undefined) {
           const { name, phone, email } = request.newCustomer;
-          const { registration, make, model, year } = request.newVehicle!;
           customerId = deps.ids.next();
-          vehicleId = deps.ids.next();
-          created = {
-            customer: {
-              id: customerId,
-              name: name!.trim(),
-              phone: phone!.trim(),
-              email: email?.trim() ?? "",
-            },
-            vehicle: {
-              id: vehicleId,
-              customerId,
-              registration: registration!.trim(),
-              make: make!.trim(),
-              model: model!.trim(),
-              ...(year === undefined ? {} : { year }),
-            },
+          const customer = {
+            id: customerId,
+            name: name!.trim(),
+            phone: phone!.trim(),
+            email: email?.trim() ?? "",
           };
+          created = { customer, vehicle: newVehicle(customerId) };
+          vehicleId = created.vehicle.id;
         } else {
           customerId =
             actor.role === "customer" ? actor.customerId! : request.customerId!;
-          vehicleId = request.vehicleId!;
           const customer = await stores.customers.get(customerId);
           if (!customer) return { ok: false, error: { kind: "not_found" } };
-          if (!customer.vehicles.some((v) => v.id === vehicleId)) {
-            // A customer must not learn that another customer's vehicle exists (SEC-6.AC-2).
-            return {
-              ok: false,
-              error:
-                actor.role === "customer"
-                  ? { kind: "not_found" }
-                  : {
-                      kind: "validation_failed",
-                      errors: [
-                        {
-                          field: "vehicleId",
-                          message: "Vehicle does not belong to this customer.",
-                        },
-                      ],
-                    },
-            };
+          if (request.newVehicle !== undefined) {
+            created = { vehicle: newVehicle(customerId) };
+            vehicleId = created.vehicle.id;
+          } else {
+            vehicleId = request.vehicleId!;
+            if (!customer.vehicles.some((v) => v.id === vehicleId)) {
+              // A customer must not learn that another customer's vehicle exists (SEC-6.AC-2).
+              return {
+                ok: false,
+                error:
+                  actor.role === "customer"
+                    ? { kind: "not_found" }
+                    : {
+                        kind: "validation_failed",
+                        errors: [
+                          {
+                            field: "vehicleId",
+                            message:
+                              "Vehicle does not belong to this customer.",
+                          },
+                        ],
+                      },
+              };
+            }
           }
         }
 
@@ -286,8 +299,11 @@ async function book(
       cancelledAt: null,
     };
     await deps.logger.step("write", async () => {
-      if (created)
+      if (created?.customer) {
         await stores.customers.insert(created.customer, created.vehicle);
+      } else if (created) {
+        await stores.customers.insertVehicle(created.vehicle);
+      }
       await stores.appointments.insert(appointment);
       await stores.idempotency.put(
         keyRecord(actor, idempotencyKey, hash, appointment.id, now),

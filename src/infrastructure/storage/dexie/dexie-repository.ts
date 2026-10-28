@@ -144,6 +144,9 @@ function buildStores(db: SchedulerDb): Stores {
         });
         await db.vehicles.add(vehicle);
       },
+      insertVehicle: async (vehicle) => {
+        await db.vehicles.add(vehicle);
+      },
       findDuplicates: async (phone, registration) => {
         const byPhone = await db.customers
           .where("phone")
@@ -231,7 +234,8 @@ export function createDexieRepository(databaseName: string): DexieRepository {
 
   return {
     close: () => db.close(),
-    read: (work) => db.transaction("r", db.tables, () => work(stores)),
+    read: (work) =>
+      db.transaction("r", db.tables, async () => await work(stores)),
     write: async (work) => {
       try {
         return await db.transaction("rw", db.tables, async () => {
