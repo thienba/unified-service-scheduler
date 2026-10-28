@@ -5,6 +5,7 @@
 import { mkdirSync } from "node:fs";
 import path from "node:path";
 import { expect, test, type Page } from "@playwright/test";
+import type { Telemetry } from "../../src/ui/features/dev/telemetry";
 import {
   expectNoAxeViolations,
   expectNoSidewaysScroll,
@@ -29,19 +30,22 @@ const shots =
   process.env["EVIDENCE_DIR"] ??
   path.resolve("test-results/evidence/dev-panel");
 
-interface Answer {
+interface Answer<T = unknown> {
   status: number;
   traceId: string | null;
-  body: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+  body: T;
 }
 
+type Id = { id: string };
+type Refusal = { code: string; reasons: string[] };
+
 /** Calls the API from inside the page, as the app's own code would, so the call is counted in this tab. */
-function api(
+async function api<T = unknown>(
   page: Page,
   url: string,
   options: { user: string; method?: string; body?: unknown },
-): Promise<Answer> {
-  return page.evaluate(
+): Promise<Answer<T>> {
+  return (await page.evaluate(
     async ({ url, options }) => {
       const response = await fetch(`/api${url}`, {
         method: options.method ?? "GET",
@@ -62,7 +66,7 @@ function api(
       };
     },
     { url, options },
-  );
+  )) as Answer<T>;
 }
 
 const booking = (start: string, extra: Record<string, unknown> = {}) => ({
@@ -97,9 +101,9 @@ const londonDate = (instant: string) =>
 
 interface Story {
   contested: string;
-  booked: Answer;
-  refused: Answer;
-  canary: Answer;
+  booked: Answer<Id>;
+  refused: Answer<Refusal>;
+  canary: Answer<Id>;
 }
 
 /**
@@ -108,23 +112,25 @@ interface Story {
  * customer with the canary details of SEC-10.
  */
 async function tellTheStory(page: Page): Promise<Story> {
-  const mine = await api(page, "/appointments", { user: "user-customer-a" });
-  const contested: string = mine.body[0].start;
+  const mine = await api<{ start: string }[]>(page, "/appointments", {
+    user: "user-customer-a",
+  });
+  const contested = mine.body[0]!.start;
   // Cedar is the one free EV technician then: the first booking takes them, the second is refused.
-  const booked = await api(page, "/appointments", {
+  const booked = await api<Id>(page, "/appointments", {
     user: "user-customer-a",
     method: "POST",
     body: booking(contested),
   });
   expect(booked.status).toBe(201);
-  const refused = await api(page, "/appointments", {
+  const refused = await api<Refusal>(page, "/appointments", {
     user: "user-customer-b",
     method: "POST",
     body: booking(contested, { vehicleId: "vehicle-b" }),
   });
   expect(refused.status).toBe(409);
   expect(refused.body.code).toBe("SLOT_UNAVAILABLE");
-  const empty = await api(
+  const empty = await api<{ slots: unknown[] }>(
     page,
     `/dealerships/${LONDON}/availability?serviceTypeId=${OIL}&date=${nextSunday()}&transport=wait`,
     { user: "user-customer-a" },
@@ -137,7 +143,7 @@ async function tellTheStory(page: Page): Promise<Story> {
   const later = new Date(new Date(contested).getTime() + 3 * 3_600_000)
     .toISOString()
     .replace(".000Z", "Z");
-  const canary = await api(page, "/appointments", {
+  const canary = await api<Id>(page, "/appointments", {
     user: "user-staff-london",
     method: "POST",
     body: {
@@ -207,12 +213,14 @@ test("after a booking, a 409 and an empty search the numbers equal the API's, an
   await openPanel(page);
 
   const telemetry = (
-    await api(page, "/_demo/telemetry", { user: "user-manager-london" })
+    await api<Telemetry>(page, "/_demo/telemetry", {
+      user: "user-manager-london",
+    })
   ).body;
   const value = (name: string) =>
     telemetry.counters
-      .filter((c: { name: string }) => c.name === name)
-      .reduce((n: number, c: { value: number }) => n + c.value, 0);
+      .filter((c) => c.name === name)
+      .reduce((n, c) => n + c.value, 0);
   expect(value("appointments_confirmed_total")).toBe(2);
   expect(value("appointment_conflicts_total")).toBe(1);
   const empty = value("availability_search_empty_total");
@@ -234,7 +242,7 @@ test("after a booking, a 409 and an empty search the numbers equal the API's, an
     `${empty} ${empty === 1 ? "search" : "searches"}`,
   );
   await expect(metric("Time to find free times")).toContainText(
-    /Day search\d+ search(es)? · middle \d+ ms · slowest 5% from \d+ msTarget: under 50 ms (Within|Over) target/,
+    /Day search\d+ search(es)? · middle \d+\sms · slowest 5% from \d+\smsTarget: under 50\sms (Within|Over) target/,
   );
 
   // The reference of the 409 is the first 8 characters of its trace id: what the "just taken" screen shows.
@@ -342,8 +350,8 @@ test("reset: the dialog starts on Keep my data, the reset empties what this brow
   const story = await tellTheStory(page);
   const day = `/appointments?dealershipId=${LONDON}&date=${londonDate(story.contested)}`;
   const schedule = async () =>
-    (await api(page, day, { user: "user-staff-london" })).body.map(
-      (a: { id: string }) => a.id,
+    (await api<Id[]>(page, day, { user: "user-staff-london" })).body.map(
+      (a) => a.id,
     );
   const before = await schedule();
   expect(before).toContain(story.booked.body.id);
@@ -367,10 +375,12 @@ test("reset: the dialog starts on Keep my data, the reset empties what this brow
   const after = await schedule();
   expect(after).not.toContain(story.booked.body.id);
   expect(after).not.toContain(story.canary.body.id);
-  const myAppointments = await api(page, "/appointments", {
+  const myAppointments = await api<
+    { id: string; start: string; status: string }[]
+  >(page, "/appointments", {
     user: "user-customer-a",
   });
-  expect(myAppointments.body.map((a: { id: string }) => a.id)).not.toContain(
+  expect(myAppointments.body.map((a) => a.id)).not.toContain(
     story.booked.body.id,
   );
   expect(myAppointments.body).toContainEqual(
@@ -588,12 +598,12 @@ test("video: a booking and a just-taken answer in two pages, the line found by i
   await expect(
     customer.getByRole("navigation", { name: "Main" }).first(),
   ).toBeVisible();
-  const mine = await api(customer, "/appointments", {
+  const mine = await api<{ start: string }[]>(customer, "/appointments", {
     user: "user-customer-a",
   });
-  const contested: string = mine.body[0].start;
+  const contested = mine.body[0]!.start;
   // The manager books the one free EV technician for customer B; a moment later customer A asks for the same time.
-  const booked = await api(manager, "/appointments", {
+  const booked = await api<Id>(manager, "/appointments", {
     user: "user-manager-london",
     method: "POST",
     body: booking(contested, {
@@ -602,7 +612,7 @@ test("video: a booking and a just-taken answer in two pages, the line found by i
     }),
   });
   expect(booked.status).toBe(201);
-  const refused = await api(customer, "/appointments", {
+  const refused = await api<Refusal>(customer, "/appointments", {
     user: "user-customer-a",
     method: "POST",
     body: booking(contested),
