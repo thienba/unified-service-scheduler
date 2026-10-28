@@ -86,12 +86,17 @@ export function matchOperation(
     const names = [...operation.path.matchAll(/\{([^}]+)\}/g)].map(
       (m) => m[1]!,
     );
-    return {
-      operation,
-      pathParams: Object.fromEntries(
-        names.map((name, i) => [name, decodeURIComponent(found[i + 1]!)]),
-      ),
-    };
+    // A malformed escape such as `%` or `%E0%A4%A` matches nothing (it is not an error of ours).
+    try {
+      return {
+        operation,
+        pathParams: Object.fromEntries(
+          names.map((name, i) => [name, decodeURIComponent(found[i + 1]!)]),
+        ),
+      };
+    } catch {
+      return undefined;
+    }
   }
   return undefined;
 }

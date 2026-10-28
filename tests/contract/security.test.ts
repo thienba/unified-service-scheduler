@@ -671,6 +671,28 @@ describe("SEC-9: errors, trace ids", () => {
   });
 });
 
+describe("a malformed escape in the path (CWE-755)", () => {
+  it.each([
+    "/appointments/%",
+    "/appointments/%E0%A4%A",
+    "/customers/%zz/vehicles",
+  ])(
+    "%s is 404 NOT_FOUND with or without a user, and never an internal error",
+    async (path) => {
+      for (const user of [undefined, users.customerA]) {
+        const reply = await call(path, { user });
+        expect(reply.status).toBe(404);
+        expect(reply.body.code).toBe("NOT_FOUND");
+      }
+      const lines = world.logger.calls.flatMap((c) =>
+        c.kind === "info" ? [c.fields] : [],
+      );
+      expect(lines.length).toBeGreaterThan(0);
+      expect(lines.some((f) => f.outcome === "internal")).toBe(false);
+    },
+  );
+});
+
 describe("traceparent (AD-12, SEC-9.AC-3)", () => {
   const TRACE = "4bf92f3577b34da6a3ce929d0e0e4736";
   const withTrace = (traceparent?: string) =>

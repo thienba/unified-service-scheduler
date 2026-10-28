@@ -24,6 +24,12 @@ describe("readConfig (AD-15, SEC-14.AC-4)", () => {
       "http://api.example.test/api",
       "http://localhost.evil.test/api",
       "ftp://x.test",
+      "http://localhost:x@evil.example/",
+      "http://localhost@evil.example/api",
+      "https://user:secret@api.example.test/api",
+      "http://user@localhost/api",
+      "https://",
+      "https:/api.example.test",
       "/api",
     ]) {
       expect(() =>

@@ -13,8 +13,25 @@ export interface RawEnv {
   VITE_API_BASE_URL?: string | undefined;
 }
 
-/** `https://` addresses only, or `http://localhost` for a developer's own machine (SEC-14.AC-4). */
-const allowedRemote = /^(https:\/\/|http:\/\/localhost([:/]|$))/;
+/**
+ * `https:` addresses only, or `http:` for the host `localhost` on a developer's own machine, and never
+ * with a user name or password in the address (SEC-14.AC-4).
+ */
+function allowedRemote(address: string): boolean {
+  // The text itself must start with the scheme and `//`; a parser would also accept `https:/host`.
+  if (!/^https?:\/\//.test(address)) return false;
+  let url: URL;
+  try {
+    url = new URL(address);
+  } catch {
+    return false;
+  }
+  if (url.username !== "" || url.password !== "") return false;
+  return (
+    url.protocol === "https:" ||
+    (url.protocol === "http:" && url.hostname === "localhost")
+  );
+}
 
 export function readConfig(env: RawEnv): Config {
   const mode = env.VITE_API_MODE ?? "mock";
@@ -22,7 +39,7 @@ export function readConfig(env: RawEnv): Config {
     throw new Error("VITE_API_MODE must be mock or remote.");
   }
   const apiBaseUrl = env.VITE_API_BASE_URL ?? "/api";
-  if (mode === "remote" && !allowedRemote.test(apiBaseUrl)) {
+  if (mode === "remote" && !allowedRemote(apiBaseUrl)) {
     throw new Error(
       "VITE_API_BASE_URL must start with https:// (or http://localhost) in remote mode.",
     );
