@@ -101,7 +101,7 @@ export function findPublicDocProblems(file, text, exists) {
   return problems;
 }
 
-/** Reference codes: decision, question, requirement, security, non-functional, architecture and step ids. */
+/** Reference codes and the company name: decision, question, requirement, security, non-functional, architecture and step ids. */
 const referenceCodePatterns = [
   /\b(?:D|Q)-\d{4}-\d+\b/,
   /\bREQ-[A-Z]+-\d+/,
@@ -109,6 +109,7 @@ const referenceCodePatterns = [
   /\bNFR-\d+/,
   /\bAD-\d+/,
   /\bS\d\b/,
+  /keyloop/i,
 ];
 
 /**
