@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+# Read-only for the whole workflow (SEC-16.AC-4).
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      # Installs from package-lock.json and fails if package.json and the lockfile disagree.
+      - run: npm ci
+
+      - name: Runtime dependencies are approved
+        run: npm run check:deps
+      - name: Workflows are pinned and read-only
+        run: npm run check:workflows
+
+      - name: Audit runtime dependencies (high and critical fail the build)
+        run: npm audit --omit=dev --audit-level=high
+      - name: Audit all dependencies (warning only)
+        run: npm audit
+        continue-on-error: true
+
+      - run: npm run lint
+      - run: npm run typecheck
+      - name: Unit tests in two time zones
+        run: npm run test:tz
+      - name: All tests with coverage
+        run: npm run test:coverage
+      - run: npm run build
+
+      - run: npx playwright install --with-deps chromium firefox webkit
+      - name: End-to-end tests in Chromium
+        run: npm run e2e
+      - name: End-to-end tests in Firefox and WebKit (warning only)
+        run: npm run e2e:other
+        continue-on-error: true
+
+      - name: Keep the test videos and the coverage report
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: test-evidence
+          path: |
+            test-results
+            coverage
+          if-no-files-found: ignore

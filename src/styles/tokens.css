@@ -1,0 +1,240 @@
+/*
+ * The ONE shared token set (D-0000-12), as a Tailwind CSS v4 theme.
+ * Brand values come from keyloop.com (extracted 2026-10-28) and are unchanged.
+ * Semantic tokens (surface, text, border, primary, status, focus, appointment parts), spacing, sizes,
+ * radius, elevation, motion, breakpoints and layers were added in step B0b. See README.md next to this file.
+ * Once the app exists, A1 copies this file to src/styles/tokens.css and imports it after `@import "tailwindcss";`.
+ *
+ * Rules for screens:
+ *  - Use the SEMANTIC tokens (surface-*, text-*, border-*, primary-*, success/warning/danger/info-*), never the brand names.
+ *  - Signal-blue is never text on white (2.6:1). Use text-link for blue text.
+ *  - `muted` is not for text (4.0:1). It is kept as the brand value and used as border-strong.
+ *  - Brand error red is not for text (3.3:1). Use text-danger for red text.
+ *  - One theme only (light). A dark theme would remap the semantic tokens and nothing else.
+ */
+/* Fonts are served from this site (D-0000-29). Both files are variable fonts, latin subset, under the SIL Open Font License (see docs/licenses). */
+@font-face {
+  font-family: "IBM Plex Sans";
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url("./fonts/ibm-plex-sans-latin.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url("./fonts/plus-jakarta-sans-latin.woff2") format("woff2");
+}
+
+@theme {
+  /* ------------------------------------------------------------------ */
+  /* Typography                                                          */
+  /* ------------------------------------------------------------------ */
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-heading: "Plus Jakarta Sans", "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1rem;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.25rem;
+  --text-base: 1rem;
+  --text-base--line-height: 1.5rem;
+  --text-lg: 1.125rem;
+  --text-lg--line-height: 1.5rem;
+  --text-xl: 1.25rem;
+  --text-xl--line-height: 1.625rem;
+  --text-2xl: 1.5rem;
+  --text-2xl--line-height: 1.875rem;
+  --text-3xl: 1.875rem;
+  --text-3xl--line-height: 2.25rem;
+  --leading-heading: 1.2;
+  --leading-body: 1.5;
+  --measure: 65ch;
+
+  /* ------------------------------------------------------------------ */
+  /* Brand core (unchanged from the Keyloop site)                        */
+  /* ------------------------------------------------------------------ */
+  --color-carbon: #11181c;
+  --color-graphite: #162228;
+  --color-navy: #1e2e3d;
+  --color-slate-tech: #2e4758;
+  --color-signal: #3da5ff;
+  --color-fusion: #00c7f2;
+  --color-cyan-brand: #00b5d8;
+  --color-fusion-purple: #5f7cff;
+  --color-violet-hyper: #8b5cf6;
+  --color-coral: #ff6b57;
+
+  /* Brand surfaces and text (unchanged) */
+  --color-background: #ffffff;
+  --color-background-secondary: #f5f9fa;
+  --color-website-grey: #f1f1f3;
+  --color-border: #d9e0e4;
+  --color-foreground: #1e2e3d;
+  --color-foreground-secondary: #4a5568;
+  --color-muted: #718096; /* 4.0:1 on white: border and icon only, never text */
+
+  /* Brand status (unchanged): fills, icons and bars only. Never text on white. */
+  --color-success: #18e0a4;
+  --color-warning: #ffb800;
+  --color-error: #ff4d4f;
+
+  /* ------------------------------------------------------------------ */
+  /* Semantic colour: what screens use                                   */
+  /* Ratios are against the surface named in the comment.                */
+  /* ------------------------------------------------------------------ */
+
+  /* Surfaces */
+  --color-surface-page: #f5f9fa;      /* app background */
+  --color-surface: #ffffff;           /* panels, fields, header */
+  --color-surface-sunken: #f1f1f3;    /* disabled, off-shift base */
+  --color-surface-selected: #1e2e3d;  /* selected chip, day, segment */
+  --color-surface-scrim: rgb(17 24 28 / 0.5);
+
+  /* Text */
+  --color-text: #1e2e3d;              /* 13.9:1 on surface, 13.1:1 on surface-page */
+  --color-text-secondary: #4a5568;    /* 7.5:1 on surface, 6.7:1 on surface-sunken */
+  --color-text-on-selected: #ffffff;  /* 13.9:1 on surface-selected */
+  --color-text-on-primary: #11181c;   /* 6.9:1 on primary, 5.3:1 on primary-active */
+  --color-text-link: #2c6494;         /* 6.3:1 on surface, 5.0:1 on info-tint */
+  --color-text-danger: #ac3a3d;       /* 6.1:1 on surface, 5.3:1 on danger-tint */
+  --color-text-success: #147259;      /* 5.9:1 on surface, 5.4:1 on success-tint */
+
+  /* Borders */
+  --color-border-subtle: #d9e0e4;     /* dividers only, 1.3:1: never the only edge of a control */
+  --color-border-strong: #718096;     /* control edges, 4.0:1 on surface, 3.6:1 on surface-sunken */
+
+  /* Primary action */
+  --color-primary: #3da5ff;
+  --color-primary-hover: #5ab3ff;
+  --color-primary-active: #3690dd;
+  --color-primary-border: #2c6494;    /* 6.3:1 on surface: gives the fill a 3:1 edge */
+
+  /* Status: fill (icons, bars), tint (panel background), text. Text on a tint is text, text-secondary or the *-text colour. */
+  --color-success-fill: #18e0a4;
+  --color-success-tint: #dffbf2;
+  --color-warning-fill: #ffb800;
+  --color-warning-tint: #ffefc7;       /* alert panels */
+  --color-warning-tint-strong: #ffe399; /* flagged blocks and badges. text 11:1, text-secondary 6.0:1 */
+  --color-danger-fill: #ff4d4f;
+  --color-danger-tint: #ffeaea;
+  --color-info-fill: #3da5ff;
+  --color-info-tint: #d0e9ff;          /* text 11:1, text-secondary 6.0:1 */
+  --color-info-tint-strong: #b1dbff;   /* hover */
+
+  /* Focus */
+  --color-focus-ring: #1e2e3d;         /* 13.9:1 on surface */
+  --color-focus-ring-on-dark: #3da5ff; /* 6.9:1 on carbon, 5.3:1 on navy */
+
+  /* Schedule parts */
+  --color-appointment-bg: #d0e9ff;
+  --color-appointment-bg-hover: #b1dbff;
+  --color-appointment-border: #2c6494;
+  --color-flag-bg: #ffe399;
+  --color-flag-border: #1e2e3d;        /* dashed */
+  --color-free-border: #2c6494;        /* dashed free gap */
+  --color-off-shift-bg: #f1f1f3;
+  --color-off-shift-line: #d9e0e4;     /* hatch lines */
+  --color-break-bg: #e2e5e8;
+  --color-break-fg: #2e4758;           /* 7.7:1 on break-bg */
+  --color-now: #ff6b57;                /* 2.8:1: the line is backed by a text label, so meaning never rests on it */
+
+  /* ------------------------------------------------------------------ */
+  /* Spacing: 4 px scale. --spacing is Tailwind's base (p-4 = 1rem).      */
+  /* ------------------------------------------------------------------ */
+  --spacing: 0.25rem;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  /* ------------------------------------------------------------------ */
+  /* Sizes                                                               */
+  /* ------------------------------------------------------------------ */
+  --size-target: 2.75rem;      /* 44 px: smallest touch target */
+  --size-field: 2.75rem;       /* input and select height */
+  --size-icon: 1.25rem;
+  --size-header: 3.5rem;
+  --size-tabbar: 3.5rem;       /* phone bottom navigation, plus the safe area */
+  --size-rail: 12rem;          /* timeline technician column */
+  --size-row: 4rem;            /* timeline row height */
+  --size-hour: 5.5rem;         /* one hour on the timeline, both directions: 30 min = 44 px */
+  --size-content: 80rem;       /* page content, max */
+  --size-dialog: 32rem;        /* dialog width, max */
+  --size-side: 22rem;          /* booking summary column */
+  --size-icon-lg: 1.75rem;     /* icon in an alert or empty state */
+  --size-chip: 5.5rem;         /* least width of a time chip */
+  --size-chip-suggest: 11rem;  /* least width of a suggested time */
+  --size-day: 6.5rem;          /* one day in the phone day strip */
+  --size-ruler: 3.5rem;        /* hour labels beside the one-technician day */
+  --size-hatch: 0.4rem;        /* spacing of the off-shift hatching */
+  --size-sheet-max: 90dvh;     /* tallest bottom sheet */
+
+  /* Line widths */
+  --border-width: 1px;         /* every panel, field and block edge */
+  --border-width-strong: 2px;  /* error edge, suggestion chip, now line */
+  --border-width-thick: 3px;   /* current-tab underline, selected block outline */
+
+  /* ------------------------------------------------------------------ */
+  /* Radius                                                              */
+  /* ------------------------------------------------------------------ */
+  --radius-xs: 0.25rem;
+  --radius-card: 12px;      /* panels, sheets */
+  --radius-control: 8px;    /* fields, timeline blocks */
+  --radius-pill: 9999px;    /* buttons, chips, badges */
+
+  /* ------------------------------------------------------------------ */
+  /* Elevation: 0 = flat with a border (default). 1 and 2 are for things */
+  /* that sit above the page.                                            */
+  /* ------------------------------------------------------------------ */
+  --shadow-card: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1); /* brand value = elevation 2 */
+  --shadow-raised: 0 4px 12px -2px rgb(17 24 28 / 0.14), 0 2px 4px -2px rgb(17 24 28 / 0.1); /* 1: toast, popover */
+  --shadow-sticky: 0 -4px 12px -4px rgb(17 24 28 / 0.12); /* phone action bar and tab bar */
+
+  /* ------------------------------------------------------------------ */
+  /* Motion: quick, ease-out from a visible start. Reduced motion = none. */
+  /* ------------------------------------------------------------------ */
+  --duration-fast: 120ms;   /* hover, press */
+  --duration-base: 150ms;   /* chips, toggles */
+  --duration-slow: 240ms;   /* sheet and dialog in, day-strip bars grow once */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* ------------------------------------------------------------------ */
+  /* Focus ring (same on every control)                                  */
+  /* ------------------------------------------------------------------ */
+  --focus-ring-width: 3px;
+  --focus-ring-offset: 2px;
+
+  /* ------------------------------------------------------------------ */
+  /* Breakpoints (viewport width). Phone is the base, below sm.          */
+  /*   phone  320 to 639  (designed and tested from 360)                 */
+  /*   tablet 640 to 1023                                                */
+  /*   desktop 1024 and up                                               */
+  /* ------------------------------------------------------------------ */
+  --breakpoint-sm: 40rem;
+  --breakpoint-md: 48rem;
+  --breakpoint-lg: 64rem;
+  --breakpoint-xl: 80rem;
+
+  /* ------------------------------------------------------------------ */
+  /* Layers                                                              */
+  /* ------------------------------------------------------------------ */
+  --z-sticky: 10;
+  --z-header: 20;
+  --z-overlay: 40;
+  --z-toast: 50;
+}
