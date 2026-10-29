@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
+import { pageDirectives } from "../../scripts/content-security-policy.mjs";
 
 const repoRoot = path.resolve(import.meta.dirname, "../..");
 const read = (file: string) => readFileSync(path.join(repoRoot, file), "utf8");
@@ -13,10 +14,7 @@ describe("the Vercel header carries the built page's Content Security Policy (SE
   const header = config.headers
     .find((h) => h.source === "/(.*)")
     ?.headers.find((h) => h.key === "Content-Security-Policy")?.value;
-  const viteConfig = read("vite.config.ts");
-  const pagePolicy = [...viteConfig.matchAll(/^\s+"([a-z-]+ [^"]+)",$/gm)].map(
-    (m) => m[1],
-  );
+  const pagePolicy = pageDirectives;
 
   it("has every directive of the page's policy", () => {
     expect(pagePolicy.length).toBeGreaterThan(3);
