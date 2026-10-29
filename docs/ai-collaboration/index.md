@@ -2,7 +2,7 @@
 
 These are copies of files from my private work repository, the place where the requirements, decisions, tickets and cost of this project are kept while the AI builds the product in this repository. They are here so a reviewer can open the files the README's [AI Collaboration Narrative](../../README.md#ai-collaboration-narrative) and the [System Design Document](../system-design.md) name, for example "D-0001-26" or "REQ-BOOK-009" (decisions D-0000-36 B and D-0001-63 B).
 
-Copied on 2026-10-29. The work repository keeps changing; these copies do not follow it.
+Copied on 2026-10-29 by a script kept in the work repository, so the copies can be made again the same way. The work repository keeps changing; these copies do not follow it.
 
 ## What was changed in the copies
 
