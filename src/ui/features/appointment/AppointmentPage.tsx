@@ -13,6 +13,7 @@ import { describeProblem } from "../../data/words";
 import { useDealerships } from "../../session/dealership";
 import { useSession } from "../../session/session";
 import type { AppointmentViewProps } from "./AppointmentReadSide";
+import { CustomerAppointmentPage } from "./CustomerAppointmentPage";
 import { CustomerAppointmentView } from "./CustomerAppointmentView";
 import { ManagerAppointmentView } from "./ManagerAppointmentView";
 import { StaffAppointmentView } from "./StaffAppointmentView";
@@ -45,7 +46,9 @@ export function AppointmentPage() {
       ),
   });
   const role = me!.role;
-
+  // The owner's page has its own states and actions (customer.md 6).
+  if (role === "customer")
+    return <CustomerAppointmentPage appointmentId={appointmentId} />;
   if (appointment.isPending) {
     return (
       <div className="grid gap-4">
@@ -107,7 +110,7 @@ export function AppointmentPage() {
           <ProblemState
             error={error}
             retry={() => void appointment.refetch()}
-            context={{ scope: role === "customer" ? "own" : "dealership" }}
+            context={{ scope: "dealership" }}
           />
         )}
       </div>

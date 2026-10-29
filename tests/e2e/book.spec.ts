@@ -413,7 +413,9 @@ for (const width of [390, 1440]) {
       });
       await start(page, width, DEEP);
       await expect(day(page, "Fri 30 Oct")).toHaveAccessibleName(/times$/);
-      await day(page, "Fri 30 Oct").check();
+      // A click, not check(): the fresh answer turns the day Fully booked (not checked), and check() fails
+      // when that answer lands before it reads the radio back. The lines below wait for the outcome.
+      await day(page, "Fri 30 Oct").click();
       await expect(
         page.getByRole("heading", { name: "No times left on Fri 30 Oct." }),
       ).toBeVisible();

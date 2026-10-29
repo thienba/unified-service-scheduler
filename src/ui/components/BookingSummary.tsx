@@ -7,6 +7,8 @@ export interface SummaryRow {
   term: string;
   /** Null shows "Not chosen yet". */
   value: ReactNode | null;
+  /** A quiet line under the value: "This stays the same". */
+  note?: string;
 }
 
 export function BookingSummary({
@@ -20,15 +22,16 @@ export function BookingSummary({
   transportRef,
   confirm,
 }: {
-  /** `staff`: "Booking for {name}" and the car choice in the third person (design.md 8.9, B2 P6). */
-  variant?: "customer" | "staff";
+  /** `staff`: "Booking for {name}" and the car choice in the third person (design.md 8.9, B2 P6).
+   * `reschedule` is "Moving your appointment": no car choice, since only the time changes (D-0001-24 A). */
+  variant?: "customer" | "staff" | "reschedule";
   /** For `staff`: whose booking it is. */
   customerName?: string | undefined;
   rows: readonly SummaryRow[];
-  /** One list: the courtesy car is added to it by its own ticket. */
-  transportChoices: readonly Choice[];
-  transport: string;
-  onTransportChange: (value: string) => void;
+  /** One list: the courtesy car is added to it by its own ticket. Left out on `reschedule`. */
+  transportChoices?: readonly Choice[];
+  transport?: string;
+  onTransportChange?: (value: string) => void;
   transportError?: string | undefined;
   transportRef?: Ref<HTMLInputElement>;
   /** The Confirm button, when it is drawn here (from 1024 wide). */
@@ -43,6 +46,7 @@ export function BookingSummary({
       title: `Booking for ${customerName ?? ""}`,
       legend: "What will the customer do with the car?",
     },
+    reschedule: { title: "Moving your appointment", legend: "" },
   }[variant];
   const { title, legend } = words;
   return (
@@ -65,19 +69,26 @@ export function BookingSummary({
               ) : (
                 row.value
               )}
+              {row.note && (
+                <small className="block text-sm font-normal text-text-secondary">
+                  {row.note}
+                </small>
+              )}
             </dd>
           </div>
         ))}
       </dl>
-      <ChoiceCards
-        legend={legend}
-        name="transport"
-        choices={transportChoices}
-        value={transport}
-        onChange={onTransportChange}
-        error={transportError}
-        ref={transportRef}
-      />
+      {transportChoices && onTransportChange && (
+        <ChoiceCards
+          legend={legend}
+          name="transport"
+          choices={transportChoices}
+          value={transport ?? ""}
+          onChange={onTransportChange}
+          error={transportError}
+          ref={transportRef}
+        />
+      )}
       {confirm}
       <p className="text-sm text-text-secondary">
         We check once more when you confirm, in case someone books first.
