@@ -130,7 +130,7 @@ The numbers, from the [Results](docs/system-design.md#results) of the System Des
 | Two-tab race, repeated 5 times     | **5 of 5**: one page booked, the other got the apology, one appointment stored         | see the Results table                                  |
 | Accessibility                      | **0 axe-core violations** on every page each role can open, at 390 and 1440 px         | `tests/e2e/whole-app.spec.ts`                          |
 
-This branch adds 21 tests for the public-docs check, so a run of `npm test` on it counts 1344.
+The README pass adds 21 tests for the public-docs check, so on its branch `npm test` counts 1344 and each half of `npm run test:tz` counts 1133 (run on a clean clone on 2026-10-29).
 
 ## Is this secure?
 
