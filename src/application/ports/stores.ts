@@ -121,6 +121,9 @@ export interface OutboxMessage {
   /** `appointmentId:kind:version` */
   dedupeKey: string;
   dueAt: EpochMs;
+  /** When the message was made, and the start of the appointment then (D-0001-79). */
+  createdAt: EpochMs;
+  forStart: EpochMs;
   status: OutboxStatus;
 }
 

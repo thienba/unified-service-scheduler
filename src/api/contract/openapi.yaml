@@ -1157,12 +1157,12 @@ components:
         since: { $ref: "#/components/schemas/Instant" }
         reason:
           type: string
-          description: One plain line that says why, for example "Ash's shift ends at 13:00; this booking ends at 13:45."
+          description: One short phrase that says why, for example "Ends after Ash's shift, 13:00"
     AppointmentDisplay:
       type: object
       description: |
-        What a screen shows for the appointment. `technicianName`, `serviceBayName` and `customerName`
-        are for staff and managers only.
+        What a screen shows for the appointment. `serviceBayName` and `customerName` are for staff and
+        managers only. `technicianName` is also sent to the customer who owns the appointment.
       additionalProperties: false
       required: [serviceTypeName, vehicle]
       properties:
@@ -1323,13 +1323,30 @@ components:
       type: object
       description: Ids only; a real sender looks the contact details up when it sends.
       additionalProperties: false
-      required: [id, appointmentId, dealershipId, kind, dueAt, status, links]
+      required:
+        [
+          id,
+          appointmentId,
+          dealershipId,
+          kind,
+          dueAt,
+          createdAt,
+          forStart,
+          status,
+          links,
+        ]
       properties:
         id: { $ref: "#/components/schemas/Id" }
         appointmentId: { $ref: "#/components/schemas/Id" }
         dealershipId: { $ref: "#/components/schemas/Id" }
         kind: { type: string }
         dueAt: { $ref: "#/components/schemas/Instant" }
+        createdAt:
+          allOf: [{ $ref: "#/components/schemas/Instant" }]
+          description: When the message was made.
+        forStart:
+          allOf: [{ $ref: "#/components/schemas/Instant" }]
+          description: The start of the appointment at the time the message was made.
         status: { type: string, enum: [pending, sent, cancelled] }
         links: { $ref: "#/components/schemas/OutboxMessageLinks" }
 

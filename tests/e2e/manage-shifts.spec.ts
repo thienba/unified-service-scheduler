@@ -218,7 +218,7 @@ test("marking a technician on leave on a day with a booking warns first, then fl
   page,
 }) => {
   await openAs(page, MANAGER, PATH);
-  const monday = next(1);
+  const monday = next(1, today(), 7); // past the seeded bookings, which sit in the first week
   const booked = await book(page, "a", instant(monday, "10:00"));
   const people = await api(
     page,

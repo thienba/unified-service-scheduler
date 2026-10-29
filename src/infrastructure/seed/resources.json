@@ -259,13 +259,13 @@
     {
       "id": "car-lon-1",
       "dealershipId": "dealership-london",
-      "name": "Courtesy car 1",
+      "name": "Car 1",
       "active": true
     },
     {
       "id": "car-sgn-1",
       "dealershipId": "dealership-saigon",
-      "name": "Courtesy car 1",
+      "name": "Car 1",
       "active": true
     }
   ]

@@ -105,6 +105,13 @@ for (const gapMs of [0, 1000]) {
     const second = await context.newPage();
     await open(second);
     const start = await contestedStart(first);
+    // Seed dates count from today, so a closed Sunday can put both seeded bookings on one day.
+    const date = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Europe/London",
+    }).format(new Date(start));
+    const dayPath = `/appointments?dealershipId=${LONDON}&date=${date}`;
+    const before = (await api(first, dayPath, { user: "user-staff-london" }))
+      .body.length;
 
     const post = (page: Page, delay: number) =>
       page.evaluate(
@@ -130,19 +137,10 @@ for (const gapMs of [0, 1000]) {
     expect(lost.body.code).toBe("SLOT_UNAVAILABLE");
     expect(lost.body.suggestions.length).toBeGreaterThan(0);
 
-    // The seeded appointment and exactly one new one, seen from either page.
-    const date = new Intl.DateTimeFormat("en-CA", {
-      timeZone: "Europe/London",
-    }).format(new Date(start));
+    // The seeded appointments and exactly one new one, seen from either page.
     for (const page of [first, second]) {
-      const day = await api(
-        page,
-        `/appointments?dealershipId=${LONDON}&date=${date}`,
-        {
-          user: "user-staff-london",
-        },
-      );
-      expect(day.body).toHaveLength(2);
+      const day = await api(page, dayPath, { user: "user-staff-london" });
+      expect(day.body).toHaveLength(before + 1);
     }
   });
 }

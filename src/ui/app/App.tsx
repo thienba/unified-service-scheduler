@@ -1,13 +1,20 @@
 import { QueryClientProvider, type QueryClient } from "@tanstack/react-query";
 import { useState, type ReactNode } from "react";
-import { BrowserRouter, MemoryRouter } from "react-router";
+import {
+  createBrowserRouter,
+  createRoutesFromElements,
+  createMemoryRouter,
+  Outlet,
+  Route,
+  RouterProvider,
+} from "react-router";
 import { createApiClient } from "../../api/client";
 import { config, mockEnabled } from "../../config";
 import { ToastProvider } from "../components/Toast";
 import { createQueryClient } from "../data/query-client";
 import { createDemoSupport, type DemoSupport } from "../demo/demo-session";
 import { SessionProvider } from "../session/session";
-import { AppRoutes } from "./routes";
+import { appRoutes } from "./routes";
 
 export interface AppProps {
   /** For tests: where the API answers, and the `fetch` that answers. */
@@ -45,22 +52,27 @@ export function App(props: AppProps = {}) {
   const [queryClient] = useState(
     () => props.queryClient ?? createQueryClient(),
   );
-  const routes = (
-    <ToastProvider>
-      <SessionProvider client={client} demo={demo}>
-        {props.routes ?? <AppRoutes />}
-      </SessionProvider>
-    </ToastProvider>
-  );
+  const [router] = useState(() => {
+    const routes = createRoutesFromElements(
+      <Route
+        element={
+          <ToastProvider>
+            <SessionProvider client={client} demo={demo}>
+              <Outlet />
+            </SessionProvider>
+          </ToastProvider>
+        }
+      >
+        {props.routes ? <Route path="*" element={props.routes} /> : appRoutes}
+      </Route>,
+    );
+    return props.initialEntries
+      ? createMemoryRouter(routes, { initialEntries: props.initialEntries })
+      : createBrowserRouter(routes);
+  });
   return (
     <QueryClientProvider client={queryClient}>
-      {props.initialEntries ? (
-        <MemoryRouter initialEntries={props.initialEntries}>
-          {routes}
-        </MemoryRouter>
-      ) : (
-        <BrowserRouter>{routes}</BrowserRouter>
-      )}
+      <RouterProvider router={router} />
     </QueryClientProvider>
   );
 }

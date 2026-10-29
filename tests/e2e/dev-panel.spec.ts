@@ -629,6 +629,95 @@ for (const width of [390, 1440]) {
   });
 }
 
+test("D-0001-84: a booking and a lost race made on the real booking screen, then the real schedule, are in the panel", async ({
+  context,
+}) => {
+  const NOW = new Date("2026-10-28T10:40:00Z");
+  const DEEP = `/book?dealership=${LONDON}&service=service-full`;
+  const open = async (page: Page) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.clock.setFixedTime(NOW);
+  };
+  const choose = async (page: Page) => {
+    await page
+      .getByRole("combobox", { name: /^Car/ })
+      .selectOption("vehicle-a");
+    await page.getByRole("radio", { name: /^Fri 30 Oct,/ }).check();
+    await page
+      .getByRole("radio", { name: "10:00 to 13:00", exact: true })
+      .check();
+    await page.getByRole("radio", { name: "Wait on site" }).check();
+  };
+  const confirm = (page: Page) =>
+    page.getByRole("button", { name: "Confirm booking" });
+
+  // Two customers' screens are open on the same time (10:00 on Fri 30 Oct); the first one confirms.
+  const winner = await context.newPage();
+  await open(winner);
+  await openApp(winner);
+  await pickRole(winner, "Customer");
+  const page = await context.newPage();
+  await open(page);
+  await winner.goto(DEEP);
+  await page.goto(DEEP);
+  await choose(winner);
+  await choose(page);
+  await confirm(winner).click();
+  await expect(
+    winner.getByRole("heading", { level: 1, name: "You are booked" }),
+  ).toBeVisible();
+
+  // This tab's confirm is refused (409); it then takes the closest time (201). Both are made on the screen.
+  const refusal = page.waitForResponse(
+    (r) => r.url().endsWith("/api/appointments") && r.status() === 409,
+  );
+  await confirm(page).click();
+  await expect(
+    page.getByText("Sorry, 10:00 on Fri 30 Oct was just taken."),
+  ).toBeVisible();
+  const reference = (await (await refusal).headerValue("X-Trace-Id"))!.slice(
+    0,
+    8,
+  );
+  await page
+    .getByRole("radiogroup", { name: "Closest to your time" })
+    .getByRole("radio")
+    .first()
+    .check();
+  await confirm(page).click();
+  await expect(
+    page.getByRole("heading", { level: 1, name: "You are booked" }),
+  ).toBeVisible();
+
+  // The staff schedule (same tab, no reload) shows both bookings on Fri 30 Oct.
+  await pickRole(page, "Staff");
+  await page.getByRole("button", { name: "Next day" }).click();
+  await page.getByRole("button", { name: "Next day" }).click();
+  await expect(page).toHaveURL(/date=2026-10-30/);
+  await expect(
+    page.getByRole("button", { name: /^10:00 to 13:00, Full service, / }),
+  ).toHaveCount(1);
+  await expect(
+    page.getByRole("button", { name: /, Full service, / }),
+  ).toHaveCount(2);
+
+  await openPanel(page);
+  await show(page, "Numbers");
+  const numbers = page.getByRole("region", { name: "Numbers" });
+  await expect(
+    numbers
+      .getByRole("heading", { level: 3, name: "Bookings confirmed" })
+      .locator(".."),
+  ).toContainText("1 booking");
+  await show(page, "Logs");
+  const refused = lines(page).filter({ hasText: "appointment.book409" });
+  await expect(refused).toHaveCount(1);
+  await expect(refused).toContainText(`reference ${reference}`);
+  await expect(
+    lines(page).filter({ hasText: "appointment.book201" }),
+  ).toHaveCount(1);
+});
+
 test("every role can open /dev, and the footer link is there in mock mode", async ({
   page,
 }) => {

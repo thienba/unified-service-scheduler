@@ -264,9 +264,10 @@ describe.each(transports)("API contract through $name", (transport) => {
       });
       expect(reply.body.technicianId).toMatch(/^tech-lon-/);
       expect(reply.body.serviceBayId).toMatch(/^bay-lon-/);
-      // A customer sees the service and the vehicle, not the technician's or the bay's name.
+      // The owner sees the service, the vehicle and the technician's name (D-0001-71), not the bay or customer name.
       expect(reply.body.display).toEqual({
         serviceTypeName: "Oil and filter change",
+        technicianName: expect.stringMatching(/^Demo Tech /),
         vehicle: {
           registration: "AB00 DMA",
           make: "Demo Motors",
@@ -699,6 +700,22 @@ describe.each(transports)("API contract through $name", (transport) => {
       expect((await dayList(users.staffLondon, "2026-11-20")).body).toEqual([]);
     });
 
+    it("the owner of an appointment gets the technician's name but no bay; another customer gets 404 (D-0001-71)", async () => {
+      const mine = await send(`/appointments/${SEEDED_A.id}`, {
+        user: users.customerA,
+      });
+      expect(mine.status).toBe(200);
+      expect(mine.body.display.technicianName).toBe("Demo Tech Ash");
+      expect(mine.body.display).not.toHaveProperty("serviceBayName");
+      expect(mine.body.display).not.toHaveProperty("customerName");
+      const listed = await send("/appointments", { user: users.customerA });
+      expect(listed.body[0].display.technicianName).toBe("Demo Tech Ash");
+      expect(
+        (await send(`/appointments/${SEEDED_A.id}`, { user: users.customerB }))
+          .status,
+      ).toBe(404);
+    });
+
     it("technicians come with skills, shifts, exceptions and booked intervals, and the bays are listed", async () => {
       const technicians = await send(`/dealerships/${LON}/technicians`, {
         user: users.staffLondon,
@@ -793,8 +810,7 @@ describe.each(transports)("API contract through $name", (transport) => {
         {
           kind: "outside_opening_hours",
           since: expect.any(String),
-          reason:
-            "The dealership is open 11:00 to 16:00 that day; this booking runs 10:00 to 11:00.",
+          reason: "Starts before opening time, 11:00",
         },
       ]);
       const grid = await send(`/dealerships/${LON}/availability`, {
@@ -882,7 +898,7 @@ describe.each(transports)("API contract through $name", (transport) => {
       expect(saved.status).toBe(200);
       expect(saved.body.flagged[0].flags[0]).toMatchObject({
         kind: "outside_shift",
-        reason: "Demo Tech Ash is not working on 2026-11-05.",
+        reason: "Demo is not working this day",
       });
       const bad = await send("/technicians/tech-lon-ash/shifts", {
         user: users.managerLondon,
@@ -919,6 +935,8 @@ describe.each(transports)("API contract through $name", (transport) => {
             kind: "confirmation",
             dedupeKey: `${SEEDED_A.id}:confirmation:1`,
             dueAt: Date.parse("2026-11-02T09:00:00Z"),
+            createdAt: Date.parse("2026-11-02T09:00:00Z"),
+            forStart: Date.parse("2026-11-02T09:00:00Z"),
             status: "pending",
           },
         ]);
@@ -932,6 +950,8 @@ describe.each(transports)("API contract through $name", (transport) => {
           dealershipId: LON,
           kind: "confirmation",
           dueAt: "2026-11-02T09:00:00Z",
+          createdAt: "2026-11-02T09:00:00Z",
+          forStart: "2026-11-02T09:00:00Z",
           status: "pending",
           links: {
             cancel: `${origin}/appointments/${SEEDED_A.id}`,

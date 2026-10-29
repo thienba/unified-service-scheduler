@@ -182,6 +182,8 @@ export function describeStoreContract(
               kind: "confirmation",
               dedupeKey: "appt-1:confirmation:1",
               dueAt: T0,
+              createdAt: T0,
+              forStart: T0,
               status: "pending",
             },
           ]);
@@ -213,6 +215,8 @@ export function describeStoreContract(
             kind: "confirmation",
             dedupeKey: "appt-1:confirmation:1",
             dueAt: T0,
+            createdAt: T0,
+            forStart: T0,
             status: "pending",
           },
         ]);
@@ -426,6 +430,8 @@ export function describeStoreContract(
         kind,
         dedupeKey: `appt-1:${kind}:1`,
         dueAt: T0,
+        createdAt: T0,
+        forStart: T0,
         status: "pending" as const,
       });
       await repo.write(async (s) => {
@@ -486,6 +492,8 @@ export function describeStoreContract(
         kind: "reminder",
         dedupeKey,
         dueAt: T0,
+        createdAt: T0,
+        forStart: T0,
         status,
       });
       await repo.write(async (s) => {
@@ -644,6 +652,8 @@ export function describeStoreContract(
         kind: "reminder",
         dedupeKey: "appt-1:reminder:1",
         dueAt: T0,
+        createdAt: T0,
+        forStart: T0,
         status: "pending" as const,
       };
       await repo.write(async (s) => {
@@ -677,6 +687,8 @@ export function describeStoreContract(
             kind: "reminder",
             dedupeKey: `z:reminder:${id}`,
             dueAt: T0,
+            createdAt: T0,
+            forStart: T0,
             status: "pending" as const,
           })),
         );
