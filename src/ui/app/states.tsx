@@ -41,7 +41,7 @@ function deniedText(key: DeniedKey, role: Role): string {
     case "adjust":
       return `${manager} move, reassign or cancel an appointment. ${toSchedule}`;
     case "flagged":
-      return `${manager} see the flagged bookings. ${toSchedule}`;
+      return `${manager} review flagged bookings. ${toSchedule}`;
     case "dealership":
       return `${manager} change opening hours and booking rules. ${toSchedule}`;
     case "shifts":

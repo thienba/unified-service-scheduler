@@ -6,6 +6,8 @@ export interface FormProblem {
   /** The field's name, as given to `register`. */
   name: string;
   message: string;
+  /** False for a problem the form has no field for: it is listed as text. */
+  link?: boolean;
 }
 
 export function FormSummary({
@@ -26,15 +28,19 @@ export function FormSummary({
       <ul className="m-0 list-disc ps-5">
         {problems.map((p) => (
           <li key={p.name}>
-            <a
-              href={`#field-${p.name}`}
-              onClick={(event) => {
-                event.preventDefault();
-                focusField(`field-${p.name}`);
-              }}
-            >
-              {p.message}
-            </a>
+            {p.link === false ? (
+              p.message
+            ) : (
+              <a
+                href={`#field-${p.name}`}
+                onClick={(event) => {
+                  event.preventDefault();
+                  focusField(`field-${p.name}`);
+                }}
+              >
+                {p.message}
+              </a>
+            )}
           </li>
         ))}
       </ul>

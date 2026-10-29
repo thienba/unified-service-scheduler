@@ -18,9 +18,15 @@ import {
 export function DetailPanel({
   day,
   appointment: a,
+  manager = false,
+  now = Date.now(),
 }: {
   day: ScheduleDay;
   appointment: Appointment | null;
+  /** The manager also gets Adjust, or Move for a flagged block (manager.md 4.1 `schedule-additions`). */
+  manager?: boolean;
+  /** An appointment that has ended cannot be moved, so the manager gets no Adjust or Move for it. */
+  now?: number;
 }) {
   const reason = a ? flagReason(a) : null;
   return (
@@ -63,13 +69,26 @@ export function DetailPanel({
             {reason && (
               <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2">
                 <FlagBadge>Flagged: {reason}</FlagBadge>
-                <span>
-                  The booking is still valid. The garage manager can move it.
-                </span>
+                {!manager && (
+                  <span>
+                    The booking is still valid. The garage manager can move it.
+                  </span>
+                )}
               </p>
             )}
           </div>
-          <Button to={`/appointments/${a.id}`}>Open appointment</Button>
+          <div className="flex flex-wrap gap-2">
+            {manager && Date.parse(a.end) > now && (
+              <Button
+                variant="primary"
+                icon="right"
+                to={`/appointments/${a.id}/adjust`}
+              >
+                {reason ? "Move" : "Adjust"}
+              </Button>
+            )}
+            <Button to={`/appointments/${a.id}`}>Open appointment</Button>
+          </div>
         </>
       )}
     </div>

@@ -18,6 +18,7 @@ import { formatLocalDate, localDateIn } from "../../format/format";
 import { useSelectedDealership } from "../../session/dealership";
 import { useSession } from "../../session/session";
 import { TimesNote } from "../../session/TimesNote";
+import { FlaggedStrip } from "../flagged/FlaggedStrip";
 import { DetailPanel } from "./DetailPanel";
 import { OneDay } from "./OneDay";
 import { ScheduleList } from "./ScheduleList";
@@ -158,6 +159,7 @@ export function SchedulePage() {
           }
         />
       </div>
+      {me?.role === "manager" && <FlaggedStrip dealershipId={dealershipId} />}
       {day.isPending ? (
         <Loading wide={wide} view={view} />
       ) : day.isError ? (
@@ -399,7 +401,12 @@ function Day({
               showNow={nowOnAxis !== null}
               showGaps={showGaps}
             />
-            <DetailPanel day={day} appointment={selected} />
+            <DetailPanel
+              day={day}
+              appointment={selected}
+              manager={!staff}
+              now={now}
+            />
           </div>
         ) : view === "technician" ? (
           <OneDay
