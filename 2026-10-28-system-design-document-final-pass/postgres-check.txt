@@ -1,0 +1,25 @@
+$ psql -v ON_ERROR_STOP=1 -f schema.sql
+exit 0
+$ psql -v ON_ERROR_STOP=1 -f check.sql
+PostgreSQL version: PostgreSQL 17.11 (Debian 17.11-1.pgdg13+2) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit
+PASS | bay overlap, first insert | expected ok, got ok
+PASS | bay overlap, second insert refused | expected 23P01, got 23P01
+PASS | bay touching, first ends 10:00 | expected ok, got ok
+PASS | bay touching, second starts 10:00 | expected ok, got ok
+PASS | cancelled: confirmed one first | expected ok, got ok
+PASS | cancelled: overlapping cancelled one on same bay, technician and car | expected ok, got ok
+PASS | cancelled: new overlapping booking after the first is cancelled | expected ok, got ok
+PASS | technician: first job 09:00-10:00 (busy until 10:15) | expected ok, got ok
+PASS | technician: job starts 10:00, jobs only touch but the break overlaps | expected 23P01, got 23P01
+PASS | technician: job starts 10:15, exactly when the break ends | expected ok, got ok
+PASS | car: first booking | expected ok, got ok
+PASS | car: same car, overlapping, refused | expected 23P01, got 23P01
+PASS | car: no car, first | expected ok, got ok
+PASS | car: no car, second overlapping | expected ok, got ok
+PASS | transport courtesy_car without a car | expected 23514, got 23514
+PASS | a car with transport wait | expected 23514, got 23514
+PASS | during (start, end] refused | expected 23514, got 23514
+PASS | during [start, end] refused | expected 23514, got 23514
+PASS | idempotency: same (actor_id, key) twice | expected 23505, got 23505
+PASS | outbox: same dedupe_key twice | expected 23505, got 23505
+exit 0
