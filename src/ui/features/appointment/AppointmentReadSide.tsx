@@ -45,9 +45,18 @@ export function AppointmentReadSide({
   now,
   audience,
   aside,
+  flagPanel,
+  actions,
+  focusCancelled = false,
 }: AppointmentViewProps & {
   audience: "customer" | "garage";
   aside?: ReactNode;
+  /** Takes the place of the flag panel below (the manager's "This booking no longer fits"). */
+  flagPanel?: ReactNode;
+  /** A row of buttons under the details (the manager's Adjust and Cancel). */
+  actions?: ReactNode;
+  /** The cancel was made on this page: its button is gone, so the cancelled note takes focus (WCAG 2.4.3). */
+  focusCancelled?: boolean;
 }) {
   const zone = a.timeZone;
   const garage = audience === "garage";
@@ -124,17 +133,21 @@ export function AppointmentReadSide({
           {reason && <FlagBadge>Flagged: {reason}</FlagBadge>}
         </div>
       </div>
-      {reason && !cancelled && (
-        <Alert kind="warning" title={`Flagged: ${reason}`}>
-          <p>
-            It is still booked and still holds its technician and bay. The
-            garage manager can move it from the Flagged list.
-          </p>
-        </Alert>
-      )}
+      {flagPanel !== undefined
+        ? flagPanel
+        : reason &&
+          !cancelled && (
+            <Alert kind="warning" title={`Flagged: ${reason}`}>
+              <p>
+                It is still booked and still holds its technician and bay. The
+                garage manager can move it from the Flagged list.
+              </p>
+            </Alert>
+          )}
       {a.cancelledAt && (
         <Alert
           kind="info"
+          focusTitle={focusCancelled}
           title={`This appointment was cancelled on ${dayAndTime(a.cancelledAt, zone, now)}.`}
         >
           <p>
@@ -154,6 +167,7 @@ export function AppointmentReadSide({
           <div className="min-w-0 md:w-(--size-side) md:shrink-0">{aside}</div>
         )}
       </div>
+      {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
     </div>
   );
 }
