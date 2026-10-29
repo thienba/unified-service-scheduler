@@ -22,7 +22,8 @@
     "e2e:media": "node scripts/e2e-media.mjs",
     "check:deps": "node scripts/check-approved-dependencies.mjs",
     "check:remote-build": "node scripts/check-remote-build.mjs",
-    "check:workflows": "node scripts/check-workflows.mjs"
+    "check:workflows": "node scripts/check-workflows.mjs",
+    "check:public-docs": "node scripts/check-public-docs.mjs"
   },
   "dependencies": {
     "@js-temporal/polyfill": "0.5.1",
