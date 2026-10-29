@@ -333,6 +333,8 @@ const reactPackages = [
   "react-router",
   "react-router-dom",
   "@tanstack/react-query",
+  "react-aria-components",
+  "@internationalized/date",
 ];
 const outerOnly = allTypes.filter((t) => !["ui", "main"].includes(t));
 const packagePolicies = [

@@ -3,7 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Keyloop Service Scheduler</title>
+    <title>Unified Service Scheduler</title>
+    <!-- React Aria adds an inline style element with this id unless the id is already in the page. The policy refuses
+         inline styles, so the id is taken here and the same rule is in src/styles/app.css. -->
+    <meta
+      id="react-aria-pressable-style"
+      name="react-aria-pressable-style"
+      content="src/styles/app.css"
+    />
   </head>
   <body>
     <div id="root"></div>

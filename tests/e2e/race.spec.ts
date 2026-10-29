@@ -24,6 +24,7 @@ import {
   resetDemo,
   signInAs,
 } from "./demo-support";
+import { chooseOption } from "./support";
 
 const EV = "service-ev-check";
 const OIL = "service-oil-change";
@@ -142,7 +143,7 @@ async function choose(
   );
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   if (pace) await beat(page);
-  await page.getByRole("combobox", { name: /^Car/ }).selectOption(r.vehicle);
+  await chooseOption(page.getByRole("button", { name: /^Car/ }), r.vehicle);
   if (pace) await beat(page);
   await page
     .getByRole("radio", { name: new RegExp(`^${londonDay(start)},`) })
@@ -198,7 +199,8 @@ async function expectApology(r: Racer, start: string) {
   await expect(
     page.getByRole("button", { name: "Pick a new time to confirm" }),
   ).toHaveCount(1);
-  await expect(page.getByRole("combobox", { name: /^Car/ })).toHaveValue(
+  await expect(page.getByRole("button", { name: /^Car/ })).toHaveAttribute(
+    "data-value",
     r.vehicle,
   );
   await expect(page.getByRole("radio", { name: "Wait on site" })).toBeChecked();

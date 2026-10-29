@@ -21,6 +21,7 @@ import {
   pickRole,
   problemBody,
   widths,
+  chooseOption,
 } from "./support";
 
 const NOW = new Date("2026-10-28T10:40:00Z");
@@ -65,7 +66,7 @@ async function chooseAll(
   date = "Fri 30 Oct",
   car = "Wait on site",
 ) {
-  await page.getByRole("combobox", { name: /^Car/ }).selectOption("vehicle-a");
+  await chooseOption(page.getByRole("button", { name: /^Car/ }), "vehicle-a");
   await day(page, date).check();
   await chip(page, time).check();
   await page.getByRole("radio", { name: car }).check();
@@ -562,7 +563,8 @@ for (const width of [390, 1440]) {
       await expect(
         other.getByRole("button", { name: "Pick a new time to confirm" }),
       ).toHaveCount(1);
-      await expect(other.getByRole("combobox", { name: /^Car/ })).toHaveValue(
+      await expect(other.getByRole("button", { name: /^Car/ })).toHaveAttribute(
+        "data-value",
         "vehicle-a",
       );
       await expect(
@@ -624,9 +626,10 @@ for (const width of [390, 1440]) {
       page,
     }) => {
       await start(page, width, DEEP);
-      await page
-        .getByRole("combobox", { name: /^Car/ })
-        .selectOption("vehicle-a");
+      await chooseOption(
+        page.getByRole("button", { name: /^Car/ }),
+        "vehicle-a",
+      );
       await chip(page, "12:45 to 15:45").check();
       await page.getByRole("radio", { name: "Drop it off" }).check();
       await page.clock.setFixedTime(new Date("2026-10-28T11:00:00Z"));
@@ -651,9 +654,10 @@ for (const width of [390, 1440]) {
     }) => {
       await start(page, width, `${DEEP}&date=2026-11-27`);
       await expect(day(page, "Fri 27 Nov")).toBeChecked();
-      await page
-        .getByRole("combobox", { name: /^Car/ })
-        .selectOption("vehicle-a");
+      await chooseOption(
+        page.getByRole("button", { name: /^Car/ }),
+        "vehicle-a",
+      );
       await page
         .getByRole("radiogroup", { name: /^Morning/ })
         .getByRole("radio")
@@ -879,10 +883,11 @@ test("SEC-12.AC-1: a link with a script as the dealership opens with both fields
   await expect(
     page.getByRole("heading", { level: 1, name: "Book a service" }),
   ).toBeVisible();
-  await expect(page.getByRole("combobox", { name: /^Dealership/ })).toHaveValue(
-    "",
-  );
-  await expect(page.getByRole("combobox", { name: /^Service/ })).toHaveValue(
+  await expect(
+    page.getByRole("button", { name: /^Dealership/ }),
+  ).toHaveAttribute("data-value", "");
+  await expect(page.getByRole("button", { name: /^Service/ })).toHaveAttribute(
+    "data-value",
     "",
   );
   const html = await page.locator("body").innerHTML();
@@ -1025,11 +1030,11 @@ test("NFR-4: the whole booking can be done with the keyboard, the error links mo
   });
   await tabTo(page, carLink);
   await page.keyboard.press("Enter");
-  const car = page.getByRole("combobox", { name: /^Car/ });
+  const car = page.getByRole("button", { name: /^Car/ });
   await focusedIs(car);
   // A closed select takes the first letters of an option as typed.
   await page.keyboard.type("Demo");
-  await expect(car).not.toHaveValue("");
+  await expect(car).not.toHaveAttribute("data-value", "");
 
   const choiceLink = page.getByRole("link", {
     name: "What you will do with the car: choose one.",
@@ -1080,9 +1085,7 @@ test("video: a customer books end to end, then a second page gets the just-taken
   for (const page of [first, second]) {
     await page.bringToFront();
     await slow(page);
-    await page
-      .getByRole("combobox", { name: /^Car/ })
-      .selectOption("vehicle-a");
+    await chooseOption(page.getByRole("button", { name: /^Car/ }), "vehicle-a");
     await slow(page);
     await day(page, "Fri 30 Oct").check();
     await slow(page);

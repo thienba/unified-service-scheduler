@@ -6,10 +6,11 @@ Copied (last refreshed on 2026-10-29, after my answers D-0001-112 to D-0001-129)
 
 ## What was changed in the copies
 
-Nothing, except the two things below (decision [D-0001-114](context/0001-booking/D-0001-114.md)):
+Nothing, except the three things below (decisions [D-0001-114](context/0001-booking/D-0001-114.md) and [D-0000-40](context/decisions/D-0000-40.md)):
 
 - Every message I send is saved word for word in the work repository's `references/` folder. Those raw chat copies are **not** published. Where a copied file said "see references/…" (the file name of a raw chat copy), the copy says "(the human's original message is kept in the private work repo)" instead.
 - One decision ([D-0000-6](context/decisions/D-0000-6.md)) named the folder on my computer where the code lives. The copy leaves the path out.
+- The public project does not carry the company's name. The copy says "the company", "the assessment", "Unified Service Scheduler" or "a public dealer-software website" where the original named the company or its website, and the repository link uses the new name.
 
 Left as they are on purpose: the placeholder `.state/<id>` in the process files (it names no real folder, and the check allows only that placeholder), my messages quoted in Vietnamese in some decisions, and the GitHub organisation name.
 

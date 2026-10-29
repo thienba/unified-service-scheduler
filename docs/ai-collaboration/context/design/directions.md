@@ -1,6 +1,6 @@
 # Design directions (step B0a)
 
-Three directions for the human to choose from. All three stay inside Keyloop's look (D-0000-4): Plus Jakarta Sans for headings, IBM Plex Sans for body text, navy and carbon with signal-blue, radii of 12 px, 8 px and pill. They differ in layout, density, hierarchy and character, not in brand. No Keyloop logo or wordmark is used.
+Three directions for the human to choose from. All three stay inside the company's look (D-0000-4): Plus Jakarta Sans for headings, IBM Plex Sans for body text, navy and carbon with signal-blue, radii of 12 px, 8 px and pill. They differ in layout, density, hierarchy and character, not in brand. No company logo or wordmark is used.
 
 Each direction has one page that shows the same two key views with the same sample data, so they can be compared fairly:
 
@@ -31,7 +31,7 @@ All names, plates, dealership and times on the pages are made-up sample data. Th
 | 3 | The workshop job board on the wall | medium | yes, as B |
 | 4 | The printed bus or rail timetable | low | yes, as C |
 | 5 | The airline seat map (slots as seats) | low | dropped: a seat map suggests you pick one of many seats; here the system picks the technician and bay |
-| 6 | The paper service book with stamps | low | dropped: it would pull the look away from Keyloop |
+| 6 | The paper service book with stamps | low | dropped: it would pull the look away from the company |
 | 7 | The vehicle inspection sheet (tick boxes) | medium | dropped: good for a checklist, not for a schedule |
 
 Both screens are **Operate** mode (the visitor completes a task). So each world lends only type, palette, density and one signature move. Controls and navigation stay standard.
@@ -56,7 +56,7 @@ Both screens are **Operate** mode (the visitor completes a task). So each world 
 - OWN-WORLD: The service reception: white and pale blue-grey counters, navy type, signal-blue used for the one action and for appointments, warm yellow only when something needs attention. Roomy 12 px panels, pill chips and buttons, one soft brand shadow on the page frame. Headings in Plus Jakarta Sans, body in IBM Plex Sans.
 - STORY: The customer sees which day suits them, picks a start time, says what they will do with the car, and confirms. If the time was just taken, they read a plain apology, see the closest times and press one. Staff read the day by technician row and open any block for its details. They never have to hunt for a field.
 - FIRST VIEWPORT: Customer: heading "Choose a time for your full service" top left; below it a seven-day strip (weekday, date, "18 times", a thin fill bar; closed days greyed and labelled); then "Morning" and "Afternoon" groups of time chips; a booking summary panel on the right with the wait / drop-off / courtesy-car choice and the Confirm button. On a phone the panel moves below and a sticky bar carries the chosen time and the Confirm button. Staff: "Schedule" heading, day and view switches, "Book for a customer" at top right, then the timeline with 64 px rows, then a detail panel for the selected block.
-- FORM: Reception desk, first on my list. Dealt: Restrained colour (white and pale blue-grey, navy for selection, signal-blue for appointments and the action); Plus Jakarta Sans and IBM Plex Sans as pinned by D-0000-4 (both are on the font blocklist, and no other face could replace them, because the human asked for the Keyloop fonts); roomy density with a 12-column feel; 12 px panels, 8 px inputs, pill chips; one soft shadow; quick 150 ms ease-out; signature move: the day strip that shows how full each day is.
+- FORM: Reception desk, first on my list. Dealt: Restrained colour (white and pale blue-grey, navy for selection, signal-blue for appointments and the action); Plus Jakarta Sans and IBM Plex Sans as pinned by D-0000-4 (both are on the font blocklist, and no other face could replace them, because the human asked for the company fonts); roomy density with a 12-column feel; 12 px panels, 8 px inputs, pill chips; one soft shadow; quick 150 ms ease-out; signature move: the day strip that shows how full each day is.
 - FINISH: unreviewed is unfinished; this screen is done when every state renders in both themes and Visual QA has judged the build against this contract
 
 ### Good and bad, by role
@@ -79,10 +79,10 @@ Honest risk: it is the one you could guess from "dealership booking app". The st
 - OWN-WORLD: The workshop wall screen: carbon ground, graphite panels, tech-slate lines, signal-blue as the single bright colour (selection, appointments, free gaps), warning yellow for flags. Hatching for time that does not exist (off shift, not available). 8 px corners, no shadows, hairline borders. White text on dark, quiet text in the border grey.
 - STORY: The customer sees the whole day as a grid of hours and quarter hours, picks one, and confirms; if it was taken, the nearest free quarter hours light up in the same grid. Staff see each technician's row, how much of their day is booked, and where a free gap is. They tap the gap to book it.
 - FIRST VIEWPORT: Customer: three columns separated by lines: the booking summary (left), a four-week calendar with closed days crossed out (middle), and the time grid with one row per hour and one column per quarter hour (right). The "just taken" notice is a banner across the top with the closest times as buttons. Staff: a one-line toolbar, a yellow strip naming the flagged booking, then the board: technician names on the left, 52 px rows, dashed "1h 30m free" gaps, and on the right a column that says how much of the shift is booked. A status bar below shows the selected appointment.
-- FORM: Workshop board, second on my list. Dealt: Committed colour (carbon carries well over half the surface, signal-blue is the one saturated colour); the pinned Keyloop faces (blocklisted, kept because of D-0000-4); dense, 14 px body, a three-column grid; 8 px radius, no shadow; 120 ms ease-out; signature move: free gaps on the timeline are dashed buttons that start a booking.
+- FORM: Workshop board, second on my list. Dealt: Committed colour (carbon carries well over half the surface, signal-blue is the one saturated colour); the pinned company faces (blocklisted, kept because of D-0000-4); dense, 14 px body, a three-column grid; 8 px radius, no shadow; 120 ms ease-out; signature move: free gaps on the timeline are dashed buttons that start a booking.
 - FINISH: unreviewed is unfinished; this screen is done when every state renders in both themes and Visual QA has judged the build against this contract
 
-**Why dark.** The scene: a service advisor's monitor and a wall screen in a workshop office, on all day, next to glass and showroom lights, and a customer booking on a phone in the evening. Dark carbon is part of Keyloop's own palette (its marketing site has dark carbon sections). It is not the neon version: no glow, no gradient, one blue.
+**Why dark.** The scene: a service advisor's monitor and a wall screen in a workshop office, on all day, next to glass and showroom lights, and a customer booking on a phone in the evening. Dark carbon is part of the company's own palette (its marketing site has dark carbon sections). It is not the neon version: no glow, no gradient, one blue.
 
 ### Good and bad, by role
 
@@ -104,7 +104,7 @@ Honest risk: it needs the most care to stay readable and to get a light version 
 - OWN-WORLD: A navy band across the top, then white pages divided by hairline rules, in the way a printed timetable is. Navy for selection and the shell, signal-blue only for the primary action, warning yellow for flags and notices, energy-coral for the "now" line. Large headings in Plus Jakarta Sans, tabular numbers everywhere. 8 px corners, no shadow.
 - STORY: The customer scans the week for a start time, reads the end time beside it, picks one, sets the car choice in the action bar and confirms. If a time was taken, the notice and the closest times come first, and the week below shows them marked. Staff see the timeline, and directly under it the same appointments as a full list with every field in its own column.
 - FIRST VIEWPORT: Customer: the navy band, a large "Choose a time" heading, a four-cell strip (dealership, vehicle, service, how long), then a five-column week: each column is a day with its count of times, each row a start time with its end time. A bar fixed at the bottom holds the chosen time, the wait / drop-off / courtesy-car choice and the Confirm button. On a phone the days swipe sideways. Staff: a large date heading, a one-line summary of the day, the timeline with 72 px rows and three-line blocks, then the ruled list of every appointment.
-- FORM: Printed timetable, third on my list. Dealt: Full colour (navy shell and selection, signal for the action, yellow for attention, coral for now); the pinned Keyloop faces (blocklisted, kept because of D-0000-4); a ruled table grid, larger headings up to 36 px; 8 px radius, no elevation at all; 150 ms ease-out; signature move: the week as one timetable with the action bar pinned under it.
+- FORM: Printed timetable, third on my list. Dealt: Full colour (navy shell and selection, signal for the action, yellow for attention, coral for now); the pinned company faces (blocklisted, kept because of D-0000-4); a ruled table grid, larger headings up to 36 px; 8 px radius, no elevation at all; 150 ms ease-out; signature move: the week as one timetable with the action bar pinned under it.
 - FINISH: unreviewed is unfinished; this screen is done when every state renders in both themes and Visual QA has judged the build against this contract
 
 ### Good and bad, by role
@@ -136,7 +136,7 @@ Honest risk: with no cards or shadows it can look plain next to the other two. I
 ## Recommendation: Direction A
 
 Reasons, in order:
-1. **The customer flow is the first thing any reviewer sees, and the brief is about booking.** A is the clearest and friendliest for that flow, and it matches Keyloop's own light, white-and-navy marketing look best, so it looks at home next to Keyloop's products (NFR-4).
+1. **The customer flow is the first thing any reviewer sees, and the brief is about booking.** A is the clearest and friendliest for that flow, and it matches the company's own light, white-and-navy marketing look best, so it looks at home next to the company's products (NFR-4).
 2. **Deadline.** The date is 2026-11-01. A uses standard patterns, so it is the cheapest to build and to test, and the build order in D-0000-9 (customer first, then staff) fits it. B costs the most because it needs two themes and a careful dense style.
 3. **The staff timeline is still distinctive.** The hatched off-shift time, break markers, flagged blocks, the "now" line and the detail panel do the work. A's roomy rows suit a demo and a video.
 4. **Cheap to improve later.** If you like B's free gaps, they can be added to A's timeline as an extra later without changing the rest.

@@ -2,6 +2,7 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
+  findCompanyNameProblems,
   findPublicDocProblems,
   findReferenceCodes,
   publicDocsDir,
@@ -95,6 +96,27 @@ describe("public docs check (D-0000-36 B, D-0000-11)", () => {
         "\n",
       ),
     ).toMatch(/links into the private references/);
+  });
+
+  it("fails on the company name in any case (D-0000-40)", () => {
+    for (const word of ["Keyloop", "KEYLOOP", "keyloop"])
+      expect(
+        findCompanyNameProblems("docs/a.md", `one\nabout ${word}'s site`),
+      ).toEqual(["docs/a.md:2: names the company (D-0000-40)"]);
+    expect(findCompanyNameProblems("docs/a.md", "the company")).toEqual([]);
+  });
+
+  it("finds no company name in docs/ and src/", () => {
+    const walk = (dir: string): string[] =>
+      readdirSync(path.join(repoRoot, dir)).flatMap((entry) => {
+        const rel = `${dir}/${entry}`;
+        if (statSync(path.join(repoRoot, rel)).isDirectory()) return walk(rel);
+        return /\.(?:md|ts|tsx|css|html|json|yaml)$/.test(entry) ? [rel] : [];
+      });
+    const problems = [...walk("docs"), ...walk("src")].flatMap((f) =>
+      findCompanyNameProblems(f, readFileSync(path.join(repoRoot, f), "utf8")),
+    );
+    expect(problems).toEqual([]);
   });
 
   it("passes on the copied files and the README", () => {

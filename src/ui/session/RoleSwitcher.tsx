@@ -4,7 +4,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
 import { Button } from "../components/Button";
-import { ChoiceCards, SelectField } from "../components/Fields";
+import { ChoiceCards } from "../components/Fields";
+import { Select } from "../components/Select";
 import { cx } from "../components/cx";
 import { Dialog } from "../components/Dialog";
 import { query, useMediaQuery } from "../components/hooks";
@@ -78,13 +79,14 @@ export function RoleSwitcher({ switcher }: { switcher: SwitcherState }) {
 
   const who =
     sameRole.length > 1 ? (
-      <SelectField
+      <Select
         label="Who"
         hideLabel
+        variant="compact"
         value={switcher.userId ?? ""}
         disabled={switcher.switching}
         options={sameRole.map((u) => ({ value: u.id, label: u.name }))}
-        onChange={(e) => void switcher.pick(e.target.value)}
+        onChange={(value) => void switcher.pick(value)}
         className="max-w-56"
       />
     ) : null;

@@ -2,7 +2,7 @@
 // and leave or a different shift on single dates. Save asks the API first what the change would flag (D-0001-36 A).
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { useSearchParams } from "react-router";
 import { z } from "zod";
 import { mockEnabled } from "../../../config";
@@ -12,12 +12,10 @@ import { Alert } from "../../components/Alert";
 import { Button } from "../../components/Button";
 import { DateExceptionList } from "../../components/DateExceptionList";
 import { Dialog } from "../../components/Dialog";
-import {
-  DateField,
-  SelectField,
-  TimeField,
-  focusField,
-} from "../../components/Fields";
+import { focusField } from "../../components/Fields";
+import { DatePicker } from "../../components/DatePicker";
+import { Select } from "../../components/Select";
+import { afterStart, TimeField } from "../../components/TimeField";
 import { FlagImpactDialog } from "../../components/FlagImpactDialog";
 import { StateBlock } from "../../components/StateBlock";
 import { useToast } from "../../components/Toast";
@@ -435,12 +433,20 @@ function ShiftsForm({
     key: "start" | "end" | "breakStart" | "breakEnd",
     label: string,
   ) => (
-    <TimeField
-      label={label}
-      className="num"
-      error={problemAt(shown, `add.${key}`)}
-      {...form.register(`add.${key}`)}
-      value={add[key]}
+    <Controller
+      control={form.control}
+      name={`add.${key}`}
+      render={({ field }) => (
+        <TimeField
+          label={label}
+          optional={label.endsWith("(optional)")}
+          error={problemAt(shown, `add.${key}`)}
+          {...(key === "end"
+            ? afterStart(add.start, "end after it starts")
+            : {})}
+          {...field}
+        />
+      )}
     />
   );
 
@@ -466,7 +472,7 @@ function ShiftsForm({
             onClick={() => step(-1)}
           />
           <div className="min-w-0 flex-1">
-            <SelectField
+            <Select
               label="Technician"
               name="technician"
               value={technician.id}
@@ -475,7 +481,7 @@ function ShiftsForm({
                 value: t.id,
                 label: `${t.name} · ${skillsText(t.skills)}`,
               }))}
-              onChange={(e) => pick(e.target.value)}
+              onChange={pick}
             />
           </div>
           <Button
@@ -542,35 +548,52 @@ function ShiftsForm({
               addNote="Adding a date does not save it. Nothing is saved until you press Save shifts."
             >
               <div className="grid gap-4 sm:grid-cols-2">
-                <DateField
-                  label="First day"
-                  thisYear={Number(today.slice(0, 4))}
-                  min={today}
-                  error={problemAt(shown, "add.first")}
-                  {...form.register("add.first")}
-                  value={add.first}
+                <Controller
+                  control={form.control}
+                  name="add.first"
+                  render={({ field }) => (
+                    <DatePicker
+                      label="First day"
+                      today={today}
+                      min={today}
+                      error={problemAt(shown, "add.first")}
+                      {...field}
+                      disabled={busy}
+                    />
+                  )}
                 />
-                <DateField
-                  label="Last day (optional)"
-                  thisYear={Number(today.slice(0, 4))}
-                  min={today}
-                  helper={
-                    add.last === "" ? "Leave empty for one day." : undefined
-                  }
-                  error={problemAt(shown, "add.last")}
-                  {...form.register("add.last")}
-                  value={add.last}
+                <Controller
+                  control={form.control}
+                  name="add.last"
+                  render={({ field }) => (
+                    <DatePicker
+                      label="Last day (optional)"
+                      today={today}
+                      min={today}
+                      helper={
+                        add.last === "" ? "Leave empty for one day." : undefined
+                      }
+                      error={problemAt(shown, "add.last")}
+                      {...field}
+                      disabled={busy}
+                    />
+                  )}
                 />
               </div>
-              <SelectField
-                label="What happens on these days"
-                helper="On leave hides the four time fields below."
-                options={[
-                  { value: "leave", label: "On leave" },
-                  { value: "changed", label: "Works a different shift" },
-                ]}
-                {...form.register("add.kind")}
-                value={add.kind}
+              <Controller
+                control={form.control}
+                name="add.kind"
+                render={({ field }) => (
+                  <Select
+                    label="What happens on these days"
+                    helper="On leave hides the four time fields below."
+                    options={[
+                      { value: "leave", label: "On leave" },
+                      { value: "changed", label: "Works a different shift" },
+                    ]}
+                    {...field}
+                  />
+                )}
               />
               {add.kind === "changed" && (
                 <div className="grid gap-4 sm:grid-cols-2">

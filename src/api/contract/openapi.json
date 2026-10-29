@@ -1,9 +1,9 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Keyloop Service Scheduler API",
+    "title": "Unified Service Scheduler API",
     "version": "1.0.0",
-    "contact": { "name": "Keyloop Service Scheduler demo" },
+    "contact": { "name": "Unified Service Scheduler demo" },
     "description": "The one contract between the screens and the backend (architecture.md AD-2, section 7.3).\nThe mock in this repository and a real backend both answer exactly this file.\n\nEvery request names its user in `X-Demo-User` (a real backend uses `Authorization: Bearer`).\nEvery response carries `X-Trace-Id`. Every 4xx and 5xx answer is `application/problem+json`.\nTimes on the wire are UTC instants such as `2026-11-03T09:00:00Z`; local dates are `YYYY-MM-DD`\nand local times are `HH:mm` in the dealership's zone.\n"
   },
   "servers": [{ "url": "/api" }],
