@@ -64,12 +64,13 @@ for (const width of [390, 1440] as const) {
       await expect(dialog).toBeVisible();
       await expect(page).toHaveURL(screen.url);
       if (evidence && screen.name === "settings") {
+        await page.waitForTimeout(600); // let the dialog finish fading in
         await page.screenshot({
           path: path.join(
             evidence,
             `dealership-settings-back-dialog-${width}.png`,
           ),
-          fullPage: true,
+          fullPage: false, // the dialog is fixed to the window
         });
       }
       await page.waitForTimeout(1200);
