@@ -2,6 +2,7 @@
 // The API gets the real logger and metrics here; the console is a list of lines.
 import { beforeEach, describe, expect, it } from "vitest";
 import { operations } from "../../src/api/contract/validator";
+import { checkResponse } from "./check-response";
 import type { CounterName } from "../../src/application/ports/telemetry";
 import customerFile from "../../src/infrastructure/seed/customers.json";
 import {
@@ -423,8 +424,77 @@ describe("the demo endpoints (AD-2, AD-17)", () => {
       );
     }
     expect(operations.filter((o) => o.tags.includes("demo-only"))).toHaveLength(
-      2,
+      3,
     );
+  });
+
+  const SEVEN = [
+    "user-customer-a",
+    "user-customer-b",
+    "user-staff-london",
+    "user-manager-london",
+    "user-staff-saigon",
+    "user-manager-saigon",
+    "user-staff-both",
+  ];
+
+  it("GET /_demo/users answers 200 with no X-Demo-User: the seven users, each id, name, role and dealershipIds only", async () => {
+    const reply = await call("/_demo/users");
+    expect(reply.status).toBe(200);
+    expect(reply.problems).toEqual([]);
+    expect(reply.body.map((u: { id: string }) => u.id).sort()).toEqual(
+      [...SEVEN].sort(),
+    );
+    for (const user of reply.body) {
+      expect(Object.keys(user).sort()).toEqual([
+        "dealershipIds",
+        "id",
+        "name",
+        "role",
+      ]);
+    }
+    expect(
+      reply.body.find((u: { id: string }) => u.id === "user-staff-both"),
+    ).toMatchObject({
+      name: "Demo Staff Both Sites",
+      role: "staff",
+      dealershipIds: ["dealership-london", "dealership-saigon"],
+    });
+    const text = JSON.stringify(reply.body);
+    expect(text).not.toContain("customerId");
+    // The user's name is the label the switcher shows; the customer's phone and email must not appear.
+    for (const customer of customerFile.customers) {
+      expect(text).not.toContain(customer.phone);
+      expect(text).not.toContain(customer.email);
+    }
+  });
+
+  it("the contract check fails when the body holds customerId or any other field", () => {
+    const operation = operations.find((o) => o.id === "getDemoUsers")!;
+    const good = { id: "u", name: "N", role: "customer", dealershipIds: [] };
+    const headers = new Headers({
+      "X-Trace-Id": "a".repeat(32),
+      "Content-Type": "application/json",
+    });
+    expect(checkResponse(operation, 200, headers, [good])).toEqual([]);
+    for (const extra of [
+      { customerId: "customer-a" },
+      { phone: "+44 0" },
+      { email: "a@b.c" },
+    ]) {
+      expect(
+        checkResponse(operation, 200, headers, [{ ...good, ...extra }]),
+      ).not.toEqual([]);
+    }
+  });
+
+  it("after POST /_demo/reset the same seven users are returned", async () => {
+    const before = (await call("/_demo/users")).body;
+    await book(users.customerA);
+    await call("/_demo/reset", { user: users.customerA, method: "POST" });
+    const after = await call("/_demo/users");
+    expect(after.body).toEqual(before);
+    expect(after.body).toHaveLength(7);
   });
 });
 
