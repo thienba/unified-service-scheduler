@@ -205,6 +205,24 @@ describe("import table of architecture.md section 7.1 (AD-6, AD-2)", () => {
       'import { useState } from "react"; export const x = useState;',
     );
   });
+  // D-0000-39: the themed controls' library and its date package are React libraries too.
+  for (const [name, code] of [
+    [
+      "react-aria-components",
+      'import { Button } from "react-aria-components"; export const x = Button;',
+    ],
+    [
+      "@internationalized/date",
+      'import { parseDate } from "@internationalized/date"; export const x = parseDate;',
+    ],
+  ] as const) {
+    it(`src/domain, src/application and src/infrastructure refuse ${name}; src/ui accepts it`, async () => {
+      for (const layer of ["domain", "application", "infrastructure"]) {
+        await fails(`src/${layer}/x.ts`, code, boundary);
+      }
+      await passes("src/ui/x.ts", code);
+    });
+  }
 });
 
 describe("the domain is pure and synchronous (AD-7)", () => {

@@ -8,3 +8,5 @@
 | 2026-10-29 | C8 end-to-end demo and race video; slot hold question (C: warn early) | 2026-10-28-end-to-end-demo-scenarios-and-the-two-tab-race-video | 39055660 | 14.3405 | claude |
 | 2026-10-29 | Time zone note, CSP in Firefox/WebKit, warn early | 2026-10-29-time-zone-note-on-every-customer-screen, 2026-10-29-warn-early-when-the-chosen-time-is-taken, 2026-10-29-content-security-policy-messages-in-firefox-and-webkit | 59087603 | 26.6915 | claude |
 | 2026-10-29 | Answers 252-255; time zone demo note | 2026-10-29-warn-early-when-the-chosen-time-is-taken | 3779476 | 1.0721 | claude |
+| 2026-10-29 | Merge all PRs to main; SDD and README final passes; CI split | 2026-10-28-system-design-document-final-pass, 2026-10-28-readme-final-pass-and-public-ai-collaboration-docs, 2026-10-29-split-the-end-to-end-tests-into-their-own-ci-jobs | 78074518 | 25.5806 | claude |
+| 2026-10-29 | Host on Vercel; trace the Firefox error | 2026-10-28-demo-hosting, 2026-10-29-trace-the-firefox-mock-worker-invalidstateerror | 23123671 | 6.2143 | claude |

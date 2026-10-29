@@ -2,7 +2,7 @@
 // `--size-hour` per hour. Phone and tablet.
 import type { CSSProperties } from "react";
 import { Button } from "../../components/Button";
-import { Icon } from "../../components/Icon";
+import { Select } from "../../components/Select";
 import { formatTime, formatTimeRange } from "../../format/format";
 import {
   appointmentsOf,
@@ -125,25 +125,15 @@ export function OneDay({
           aria-label={`Previous ${what}`}
           onClick={() => step(-1)}
         />
-        <div className="relative min-w-0 flex-1">
-          <label htmlFor={selectId} className="sr-only">
-            {rows === "technicians" ? "Technician" : "Service bay"}
-          </label>
-          <select
+        <div className="min-w-0 flex-1">
+          <Select
             id={selectId}
+            label={rows === "technicians" ? "Technician" : "Service bay"}
+            hideLabel
+            variant="bare"
             value={current?.id ?? ""}
-            onChange={(e) => onRow(e.target.value)}
-            className="min-h-(--size-field) w-full appearance-none truncate rounded-control border border-border-strong bg-surface ps-3 pe-10 text-text hover:border-text"
-          >
-            {options.map((o) => (
-              <option key={o.id} value={o.id}>
-                {o.name}
-              </option>
-            ))}
-          </select>
-          <Icon
-            name="down"
-            className="pointer-events-none absolute end-3 top-1/2 -translate-y-1/2"
+            options={options.map((o) => ({ value: o.id, label: o.name }))}
+            onChange={onRow}
           />
         </div>
         <Button

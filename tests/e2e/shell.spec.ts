@@ -8,6 +8,7 @@ import {
   pickRole,
   problemBody,
   widths,
+  selectNamed,
 } from "./support";
 import { shot } from "./customer-support";
 
@@ -134,7 +135,7 @@ for (const width of [390, 1440]) {
     await expect(
       page.getByText(/Now viewing as Staff, Demo Staff London/),
     ).toBeVisible();
-    await expect(page.getByLabel("Dealership")).toHaveCount(0);
+    await expect(selectNamed(page, "Dealership")).toHaveCount(0);
     await expect(
       page.getByText("Fakeford Motors (demo)").first(),
     ).toBeVisible();
@@ -256,6 +257,13 @@ for (const width of widths) {
             r.height > 0 &&
             getComputedStyle(e).opacity !== "0" &&
             !e.matches(".sr-only, [class*='sr-only']") &&
+            // React Aria's Select keeps a 1px native select for autofill: hidden from sight and from screen
+            // readers, and out of the tab order, so no one can reach it (Q-0001-265).
+            !(
+              e.matches("select") &&
+              e.closest('[aria-hidden="true"]') &&
+              e.tabIndex < 0
+            ) &&
             (r.width < 43.5 || r.height < 43.5)
           );
         })

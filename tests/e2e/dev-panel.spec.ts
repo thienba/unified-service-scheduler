@@ -14,6 +14,7 @@ import {
   pickRole,
   problemBody,
   widths,
+  chooseOption,
 } from "./support";
 
 const LONDON = "dealership-london";
@@ -639,9 +640,7 @@ test("D-0001-84: a booking and a lost race made on the real booking screen, then
     await page.clock.setFixedTime(NOW);
   };
   const choose = async (page: Page) => {
-    await page
-      .getByRole("combobox", { name: /^Car/ })
-      .selectOption("vehicle-a");
+    await chooseOption(page.getByRole("button", { name: /^Car/ }), "vehicle-a");
     await page.getByRole("radio", { name: /^Fri 30 Oct,/ }).check();
     await page
       .getByRole("radio", { name: "10:00 to 13:00", exact: true })

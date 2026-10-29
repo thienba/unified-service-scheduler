@@ -28,6 +28,8 @@ import {
   expectNoSidewaysScroll,
   pickRole,
   widths,
+  chooseOption,
+  selectNamed,
 } from "./support";
 
 const NOW = new Date("2026-10-28T10:40:00Z");
@@ -78,9 +80,10 @@ test("SEC-15.AC-3: the three role journeys on the built app send every request t
   await customer.goto(
     `/book?dealership=${LONDON}&service=service-full&date=2026-10-30`,
   );
-  await customer
-    .getByRole("combobox", { name: /^Car/ })
-    .selectOption("vehicle-a");
+  await chooseOption(
+    customer.getByRole("button", { name: /^Car/ }),
+    "vehicle-a",
+  );
   await customer
     .getByRole("radio", { name: "10:00 to 13:00", exact: true })
     .check();
@@ -124,9 +127,10 @@ test("SEC-15.AC-3: the three role journeys on the built app send every request t
     .getByRole("radio", { name: "Demo Motors Coupe, EF22 DMC" })
     .check();
   await staff.getByRole("button", { name: "Continue", exact: true }).click();
-  await staff
-    .getByRole("combobox", { name: "Service (required)" })
-    .selectOption("service-oil-change");
+  await chooseOption(
+    selectNamed(staff, "Service (required)"),
+    "service-oil-change",
+  );
   await staff.getByRole("radio", { name: "Waits on site" }).check();
   await staff.getByRole("button", { name: "Confirm booking" }).click();
   await expect(
@@ -245,9 +249,10 @@ test("SEC-11.AC-3: script text stored through the staff booking form is shown as
   await field("Make (required)").fill(make);
   await field("Model (required)").fill(name);
   await page.getByRole("button", { name: "Continue", exact: true }).click();
-  await page
-    .getByRole("combobox", { name: "Service (required)" })
-    .selectOption("service-oil-change");
+  await chooseOption(
+    selectNamed(page, "Service (required)"),
+    "service-oil-change",
+  );
   await page.getByRole("radio", { name: /^Fri 30 Oct,/ }).check();
   await page
     .getByRole("radio", { name: "09:00 to 10:00", exact: true })
@@ -568,7 +573,7 @@ test("SEC-14: a VITE_API_MODE=remote preview has no role switcher, no dev panel 
       await expect(
         page.getByRole("button", { name: /^Viewing as/ }),
       ).toHaveCount(0);
-      await expect(page.getByRole("combobox", { name: "Who" })).toHaveCount(0);
+      await expect(selectNamed(page, "Who")).toHaveCount(0);
       await expect(page.getByRole("link", { name: "Dev panel" })).toHaveCount(
         0,
       );

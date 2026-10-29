@@ -26,6 +26,7 @@ import {
   open,
   signInAs,
 } from "./demo-support";
+import { chooseOption, dateNamed, selectNamed, typeDate } from "./support";
 
 const NOW = new Date("2026-10-28T10:40:00Z");
 const TECHNICIANS: Record<string, string> = {
@@ -136,15 +137,14 @@ test("scenario 1, customer books (REQ-BOOK-001, 002, 003, 010.AC-1): dealership,
   await page.goto("/book");
   await expect(h1(page, "Book a service")).toBeVisible();
   await beat(page);
-  await page
-    .getByRole("combobox", { name: /^Dealership/ })
-    .selectOption(LONDON);
+  await chooseOption(page.getByRole("button", { name: /^Dealership/ }), LONDON);
   await beat(page);
-  await page.getByRole("combobox", { name: /^Car/ }).selectOption("vehicle-a");
+  await chooseOption(page.getByRole("button", { name: /^Car/ }), "vehicle-a");
   await beat(page);
-  await page
-    .getByRole("combobox", { name: /^Service/ })
-    .selectOption("service-full");
+  await chooseOption(
+    page.getByRole("button", { name: /^Service/ }),
+    "service-full",
+  );
   // The strip of days with their counts, and the time chips of the chosen day.
   await expect(dayTile(page, "Wed 28 Oct")).toBeChecked();
   await expect(dayTile(page, "Sun 1 Nov")).toHaveAccessibleName(
@@ -253,9 +253,10 @@ test("scenario 2, staff sees it and books (REQ-BOOK-004, 010.AC-2, 014): the new
     .getByRole("radio", { name: "Demo Motors Coupe, EF22 DMC" })
     .check();
   await continueButton(page).click();
-  await page
-    .getByRole("combobox", { name: "Service (required)" })
-    .selectOption("service-oil-change");
+  await chooseOption(
+    selectNamed(page, "Service (required)"),
+    "service-oil-change",
+  );
   await page.getByRole("radio", { name: "Waits on site" }).check();
   await beat(page);
   await page.getByRole("button", { name: "Confirm booking" }).click();
@@ -275,9 +276,7 @@ test("scenario 2, staff sees it and books (REQ-BOOK-004, 010.AC-2, 014): the new
   await typeIn("Make (required)", "Skoda");
   await typeIn("Model (required)", "Fabia");
   await continueButton(page).click();
-  await page
-    .getByRole("combobox", { name: "Service (required)" })
-    .selectOption("service-full");
+  await chooseOption(selectNamed(page, "Service (required)"), "service-full");
   await dayTile(page, "Mon 2 Nov").check();
   await chip(page, "10:00 to 13:00").check();
   await page.getByRole("radio", { name: "Drops the car off" }).check();
@@ -448,8 +447,8 @@ test("scenario 4, manager (REQ-BOOK-005, 007, 008, 011, 013): move to a free tim
     .getByRole("button", { name: /^(Save change|Checking…)$/ })
     .first();
   const fill = async (date: string, time: string) => {
-    await page.getByLabel("Date", { exact: true }).fill(date);
-    await page.getByLabel("Start time").fill(time);
+    await typeDate(dateNamed(page, "Date"), date);
+    await chooseOption(selectNamed(page, "Start time"), time);
   };
 
   // REQ-BOOK-005.AC-1: a move to a free time (Thu 29 Oct, 09:15).
@@ -486,9 +485,9 @@ test("scenario 4, manager (REQ-BOOK-005, 007, 008, 011, 013): move to a free tim
   await page.goto("/manage/dealership");
   const thursday = page.getByRole("group", { name: "Thursday", exact: true });
   await expect(thursday).toBeVisible();
-  const closes = thursday.getByLabel("Closes");
+  const closes = selectNamed(thursday, "Closes");
   await closes.scrollIntoViewIfNeeded();
-  await closes.fill("12:00");
+  await chooseOption(closes, "12:00");
   await beat(page);
   const saveSettings = page
     .getByRole("button", { name: "Save settings" })
@@ -542,9 +541,10 @@ test("scenario 4, manager (REQ-BOOK-005, 007, 008, 011, 013): move to a free tim
   const monTile = async () => {
     await signInAs(customer, A);
     await customer.goto(evDay);
-    await customer
-      .getByRole("combobox", { name: /^Car/ })
-      .selectOption("vehicle-a");
+    await chooseOption(
+      customer.getByRole("button", { name: /^Car/ }),
+      "vehicle-a",
+    );
     const tile = dayTile(customer, "Mon 2 Nov");
     await expect(tile).toHaveAccessibleName(/^Mon 2 Nov, \d+ times?$/);
     const count = Number(
@@ -559,8 +559,8 @@ test("scenario 4, manager (REQ-BOOK-005, 007, 008, 011, 013): move to a free tim
   await expect(
     page.getByRole("group", { name: "Saturday", exact: true }),
   ).toBeVisible();
-  await page.getByLabel("First day").fill("2026-11-02");
-  await page.getByLabel("What happens on these days").selectOption("leave");
+  await typeDate(dateNamed(page, "First day"), "2026-11-02");
+  await chooseOption(selectNamed(page, "What happens on these days"), "leave");
   await beat(page);
   await page.getByRole("button", { name: "Add to the list" }).click();
   await page.getByRole("button", { name: "Save shifts" }).first().click();
@@ -628,9 +628,10 @@ test("scenario 5, manager books for a customer (D-0001-53, D-0001-54 B, REQ-BOOK
     .check();
   await beat(page);
   await continueButton(page).click();
-  await page
-    .getByRole("combobox", { name: "Service (required)" })
-    .selectOption("service-oil-change");
+  await chooseOption(
+    selectNamed(page, "Service (required)"),
+    "service-oil-change",
+  );
   await page.getByRole("radio", { name: "Waits on site" }).check();
   await beat(page);
   await page.getByRole("button", { name: "Confirm booking" }).click();
@@ -772,7 +773,7 @@ test("scenario 7a, time zones (REQ-BOOK-013.AC-2, S4): a browser in Saigon sees 
   await page.goto(
     `/book?dealership=${LONDON}&service=service-oil-change&date=2026-10-30`,
   );
-  await page.getByRole("combobox", { name: /^Car/ }).selectOption("vehicle-a");
+  await chooseOption(page.getByRole("button", { name: /^Car/ }), "vehicle-a");
   await expect(chip(page, "08:00 to 09:00")).toBeVisible();
   await expect(chip(page, "10:00 to 11:00")).toBeVisible();
   await beat(page, 1500);
@@ -932,9 +933,10 @@ test("scenario 8, dev panel (NFR-6): after the race the panel shows the confirme
     await p.goto(
       `/book?dealership=${LONDON}&service=service-ev-check&date=2026-10-31`,
     );
-    await p
-      .getByRole("combobox", { name: /^Car/ })
-      .selectOption(p === first ? "vehicle-a" : "vehicle-b");
+    await chooseOption(
+      p.getByRole("button", { name: /^Car/ }),
+      p === first ? "vehicle-a" : "vehicle-b",
+    );
     await dayTile(p, londonDay(start)).check();
     await chip(p, "10:00 to 11:00").check();
     await p.getByRole("radio", { name: "Wait on site" }).check();
@@ -1029,7 +1031,7 @@ test("the customer booking page in a Saigon browser says its times are London ti
   await page.goto(
     `/book?dealership=${LONDON}&service=service-oil-change&date=2026-10-30`,
   );
-  await page.getByRole("combobox", { name: /^Car/ }).selectOption("vehicle-a");
+  await chooseOption(page.getByRole("button", { name: /^Car/ }), "vehicle-a");
   await expect(chip(page, "10:00 to 11:00")).toBeVisible();
   await expect(page.getByText(/London time/).first()).toBeVisible({
     timeout: 3000,
