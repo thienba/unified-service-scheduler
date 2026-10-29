@@ -207,7 +207,7 @@ for (const width of [390, 1440] as const) {
     }) => {
       await interceptApi(page, { path: "/shifts", delayMs: 3000 });
       await openAs(page, MANAGER, "/manage/shifts");
-      const monday = next(1);
+      const monday = next(1, today(), 7); // past the seeded bookings, which sit in the first week
       const booked = await book(page, "a", instant(monday, "10:00"));
       await page.goto(`/manage/shifts?technicianId=${booked.technicianId}`);
       await expect(day(page, "Saturday")).toBeVisible();

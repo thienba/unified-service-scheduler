@@ -1,7 +1,7 @@
 // The manager's main flow in one go, at a pace a person can follow in its video (D-0000-13): shorten Saturday,
 // read the warning, go back, save with flags, open the flagged list, then mark a technician on leave.
 import { expect, test, type Page } from "@playwright/test";
-import { book, day, instant, next, openAs } from "./manage-support";
+import { book, day, instant, next, openAs, today } from "./manage-support";
 
 const pause = (page: Page) => page.waitForTimeout(700);
 
@@ -13,7 +13,7 @@ test("a manager shortens Saturday, saves with flags, opens Flagged, then marks a
   const saturday = next(6);
   await book(page, "a", instant(saturday, "14:30"));
   await book(page, "b", instant(saturday, "15:00"));
-  const monday = next(1);
+  const monday = next(1, today(), 7); // past the seeded bookings, which sit in the first week
   const leave = await book(page, "b", instant(monday, "11:00"));
   await page.reload();
   await expect(day(page, "Saturday")).toBeVisible();
