@@ -7,6 +7,7 @@ import type {
   Dealership,
   DemoUser,
   EpochMs,
+  LocalDate,
   LocalTime,
   SeedData,
   ServiceBay,
@@ -15,7 +16,13 @@ import type {
   Transport,
   Vehicle,
 } from "../../domain/model";
-import { MINUTE_MS, addDays, instantAt, localDateOf } from "../../domain/time";
+import {
+  MINUTE_MS,
+  addDays,
+  instantAt,
+  localDateOf,
+  weekdayOf,
+} from "../../domain/time";
 import { validateSeed } from "../../domain/validation/seed-validation";
 import appointmentFile from "./appointments.json";
 import customerFile from "./customers.json";
@@ -25,7 +32,7 @@ import resourceFile from "./resources.json";
 import serviceTypeFile from "./service-types.json";
 
 /** Raise this when the seed files change, so older browser databases are reset (AD-17). */
-export const SEED_VERSION = 1;
+export const SEED_VERSION = 2;
 
 /** A seeded appointment is written as "N days from today at a local time". */
 interface SeedAppointment extends Omit<
@@ -46,6 +53,18 @@ interface SeedAppointment extends Omit<
   localTime: LocalTime;
 }
 
+/** The date itself, or the next date on which the dealership is open (D-0001-38). */
+export function firstOpenDate(
+  dealership: Dealership,
+  date: LocalDate,
+): LocalDate {
+  let open = date;
+  while (dealership.weeklyHours[weekdayOf(open)] === undefined) {
+    open = addDays(open, 1);
+  }
+  return open;
+}
+
 /** The seed with its appointments turned into instants, counting "today" from `now`. */
 export function buildSeedData(now: EpochMs): SeedData {
   // The JSON files are typed by their content; they are checked by validateSeed below.
@@ -57,7 +76,8 @@ export function buildSeedData(now: EpochMs): SeedData {
       const serviceType = serviceTypes.find((s) => s.id === rest.serviceTypeId);
       // A broken reference is reported by validateSeed; here it only has to build something.
       const zone = dealership?.timeZone ?? "UTC";
-      const date = addDays(localDateOf(now, zone), daysFromToday);
+      const wanted = addDays(localDateOf(now, zone), daysFromToday);
+      const date = dealership ? firstOpenDate(dealership, wanted) : wanted;
       const start = instantAt(date, localTime, zone);
       return {
         ...rest,

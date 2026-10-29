@@ -4,10 +4,21 @@ import { overlaps, contains } from "../../domain/appointment/interval";
 import { isTechnicianFree } from "../../domain/policies/technician-free";
 import { workSegments } from "../../domain/policies/work-segments";
 import type { Appointment, SeedData } from "../../domain/model";
-import { addDays, instantAt, localDateOf, MINUTE_MS } from "../../domain/time";
+import {
+  addDays,
+  instantAt,
+  localDateOf,
+  MINUTE_MS,
+  weekdayOf,
+} from "../../domain/time";
 import { validateSeed } from "../../domain/validation/seed-validation";
 import { createMemoryRepository } from "../storage/memory/memory-repository";
-import { buildSeedData, loadSeed, SEED_VERSION } from "./seed-loader";
+import {
+  buildSeedData,
+  firstOpenDate,
+  loadSeed,
+  SEED_VERSION,
+} from "./seed-loader";
 
 const DAY_1 = Date.parse("2026-11-02T09:00:00Z");
 const DAY_2 = Date.parse("2027-03-01T09:00:00Z");
@@ -118,13 +129,46 @@ describe("the shipped seed", () => {
     });
   }
 
+  it("D-0001-38: London is closed on Sunday and its technicians have no Sunday shift, and no appointment falls on a closed day", () => {
+    for (let day = 0; day < 14; day++) {
+      const seed = buildSeedData(DAY_1 + day * 24 * 60 * MINUTE_MS);
+      const london = seed.dealerships.find(
+        (d) => d.id === "dealership-london",
+      )!;
+      expect(london.weeklyHours[7]).toBeUndefined();
+      for (const t of seed.technicians.filter(
+        (t) => t.dealershipId === london.id,
+      )) {
+        expect(t.shiftPattern[7]).toBeUndefined();
+      }
+      for (const a of seed.appointments) {
+        const d = seed.dealerships.find((x) => x.id === a.dealershipId)!;
+        expect(
+          d.weeklyHours[weekdayOf(localDateOf(a.start, a.timeZone))],
+        ).toBeDefined();
+      }
+    }
+    expect(
+      firstOpenDate(buildSeedData(DAY_1).dealerships[0]!, "2026-11-08"),
+    ).toBe("2026-11-09");
+  });
+
+  it("D-0001-25: every dealership has a phone number from a reserved or clearly fake range", () => {
+    const [london, saigon] = buildSeedData(DAY_1).dealerships;
+    expect(london!.phone).toMatch(/^\+44 1632 960 \d{3}$/);
+    expect(saigon!.phone).toBe("+84 00 0000 0000");
+  });
+
   it("has a future time at the first dealership with exactly one free qualified technician and one free bay", () => {
     // Any day of the week, so the time must not depend on today's weekday.
     for (let day = 0; day < 14; day++) {
       const now = DAY_1 + day * 24 * 60 * MINUTE_MS;
       const seed = buildSeedData(now);
       const first = seed.dealerships[0]!;
-      const date = addDays(localDateOf(now, first.timeZone), 3);
+      const date = firstOpenDate(
+        first,
+        addDays(localDateOf(now, first.timeZone), 3),
+      );
       expect(freeAt(seed, first.id, "service-ev-check", date, "10:00")).toEqual(
         {
           technicians: 1,

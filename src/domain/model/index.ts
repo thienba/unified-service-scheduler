@@ -36,6 +36,8 @@ export interface Dealership {
   id: string;
   name: string;
   timeZone: TimeZone;
+  /** Shown to customers who are told to call (D-0001-25). */
+  phone?: string;
   weeklyHours: Partial<Record<Weekday, OpeningHours>>;
   dateOverrides: Record<LocalDate, OpeningOverride>;
   policies: Policies;
@@ -83,6 +85,8 @@ export interface Vehicle {
   registration: string;
   make: string;
   model: string;
+  /** Optional (Q-0001-23 A). */
+  year?: number;
 }
 
 export interface ServiceType {

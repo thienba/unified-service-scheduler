@@ -149,6 +149,12 @@ function buildStores(data: Data): Stores {
         data.customers.set(customer.id, copy(customer));
         data.vehicles.set(vehicle.id, copy(vehicle));
       },
+      insertVehicle: async (vehicle) => {
+        if (data.vehicles.has(vehicle.id)) {
+          throw new Error(`Vehicle ${vehicle.id} is already stored`);
+        }
+        data.vehicles.set(vehicle.id, copy(vehicle));
+      },
       findDuplicates: async (phone, registration) =>
         byId(
           [...data.customers.values()]

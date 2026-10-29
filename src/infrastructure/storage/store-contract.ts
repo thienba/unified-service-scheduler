@@ -355,6 +355,36 @@ export function describeStoreContract(
       expect(await find("  ")).toEqual([]);
     });
 
+    it("a read unit may await several customer calls one after the other", async () => {
+      const repo = await seeded();
+      const found = await repo.read(async (s) => {
+        const byName = await s.customers.search("alex");
+        const byPhone = await s.customers.search("900222");
+        const one = await s.customers.get("c1");
+        const dup = await s.customers.findDuplicates("+44 7700 900111", "NONE");
+        return [byName, byPhone, one ? [one] : [], dup].map((list) =>
+          list.map((c) => c.id),
+        );
+      });
+      expect(found).toEqual([["c1"], ["c2"], ["c1"], ["c1"]]);
+    });
+
+    it("insertVehicle adds a vehicle to a stored customer, and fails when the vehicle id is stored", async () => {
+      const repo = await seeded();
+      await repo.write(async (s) => {
+        await s.customers.insertVehicle(vehicle("v9", "c1", "NEW 123"));
+        return { ok: true, value: null };
+      });
+      const c1 = await repo.read((s) => s.customers.get("c1"));
+      expect(c1?.vehicles.map((v) => v.id)).toEqual(["v1", "v9"]);
+      await expect(
+        repo.write(async (s) => {
+          await s.customers.insertVehicle(vehicle("v9", "c1", "OTHER 1"));
+          return { ok: true, value: null };
+        }),
+      ).rejects.toThrow();
+    });
+
     it("findDuplicates returns a customer with that phone or a vehicle with that registration", async () => {
       const repo = await seeded();
       const dup = (phone: string, registration: string) =>

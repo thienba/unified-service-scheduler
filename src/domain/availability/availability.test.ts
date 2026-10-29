@@ -700,3 +700,43 @@ describe("searchDay", () => {
     expect(starts.at(-1)).toBe(at("16:00"));
   });
 });
+
+describe("a fixed technician in the day search and the suggestions (D-0001-31 A)", () => {
+  // t1 is busy 10:00 to 11:00; t2 is free all day.
+  const s = snapshot({
+    appointments: [appt("a1", "t1", "b1", at("10:00"), at("11:00"))],
+  });
+
+  it("searchDay lists only starts where the fixed technician is free", () => {
+    const any = searchDay(s, { ...wait, date: MONDAY }, NOW);
+    const fixed = searchDay(
+      s,
+      { ...wait, date: MONDAY, technicianId: "t1" },
+      NOW,
+    );
+    expect(any).toContain(at("10:00"));
+    expect(fixed).not.toContain(at("10:00"));
+    expect(fixed).not.toContain(at("10:45"));
+    expect(fixed).toContain(at("11:15"));
+    for (const start of fixed) {
+      expect(check(s, start, { technicianId: "t1" }).available).toBe(true);
+    }
+  });
+
+  it("suggest keeps to the fixed technician, so every suggestion passes the check with that technician", () => {
+    const times = suggest(
+      s,
+      { ...wait, start: at("10:00"), technicianId: "t1" },
+      NOW,
+    );
+    expect(times.length).toBeGreaterThan(0);
+    for (const start of times) {
+      expect(check(s, start, { technicianId: "t1" }).available).toBe(true);
+    }
+    expect(times).not.toContain(at("10:00"));
+    // Without the fixing, t2 is free at once, so the wanted time itself is offered.
+    expect(suggest(s, { ...wait, start: at("10:00") }, NOW)).toContain(
+      at("10:00"),
+    );
+  });
+});
