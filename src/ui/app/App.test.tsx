@@ -142,7 +142,7 @@ it("each role sees the words of its own no-permission states", async () => {
   await heading("You cannot do that as Staff.");
   expect(
     screen.getByText(
-      "Only the garage manager can see the flagged bookings. Switch role, or go to your schedule.",
+      "Only the garage manager can review flagged bookings. Switch role, or go to your schedule.",
     ),
   ).toBeTruthy();
   expect(screen.getByRole("link", { name: "Go to the schedule" })).toBeTruthy();
