@@ -35,6 +35,7 @@
   /* ------------------------------------------------------------------ */
   --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
   --font-heading: "Plus Jakarta Sans", "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; /* B4: data only (the dev panel's JSON block), never a label style */
 
   --font-weight-normal: 400;
   --font-weight-medium: 500;

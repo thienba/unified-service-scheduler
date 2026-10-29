@@ -15,6 +15,7 @@ import { SchedulePage } from "../features/schedule/SchedulePage";
 import { DealershipSettingsPage } from "../features/manage/DealershipSettingsPage";
 import { ShiftsPage } from "../features/manage/ShiftsPage";
 import { OutboxScreen } from "../features/outbox/OutboxScreen";
+import { DevPanel } from "../features/dev/DevPanel";
 import {
   devPanelPath,
   homeFor,
@@ -40,6 +41,8 @@ const screens: Record<string, ReactElement> = {
   "/manage/dealership": <DealershipSettingsPage />,
   "/manage/shifts": <ShiftsPage />,
   "/manage/outbox": <OutboxScreen />,
+  // Demo only: in a remote build `mockEnabled` is false, so the panel is left out of the bundle (SEC-14).
+  ...(mockEnabled ? { [devPanelPath]: <DevPanel /> } : {}),
 };
 
 const rules: readonly RouteRule[] = mockEnabled
