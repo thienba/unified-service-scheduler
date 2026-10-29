@@ -36,6 +36,7 @@ import {
 } from "../../format/format";
 import { useDealerships } from "../../session/dealership";
 import { useSession } from "../../session/session";
+import { ZoneTimesNote } from "../../session/TimesNote";
 import {
   dayNote,
   describeDay,
@@ -427,6 +428,7 @@ function Rescheduling({
               Your {service} takes about {formatDuration(minutes)}. Pick a day,
               then the time you want to arrive.
             </p>
+            <ZoneTimesNote timeZone={zone} className="mt-2" />
           </div>
 
           <Alert
