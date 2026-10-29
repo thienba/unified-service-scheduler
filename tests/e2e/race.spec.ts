@@ -5,11 +5,12 @@
 // data is closed on Sundays (D-0001-38 B): the seed then moves the booking to the next open day, and the test
 // still finds it. With EVIDENCE_DIR set the two race videos are kept for the side-by-side cut.
 import { expect, test, type BrowserContext, type Page } from "@playwright/test";
-import { answerFrom, recordPosts, posts } from "./customer-support";
+import { recordPosts, posts } from "./customer-support";
 import {
   A,
   B,
   LONDON,
+  MANAGER,
   STAFF,
   api,
   beat,
@@ -326,7 +327,7 @@ test("REQ-BOOK-009.AC-3: the second page confirms the same time one second after
   expect(await dayList(pages[0]!.page, start)).toHaveLength(before + 1);
 });
 
-test("REQ-BOOK-009.AC-4: a double press on Confirm leaves one appointment, and every request it sends carries the same Idempotency-Key", async ({
+test("REQ-BOOK-009.AC-4: a double press on Confirm sends one booking request (the page ignores the second press while the first is out) and leaves one appointment", async ({
   context,
 }) => {
   const r = await racer(context, A, 1440);
@@ -336,42 +337,80 @@ test("REQ-BOOK-009.AC-4: a double press on Confirm leaves one appointment, and e
   await choose(r, EV, start, 60);
   await confirm(r.page).dblclick();
   await expect(booked(r.page)).toBeVisible();
-  const sent = await posts(r.page, "/appointments");
-  expect(sent.length).toBeGreaterThan(0);
-  expect(new Set(sent.map((p) => p.key)).size).toBe(1);
+  // The page's own guard drops the second press, so there is exactly one request (and so one key).
+  expect(await posts(r.page, "/appointments")).toHaveLength(1);
   expect(await dayList(r.page, start)).toHaveLength(before + 1);
 });
 
-test("REQ-BOOK-009.AC-4: Try again after a forced failure sends the same Idempotency-Key and leaves one appointment", async ({
+test("REQ-BOOK-009.AC-4, S1: the first confirm is stored but its answer is lost (a 500); Try again with the same Idempotency-Key gets the same appointment back, replayed, and one appointment is stored", async ({
   context,
 }) => {
   const r = await racer(context, A, 1440);
-  // The first booking call fails with a 500 in the page's own fetch (D-0001-64); the calls are then recorded.
-  await answerFrom(r.page, {
-    path: "/appointments",
-    method: "POST",
-    from: 1,
-    times: 1,
-    status: 500,
-    body: {
-      type: "about:blank",
-      title: "INTERNAL",
-      status: 500,
-      code: "INTERNAL",
-      traceId: "4bf92f35a1b2c3d4e5f60718293a4b5c",
-    },
+  // The first booking call reaches the mock and is stored; the page is then handed a 500 instead of the 201
+  // (D-0001-64: the fake sits in the page's own fetch, in front of the mock). The real answer is kept.
+  await r.page.addInitScript(() => {
+    const original = window.fetch.bind(window);
+    let faked = false;
+    window.fetch = async (input, init) => {
+      const request = input instanceof Request ? input : null;
+      const url = new URL(request ? request.url : String(input), location.href);
+      const method = (request?.method ?? init?.method ?? "GET").toUpperCase();
+      const response = await original(input, init);
+      if (faked || method !== "POST" || !url.pathname.endsWith("/appointments"))
+        return response;
+      faked = true;
+      (window as unknown as { lost: unknown }).lost = {
+        status: response.status,
+        body: await response.json(),
+      };
+      return new Response(
+        JSON.stringify({
+          type: "about:blank",
+          title: "INTERNAL",
+          status: 500,
+          code: "INTERNAL",
+          traceId: "4bf92f35a1b2c3d4e5f60718293a4b5c",
+        }),
+        {
+          status: 500,
+          headers: {
+            "Content-Type": "application/json",
+            "X-Trace-Id": "4bf92f35a1b2c3d4e5f60718293a4b5c",
+          },
+        },
+      );
+    };
   });
   await recordPosts(r.page);
   await open(r.page, "/");
+  const replays = async () => {
+    const telemetry = await api<{
+      counters: { name: string; value: number }[];
+    }>(r.page, MANAGER, "GET", "/_demo/telemetry");
+    return telemetry.body.counters
+      .filter((c) => c.name === "idempotent_replays_total")
+      .reduce((n, c) => n + c.value, 0);
+  };
   const start = await contestedStart(r.page);
   const before = (await dayList(r.page, start)).length;
+  const replaysBefore = await replays();
   await choose(r, EV, start, 60);
   await confirm(r.page).click();
   await r.page.getByRole("button", { name: "Try again" }).click();
   await expect(booked(r.page)).toBeVisible();
+  const lost = await r.page.evaluate(
+    () =>
+      (window as unknown as { lost: { status: number; body: Appointment } })
+        .lost,
+  );
+  // The first request was really stored (201); its answer never reached the page.
+  expect(lost.status).toBe(201);
   const sent = await posts(r.page, "/appointments");
   expect(sent).toHaveLength(2);
   expect(sent[0]!.key).toBe(sent[1]!.key);
+  // The retry got the stored appointment back: the confirmation is for the first request's appointment.
+  expect(idFromUrl(r.page)).toBe(lost.body.id);
+  expect(await replays()).toBe(replaysBefore + 1);
   expect(await dayList(r.page, start)).toHaveLength(before + 1);
 });
 

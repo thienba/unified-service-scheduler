@@ -4,7 +4,7 @@
 // build (SEC-14). They run against the built app served by `vite preview`, so the policy in index.html is in force.
 // With EVIDENCE_DIR set the CSP run's log is written to logs/csp-run.txt.
 import { spawn, execFileSync, type ChildProcess } from "node:child_process";
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 import { devPanelPath, routeRules } from "../../src/ui/app/guard";
@@ -396,18 +396,44 @@ const addresses: Record<string, string> = {
   "/manage/shifts": "/manage/shifts",
   "/manage/outbox": "/manage/outbox",
   [devPanelPath]: devPanelPath,
+  "/components": "/components",
 };
 const users = { customer: A, staff: STAFF, manager: MANAGER } as const;
+const allRoles = ["customer", "staff", "manager"] as const;
+// The demo build's routes: the guarded ones of `routeRules`, the dev panel and the component sheet (any role).
 const everyRoute = [
   ...routeRules,
-  { path: devPanelPath, roles: ["customer", "staff", "manager"] as const },
+  { path: devPanelPath, roles: allRoles },
+  { path: "/components", roles: allRoles },
 ];
+/** The component sheet shows the loading state on purpose, so it is never free of aria-busy. */
+const showsLoadingOnPurpose = new Set(["/components"]);
 
 test("NFR-4: the route list of the router has an address for every route", () => {
   const missing = everyRoute
     .map((r) => r.path)
     .filter((p) => !(p in addresses));
   expect(missing, "routes with no accessibility check").toEqual([]);
+});
+
+test("NFR-4: every route written straight into the router (not through routeRules) is in the sweep", () => {
+  // routes.tsx builds the guarded routes from routeRules (and the dev panel); any other <Route path="..."> is
+  // written there by hand and has to be swept too. "*" is the not-found page, which has no address of its own.
+  const source = readFileSync(
+    path.join(process.cwd(), "src/ui/app/routes.tsx"),
+    "utf8",
+  );
+  const written = [...source.matchAll(/<Route\b[^>]*\bpath="([^"]+)"/g)]
+    .map((m) => m[1]!)
+    .filter((p) => p !== "*")
+    .map((p) => (p.startsWith("/") ? p : `/${p}`));
+  expect(written.length, "routes.tsx was read").toBeGreaterThan(0);
+  expect(source).toContain("rules.map((rule) =>");
+  const swept = new Set(everyRoute.map((r) => r.path));
+  expect(
+    written.filter((p) => !swept.has(p)),
+    "routes in routes.tsx with no accessibility check",
+  ).toEqual([]);
 });
 
 for (const role of ["customer", "staff", "manager"] as const) {
@@ -427,7 +453,8 @@ for (const role of ["customer", "staff", "manager"] as const) {
         await expect(
           page.getByRole("heading", { level: 1 }).first(),
         ).toBeVisible();
-        await expect(page.locator("[aria-busy=true]")).toHaveCount(0);
+        if (!showsLoadingOnPurpose.has(rule.path))
+          await expect(page.locator("[aria-busy=true]")).toHaveCount(0);
         await test.step(`${rule.path} at ${width}`, async () => {
           await expectNoSidewaysScroll(page);
           if (width === 390 || width === 1440)

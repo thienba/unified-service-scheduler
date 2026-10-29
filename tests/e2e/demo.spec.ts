@@ -683,15 +683,15 @@ test("scenario 6, roles (REQ-BOOK-005.AC-3, 008.AC-3, 014.AC-5, 012.AC-5): each 
 }, testInfo) => {
   test.setTimeout(120_000);
   const context = await recorded(browser, testInfo.outputPath("video"));
+  // Every API answer the context sees (the mock answers inside the browser), so "no write" is not "saw nothing".
+  const answers: string[] = [];
   const writes: string[] = [];
   context.on("response", (r) => {
     const url = new URL(r.url());
-    if (
-      url.pathname.startsWith("/api") &&
-      r.request().method() !== "GET" &&
-      r.status() < 400
-    )
-      writes.push(`${r.request().method()} ${url.pathname} ${r.status()}`);
+    if (!url.pathname.startsWith("/api")) return;
+    const line = `${r.request().method()} ${url.pathname} ${r.status()}`;
+    answers.push(line);
+    if (r.request().method() !== "GET" && r.status() < 400) writes.push(line);
   });
   const page = await pageAs(context, A);
   const forbidden = async (path: string, title: string, hidden: string[]) => {
@@ -746,6 +746,9 @@ test("scenario 6, roles (REQ-BOOK-005.AC-3, 008.AC-3, 014.AC-5, 012.AC-5): each 
     "You cannot open that dealership.",
     ["Minh Tran", "Linh Nguyen", "Bao Pham"],
   );
+  // Proof that the log sees the mock's answers: customer A's read of B's appointment came back 404.
+  expect(answers.length).toBeGreaterThan(0);
+  expect(answers).toContain("GET /api/appointments/appointment-customer-b 404");
   expect(writes, "no write succeeded").toEqual([]);
   await endShots(staff, "scenario-6-roles");
   await keepVideo(staff, "scenario-6-roles");
@@ -842,14 +845,45 @@ test("scenario 7b, time zones (S4): a browser in London sees Saigon wall times w
   await context.close();
 });
 
-test("scenario 7c, the clock change (S4): with the browser clock on Sun 25 Oct 2026, the hour labels and block positions are right and the 48-hour reminder shows the right London hour", async ({
+test("scenario 7c, the clock change (S4): in a London browser, a 10:00 booking sits at 10:00 on Sat 24 Oct (summer time) and, with the clock on Sun 25 Oct 2026, on Tue 27 Oct (winter time), and the 48-hour reminder shows the right London hour", async ({
   browser,
 }, testInfo) => {
   test.setTimeout(120_000);
-  const context = await recorded(browser, testInfo.outputPath("video"));
-  // 00:30 UTC on Sun 25 Oct is 01:30 BST; the clocks go back at 02:00 BST (01:00 UTC).
-  const changeDay = new Date("2026-10-25T00:30:00Z");
-  const page = await pageAs(context, STAFF, changeDay);
+  // The browser is in London itself, so its own clock goes back with the dealership's (not the host machine's zone).
+  const context = await recorded(browser, testInfo.outputPath("video"), {
+    timezoneId: "Europe/London",
+  });
+  const hourPx = 88;
+  /** 10:00 sits two hours right of 08:00, and the 10:00 to 11:00 block starts there and is one hour wide. */
+  const expectTenOClock = async () => {
+    const lane = await timeline(page)
+      .getByText("08:00", { exact: true })
+      .boundingBox();
+    const ten = await timeline(page)
+      .getByText("10:00", { exact: true })
+      .boundingBox();
+    const block = await timeline(page)
+      .getByRole("button", { name: /^10:00 to 11:00, / })
+      .boundingBox();
+    expect(Math.round(ten!.x - lane!.x)).toBe(2 * hourPx);
+    expect(Math.round(block!.x - lane!.x)).toBe(2 * hourPx);
+    expect(Math.round(block!.width)).toBe(hourPx);
+  };
+  // Before the change: on Fri 23 Oct (BST) staff book Sat 24 Oct 10:00 BST, which is 09:00 UTC.
+  const page = await pageAs(context, STAFF, new Date("2026-10-23T10:00:00Z"));
+  await bookFor(page, A, {
+    serviceTypeId: "service-oil-change",
+    vehicleId: "vehicle-a",
+    start: "2026-10-24T09:00:00Z",
+  });
+  await page.goto("/schedule?date=2026-10-24");
+  await expect(h1(page, "Schedule")).toBeVisible();
+  await expect(page.getByText(/^Times are in .+ time\.$/)).toHaveCount(0);
+  await expectTenOClock();
+  await beat(page, 1500);
+
+  // The change day: 00:30 UTC on Sun 25 Oct is 01:30 BST; the clocks go back at 02:00 BST (01:00 UTC).
+  await page.clock.setFixedTime(new Date("2026-10-25T00:30:00Z"));
   // Tue 27 Oct, 10:00 GMT: its 48-hour reminder is due at 10:00 UTC on Sun 25 Oct, which is 10:00 GMT, after the change.
   const tue = await bookFor(page, A, {
     serviceTypeId: "service-oil-change",
@@ -858,19 +892,7 @@ test("scenario 7c, the clock change (S4): with the browser clock on Sun 25 Oct 2
   });
   await page.goto("/schedule?date=2026-10-27");
   await expect(h1(page, "Schedule")).toBeVisible();
-  const hourPx = 88;
-  const lane = await timeline(page)
-    .getByText("08:00", { exact: true })
-    .boundingBox();
-  const ten = await timeline(page)
-    .getByText("10:00", { exact: true })
-    .boundingBox();
-  const block = await timeline(page)
-    .getByRole("button", { name: /^10:00 to 11:00, / })
-    .boundingBox();
-  expect(Math.round(ten!.x - lane!.x)).toBe(2 * hourPx);
-  expect(Math.round(block!.x - lane!.x)).toBe(2 * hourPx);
-  expect(Math.round(block!.width)).toBe(hourPx);
+  await expectTenOClock();
   await beat(page, 1500);
 
   // The same tab as the manager.
@@ -997,14 +1019,18 @@ test("scenario 8, dev panel (NFR-6): after the race the panel shows the confirme
   await context.close();
 });
 
-// DEFECT (reported in C8's Result): design.md section 9 ("Formats") says that when the viewer's zone differs from the
-// dealership's, times carry "(London time)" once per screen, and C8 asks for the note on the booking page. The
-// customer booking page in a browser set to Asia/Ho_Chi_Minh shows London wall times with no note at all
-// (src/ui/features/book/BookPage.tsx never calls zoneNote or TimesNote). Kept as an expected failure until fixed.
+// DEFECT, ticket 2026-10-29-time-zone-note-on-every-customer-screen: design.md section 9 ("Formats") says that when
+// the viewer's zone differs from the dealership's, times carry "(London time)" once per screen, and C8 asks for the
+// note on the booking page. The customer booking page in a browser set to Asia/Ho_Chi_Minh shows London wall times
+// with no note at all (src/ui/features/book/BookPage.tsx never calls zoneNote or TimesNote). Kept as an expected
+// failure until that ticket fixes it and removes the test.fail line.
 test("the customer booking page in a Saigon browser says its times are London time (design.md section 9)", async ({
   browser,
 }) => {
-  test.fail(true, "Defect: the booking page has no time-zone note");
+  test.fail(
+    true,
+    "Defect 2026-10-29-time-zone-note-on-every-customer-screen: the booking page has no time-zone note",
+  );
   const context = await browser.newContext({ timezoneId: "Asia/Ho_Chi_Minh" });
   const page = await pageAs(context, A);
   await page.goto(
