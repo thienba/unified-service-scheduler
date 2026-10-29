@@ -666,12 +666,12 @@ export interface components {
       /** @enum {string} */
       kind: "outside_opening_hours" | "outside_shift";
       since: components["schemas"]["Instant"];
-      /** @description One plain line that says why, for example "Ash's shift ends at 13:00; this booking ends at 13:45." */
+      /** @description One short phrase that says why, for example "Ends after Ash's shift, 13:00" */
       reason: string;
     };
     /**
-     * @description What a screen shows for the appointment. `technicianName`, `serviceBayName` and `customerName`
-     *     are for staff and managers only.
+     * @description What a screen shows for the appointment. `serviceBayName` and `customerName` are for staff and
+     *     managers only. `technicianName` is also sent to the customer who owns the appointment.
      */
     AppointmentDisplay: {
       serviceTypeName: string;

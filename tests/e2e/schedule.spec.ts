@@ -110,7 +110,7 @@ for (const width of [390, 1440]) {
           ),
         ).toBeVisible();
         await expect(
-          page.getByText("Courtesy car, Courtesy car 1"),
+          page.getByText("Courtesy car, Car 1"),
         ).toBeVisible();
         await checkState(page, "schedule-selected-flagged");
 
@@ -554,7 +554,7 @@ test("the timeline: shading, break, leave, Now line, gaps, names and Tab order",
 
   const flagged = ash.getByRole("button", { name: /, flagged: / });
   await expect(flagged).toHaveAccessibleName(
-    /^13:15 to 14:15, Oil and filter change, Kia Ceed EF56 JKL, Demo Tech Ash, Bay 1, Courtesy car, Courtesy car 1, flagged: .+$/,
+    /^13:15 to 14:15, Oil and filter change, Kia Ceed EF56 JKL, Demo Tech Ash, Bay 1, Courtesy car, Car 1, flagged: .+$/,
   );
   const birch = timeline(page).getByRole("group", { name: "Demo Tech Birch" });
   const gap = birch.getByRole("link").first();
