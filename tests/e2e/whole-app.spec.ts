@@ -19,6 +19,11 @@ import {
   signInAs,
 } from "./demo-support";
 import {
+  isWebKitSelectStyle,
+  recordPolicyViolations,
+  withoutWebKitSelectMessage,
+} from "./policy-support";
+import {
   expectNoAxeViolations,
   expectNoSidewaysScroll,
   pickRole,
@@ -26,6 +31,13 @@ import {
 } from "./support";
 
 const NOW = new Date("2026-10-28T10:40:00Z");
+
+// Firefox now and then prints this, with no file or line, as the test moves a page on. It is not a
+// policy message and our page code does not raise it: no "error" or "unhandledrejection" event reaches
+// the page, and it comes and goes with the mock's service worker hand-over between pages. Set aside in
+// Firefox only until Q-0001-254 is answered; every other console error still fails the test.
+const firefoxMockWorkerMessage =
+  '[JavaScript Error: "InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable"]';
 
 async function pageAs(page: Page, user: string) {
   await page.clock.setFixedTime(NOW);
@@ -36,9 +48,11 @@ async function pageAs(page: Page, user: string) {
 test("SEC-15.AC-3: the three role journeys on the built app send every request to the app's own origin, with no blocked resource or policy message", async ({
   context,
   baseURL,
+  browserName,
 }) => {
   test.setTimeout(180_000);
   const own = new URL(baseURL!).origin;
+  const violations = await recordPolicyViolations(context);
   const requests: string[] = [];
   const consoleLines: string[] = [];
   context.on("request", (r) =>
@@ -155,7 +169,7 @@ test("SEC-15.AC-3: the three role journeys on the built app send every request t
     writeFileSync(
       path.join(evidenceDir, "logs", "csp-run.txt"),
       [
-        "Content Security Policy run (SEC-15.AC-3), Chromium, built app served by vite preview.",
+        `Content Security Policy run (SEC-15.AC-3), ${browserName}, built app served by vite preview.`,
         `App origin: ${own}`,
         `Request origins seen: ${origins.join(", ")}`,
         `Requests: ${requests.length}; console messages: ${consoleLines.length}`,
@@ -166,12 +180,23 @@ test("SEC-15.AC-3: the three role journeys on the built app send every request t
         "## Every console message",
         ...(consoleLines.length ? consoleLines : ["(none)"]),
         "",
+        "## Every policy violation event (directive, blocked, element, source)",
+        ...(violations.length
+          ? violations.map(
+              (v) =>
+                `${v.directive} ${v.blocked} ${v.target} ${v.source}${isWebKitSelectStyle(v, browserName) ? " (WebKit's own <select> style, set aside: Q-0001-253)" : ""}`,
+            )
+          : ["(none)"]),
+        "",
       ].join("\n"),
     );
   }
   expect(origins).toEqual([own]);
   expect(
-    consoleLines.filter((l) =>
+    violations.filter((v) => !isWebKitSelectStyle(v, browserName)),
+  ).toEqual([]);
+  expect(
+    withoutWebKitSelectMessage(consoleLines, browserName).filter((l) =>
       /Content Security Policy|Refused to|blocked|violat/i.test(l),
     ),
   ).toEqual([]);
@@ -179,8 +204,11 @@ test("SEC-15.AC-3: the three role journeys on the built app send every request t
 
 test("SEC-11.AC-3: script text stored through the staff booking form is shown as text on the schedule, the search, the appointment page and the outbox; no dialog, no console error, no window.__xss", async ({
   page,
+  context,
+  browserName,
 }) => {
   test.setTimeout(120_000);
+  const violations = await recordPolicyViolations(context);
   const name = '<img src=x onerror="window.__xss=1">';
   const make = '"><script>window.__xss=1</script>';
   const dialogs: string[] = [];
@@ -193,9 +221,19 @@ test("SEC-11.AC-3: script text stored through the staff booking form is shown as
     if (m.type() === "error") errors.push(m.text());
   });
   page.on("pageerror", (e) => errors.push(e.message));
+  // Firefox reports the loads a page still has running when the test moves it on (its fonts through
+  // the mock's service worker, a storage call) as console errors of the page being left. A person
+  // reads a page before leaving it, so the test lets each page finish loading first.
+  const leaveFor = async (address: string) => {
+    await page.waitForLoadState("networkidle");
+    await page.evaluate(async () => {
+      await document.fonts.ready;
+    });
+    await page.goto(address);
+  };
   await page.setViewportSize({ width: 1440, height: 900 });
   await pageAs(page, STAFF);
-  await page.goto("/book/for-customer");
+  await leaveFor("/book/for-customer");
   await page.getByRole("button", { name: "Add a new customer" }).click();
   const field = (label: string) =>
     page.getByRole("textbox", { name: label, exact: true });
@@ -238,21 +276,21 @@ test("SEC-11.AC-3: script text stored through the staff booking form is shown as
   const stored = day.body.find((a) => a.display.customerName === name)!;
   expect(stored).toBeTruthy();
 
-  await page.goto("/schedule?date=2026-10-30");
+  await leaveFor("/schedule?date=2026-10-30");
   await page
     .getByRole("region", { name: "Day timeline, scrolls sideways" })
     .getByRole("button", { name: /^09:00 to 10:00, / })
     .click();
   await shownAsText([name, make]);
-  await page.goto("/book/for-customer");
+  await leaveFor("/book/for-customer");
   await page
     .getByRole("searchbox", { name: "Name, phone or number plate" })
     .fill("XS11");
   await shownAsText([name]);
-  await page.goto(`/appointments/${stored.id}`);
+  await leaveFor(`/appointments/${stored.id}`);
   await shownAsText([name, make]);
   await signInAs(page, MANAGER);
-  await page.goto(`/manage/outbox?appointmentId=${stored.id}`);
+  await leaveFor(`/manage/outbox?appointmentId=${stored.id}`);
   await expect(
     page.getByRole("heading", { level: 1, name: "Outbox" }),
   ).toBeVisible();
@@ -273,7 +311,14 @@ test("SEC-11.AC-3: script text stored through the staff booking form is shown as
   expect(await page.locator("main img, main script").count()).toBe(0);
   expect(await page.evaluate(() => "__xss" in window)).toBe(false);
   expect(dialogs).toEqual([]);
-  expect(errors).toEqual([]);
+  expect(
+    withoutWebKitSelectMessage(errors, browserName).filter(
+      (e) => !(browserName === "firefox" && e === firefoxMockWorkerMessage),
+    ),
+  ).toEqual([]);
+  expect(
+    violations.filter((v) => !isWebKitSelectStyle(v, browserName)),
+  ).toEqual([]);
 });
 
 /**
