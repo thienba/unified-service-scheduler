@@ -21,7 +21,7 @@ import { DayStrip } from "../../components/DayStrip";
 import { focusField, SelectField, type Choice } from "../../components/Fields";
 import { query, useMediaQuery } from "../../components/hooks";
 import { ForCustomerPanel } from "../../components/ForCustomer";
-import { PageBack, PhoneLink, Plate } from "../../components/Small";
+import { InlineNote, PageBack, PhoneLink, Plate } from "../../components/Small";
 import { Skeleton, StateBlock } from "../../components/StateBlock";
 import {
   HintBox,
@@ -88,7 +88,7 @@ const schemaFor = (staff: boolean) =>
     transport: z
       .string()
       .refine(
-        (v) => ["wait", "drop_off"].includes(v),
+        (v) => ["wait", "drop_off", "courtesy_car"].includes(v),
         staff
           ? "Choose what the customer will do with the car."
           : choiceMissing,
@@ -107,16 +107,25 @@ const staffSummaryWords: Record<string, string> = {
   transport: "Car choice: choose what the customer will do with the car.",
 };
 
-/** One list of car choices: the courtesy-car ticket adds the third (D-0000-9). */
+/** One list of car choices (REQ-BOOK-010.AC-1), still with no default. */
 const transportChoices: Choice[] = [
   { value: "wait", label: "Wait on site", icon: "hourglass" },
   { value: "drop_off", label: "Drop it off", icon: "login" },
+  { value: "courtesy_car", label: "Borrow a courtesy car", icon: "key" },
 ];
 /** The same choices in the staff's third person (design.md 8.9). */
 const staffTransportChoices: Choice[] = [
   { value: "wait", label: "Waits on site", icon: "hourglass" },
   { value: "drop_off", label: "Drops the car off", icon: "login" },
+  { value: "courtesy_car", label: "Borrows a courtesy car", icon: "key" },
 ];
+/** The courtesy car greyed out with its reason in words, never colour alone (design.md 8.6, Q-0001-18). */
+const withCourtesyOff = (choices: readonly Choice[], off: boolean) =>
+  choices.map((c) =>
+    c.value === "courtesy_car" && off
+      ? { ...c, disabled: true, disabledReason: "Not available at this time" }
+      : c,
+  );
 
 /** Who the booking is for: the customer themselves, or the customer staff chose. */
 type Who = { kind: "customer"; customerId: string | null } | StaffWho;
@@ -125,7 +134,8 @@ const START = "start";
 const SUGGESTED = "suggested-start";
 
 interface Conflict {
-  kind: "taken" | "too-soon" | "too-far";
+  /** `courtesy`: the time is still free, but the last courtesy car went first (409 COURTESY_CAR_BUSY). */
+  kind: "taken" | "too-soon" | "too-far" | "courtesy";
   start: string;
   end: string;
   suggestions: TimeSlot[];
@@ -263,6 +273,8 @@ function Booking({ who }: { who: Who }) {
   const [forbidden, setForbidden] = useState(false);
   const [rejected, setRejected] = useState<string[] | null>(null);
   const [message, setMessage] = useState(0);
+  // The start at which a chosen courtesy car was cleared because none is free then (`courtesy-cleared`).
+  const [clearedAt, setClearedAt] = useState<string | null>(null);
   const autoKey = useRef<string | null>(null);
   const pending = useRef<Pending | null>(null);
   const busy = useRef(false);
@@ -280,7 +292,10 @@ function Booking({ who }: { who: Who }) {
     weekStart ?? (today ? weekStartFor(today, linkDate ?? today) : "");
   const dates = week ? weekDates(week) : [];
   const minutes = service?.durationMinutes ?? 0;
-  const queryTransport: Transport = "wait";
+  // With the courtesy car chosen, only starts with a free car are listed and counted; wait and drop-off
+  // need the same resources, so they share one search.
+  const queryTransport: Transport =
+    transport === "courtesy_car" ? "courtesy_car" : "wait";
   const fetchDates =
     dealership && service && !gapBlocked
       ? dates.filter((d) => needsTimes(dealership, d, now))
@@ -330,7 +345,7 @@ function Booking({ who }: { who: Who }) {
             dealershipId: dealership!.id,
             serviceTypeId: service!.id,
             start: gap!.start,
-            transport: queryTransport,
+            transport: "wait",
             technicianId: gap!.technicianId,
           },
         }),
@@ -378,8 +393,47 @@ function Booking({ who }: { who: Who }) {
   const timeLabel = (instant: string) => formatTime(instant, zone);
   const dayWords = (date: string) => formatLocalDate(date, thisYear);
 
+  // Is a courtesy car free for the whole job at the chosen start (REQ-BOOK-010.AC-3, Q-0001-18)? The
+  // answer also names the closest start that has one.
+  const courtesy = useQuery({
+    queryKey: [
+      "courtesy-check",
+      dealership?.id,
+      service?.id,
+      start,
+      technicianId,
+    ],
+    queryFn: () =>
+      call(
+        client.POST("/availability-checks", {
+          body: {
+            dealershipId: dealership!.id,
+            serviceTypeId: service!.id,
+            start,
+            transport: "courtesy_car",
+            ...(technicianId ? { technicianId } : {}),
+          },
+        }),
+      ),
+    enabled: Boolean(start && dealership && service && !gapBlocked),
+  });
+  const carBusy =
+    Boolean(start) &&
+    courtesy.data !== undefined &&
+    !courtesy.data.available &&
+    courtesy.data.reasons.includes("COURTESY_CAR_BUSY");
+  const carGone = conflict?.kind === "courtesy" && conflict.start === start;
+  const courtesyOff = carBusy || carGone;
+  // A chosen courtesy car with none free at the new start is cleared, and the page says so (`courtesy-cleared`).
+  useEffect(() => {
+    if (transport !== "courtesy_car" || !carBusy) return;
+    setValue("transport", "");
+    setClearedAt(start);
+  });
+
   function resetChoice() {
     setValue("start", "");
+    setClearedAt(null);
     setConflict(null);
     setFailure(null);
     setDay(null);
@@ -455,6 +509,26 @@ function Booking({ who }: { who: Who }) {
         if (problem.code === "SLOT_UNAVAILABLE") {
           pending.current = null;
           const reasons = problem.problem?.reasons ?? [];
+          if (
+            reasons.length > 0 &&
+            reasons.every((r) => r === "COURTESY_CAR_BUSY")
+          ) {
+            // The time is still free to wait or drop off: it stays chosen, the car choice is cleared, and
+            // the closest times with a courtesy car are offered (`conflict-courtesy`, REQ-BOOK-009.AC-2).
+            setConflict({
+              kind: "courtesy",
+              start: press.body.start!,
+              end: addMinutes(press.body.start!, minutes),
+              suggestions: (problem.problem?.suggestions ?? []).slice(0, 5),
+            });
+            setValue("transport", "");
+            setMessage((n) => n + 1);
+            void queryClient.invalidateQueries({ queryKey: ["availability"] });
+            void queryClient.invalidateQueries({
+              queryKey: ["courtesy-check"],
+            });
+            return;
+          }
           const kind = reasons.includes("TOO_SOON")
             ? "too-soon"
             : reasons.includes("BEYOND_HORIZON")
@@ -1122,7 +1196,10 @@ function Booking({ who }: { who: Who }) {
                     { term: "Time", value: chosenTime ?? null },
                   ]
             }
-            transportChoices={staff ? staffTransportChoices : transportChoices}
+            transportChoices={withCourtesyOff(
+              staff ? staffTransportChoices : transportChoices,
+              courtesyOff,
+            )}
             transport={transport}
             onTransportChange={(value) =>
               setValue("transport", value, {
@@ -1130,6 +1207,28 @@ function Booking({ who }: { who: Who }) {
               })
             }
             transportError={errors.transport?.message}
+            transportNote={
+              start && clearedAt === start && !transport ? (
+                <InlineNote>
+                  A courtesy car is not free from{" "}
+                  {formatTimeRange(start, addMinutes(start, minutes), zone)}, so
+                  we cleared that choice. Please choose again.
+                </InlineNote>
+              ) : carBusy && !carGone && courtesy.data ? (
+                <p className="text-sm text-text-secondary">
+                  {noCarLine(
+                    start,
+                    addMinutes(start, minutes),
+                    courtesy.data.available
+                      ? undefined
+                      : courtesy.data.suggestions[0],
+                    zone,
+                    now,
+                    staff !== null,
+                  )}
+                </p>
+              ) : null
+            }
             confirm={lg ? confirmButton : undefined}
           />
         </div>
@@ -1193,6 +1292,27 @@ function focusDayStrip() {
   );
   const chosen = [...days].find((d) => d.checked) ?? days[0];
   chosen?.focus();
+}
+
+/** `no-courtesy-car`: "No courtesy car is free from 10:00 to 13:00. You can still wait or drop the car off. A
+ * courtesy car is free if you start at 10:45." The start comes from the API's closest time with a car. */
+function noCarLine(
+  start: string,
+  end: string,
+  next: TimeSlot | undefined,
+  zone: string,
+  now: number,
+  staff: boolean,
+): string {
+  const range = formatTimeRange(start, end, zone);
+  const at = next
+    ? localDateIn(next.start, zone) === localDateIn(start, zone)
+      ? formatTime(next.start, zone)
+      : `${formatTime(next.start, zone)} on ${formatDay(next.start, zone, now)}`
+    : null;
+  return staff
+    ? `No courtesy car is free from ${range}. The customer can still wait or drop the car off.${at ? ` A courtesy car is free if they start at ${at}.` : ""}`
+    : `No courtesy car is free from ${range}. You can still wait or drop the car off.${at ? ` A courtesy car is free if you start at ${at}.` : ""}`;
 }
 
 function addMinutes(instant: string, n: number): string {
@@ -1348,6 +1468,7 @@ function Times({
   const struck =
     conflict &&
     conflict.kind !== "too-far" &&
+    conflict.kind !== "courtesy" &&
     localDateIn(conflict.start, zone) === day
       ? conflict
       : null;
@@ -1558,6 +1679,41 @@ function ConflictAlert({
   const notSaved = staff?.newCustomerName
     ? ` ${staff.newCustomerName} is not saved yet. We kept the details you entered. They are saved when you confirm a time.`
     : "";
+  if (conflict.kind === "courtesy") {
+    const range = formatTimeRange(conflict.start, conflict.end, zone);
+    const time = formatTime(conflict.start, zone);
+    return (
+      <Alert
+        kind="warning"
+        role={null}
+        focusTitle
+        title={`Sorry, no courtesy car is free from ${range} any more.`}
+      >
+        <p>
+          {staff
+            ? `Someone else took the last one a moment before you. Nothing was booked. You can still book ${time} and the customer can wait or drop the car off, or pick a time when a courtesy car is free.`
+            : `Another customer took the last one a moment before you. Nothing was booked for you. You can still book ${time} and wait or drop the car off, or pick a time when a courtesy car is free.`}
+          {notSaved}
+        </p>
+        {conflict.suggestions.length === 0 ? (
+          <h3 className="mt-2 text-base">
+            There are no other times with a courtesy car in the next 14 days.
+          </h3>
+        ) : (
+          <div className="mt-2">
+            <SuggestionGroup
+              title="Closest times with a courtesy car"
+              items={conflict.suggestions.map(toItem)}
+              value={value || null}
+              onChange={onChoose}
+              name={`${SUGGESTED}-courtesy`}
+              label={label}
+            />
+          </div>
+        )}
+      </Alert>
+    );
+  }
   const title =
     conflict.kind === "too-soon"
       ? `Sorry, ${at} is too soon to book.`
