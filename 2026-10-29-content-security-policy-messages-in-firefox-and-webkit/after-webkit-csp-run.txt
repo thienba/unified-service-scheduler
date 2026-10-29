@@ -1,0 +1,366 @@
+Content Security Policy run (SEC-15.AC-3), webkit, built app served by vite preview.
+App origin: http://localhost:4501
+Request origins seen: http://localhost:4501
+Requests: 136; console messages: 204
+
+## Every request (method, address, resource type)
+GET http://localhost:4501/ (document)
+GET http://localhost:4501/assets/index-XJ7kfjok.js (script)
+GET http://localhost:4501/assets/rolldown-runtime-XKyaHtl9.js (script)
+GET http://localhost:4501/assets/index-DKFrd_Gt.css (stylesheet)
+GET http://localhost:4501/assets/boot-mock-DXjaokER.js (script)
+GET http://localhost:4501/mockServiceWorker.js (xhr)
+GET http://localhost:4501/assets/ibm-plex-sans-latin-BD64o3ke.woff2 (font)
+GET http://localhost:4501/api/me (fetch)
+GET http://localhost:4501/api/_demo/users (fetch)
+GET http://localhost:4501/assets/plus-jakarta-sans-latin-B2KjpZfh.woff2 (font)
+GET http://localhost:4501/book?dealership=dealership-london&service=service-full&date=2026-10-30 (document)
+GET http://localhost:4501/assets/index-XJ7kfjok.js (script)
+GET http://localhost:4501/assets/rolldown-runtime-XKyaHtl9.js (script)
+GET http://localhost:4501/assets/index-DKFrd_Gt.css (stylesheet)
+GET http://localhost:4501/assets/boot-mock-DXjaokER.js (script)
+GET http://localhost:4501/mockServiceWorker.js (xhr)
+GET http://localhost:4501/assets/ibm-plex-sans-latin-BD64o3ke.woff2 (font)
+GET http://localhost:4501/api/me (fetch)
+GET http://localhost:4501/api/_demo/users (fetch)
+GET http://localhost:4501/assets/plus-jakarta-sans-latin-B2KjpZfh.woff2 (font)
+GET http://localhost:4501/api/dealerships (fetch)
+GET http://localhost:4501/api/dealerships (fetch)
+GET http://localhost:4501/api/service-types (fetch)
+GET http://localhost:4501/api/customers/customer-a/vehicles (fetch)
+GET http://localhost:4501/api/dealerships/dealership-london/availability?serviceTypeId=service-full&date=2026-10-28&transport=wait (fetch)
+GET http://localhost:4501/api/dealerships/dealership-london/availability?serviceTypeId=service-full&date=2026-10-29&transport=wait (fetch)
+GET http://localhost:4501/api/dealerships/dealership-london/availability?serviceTypeId=service-full&date=2026-10-30&transport=wait (fetch)
+GET http://localhost:4501/api/dealerships/dealership-london/availability?serviceTypeId=service-full&date=2026-10-31&transport=wait (fetch)
+GET http://localhost:4501/api/dealerships/dealership-london/availability?serviceTypeId=service-full&date=2026-11-02&transport=wait (fetch)
+GET http://localhost:4501/api/dealerships/dealership-london/availability?serviceTypeId=service-full&date=2026-11-03&transport=wait (fetch)
+POST http://localhost:4501/api/availability-checks (fetch)
+POST http://localhost:4501/api/appointments (fetch)
+GET http://localhost:4501/api/dealerships/dealership-london/availability?serviceTypeId=service-full&date=2026-10-28&transport=wait (fetch)
+GET http://localhost:4501/api/dealerships/dealership-london/availability?serviceTypeId=service-full&date=2026-10-29&transport=wait (fetch)
+GET http://localhost:4501/api/dealerships/dealership-london/availability?serviceTypeId=service-full&date=2026-10-30&transport=wait (fetch)
+GET http://localhost:4501/api/dealerships/dealership-london/availability?serviceTypeId=service-full&date=2026-10-31&transport=wait (fetch)
+GET http://localhost:4501/api/dealerships/dealership-london/availability?serviceTypeId=service-full&date=2026-11-02&transport=wait (fetch)
+GET http://localhost:4501/api/dealerships/dealership-london/availability?serviceTypeId=service-full&date=2026-11-03&transport=wait (fetch)
+GET http://localhost:4501/api/appointments/a97f5c43-f308-4e49-a775-279bba55401f (fetch)
+GET http://localhost:4501/api/dealerships (fetch)
+GET http://localhost:4501/api/dealerships (fetch)
+GET http://localhost:4501/api/appointments/a97f5c43-f308-4e49-a775-279bba55401f (fetch)
+POST http://localhost:4501/api/appointments/a97f5c43-f308-4e49-a775-279bba55401f/cancel (fetch)
+GET http://localhost:4501/ (document)
+GET http://localhost:4501/assets/index-XJ7kfjok.js (script)
+GET http://localhost:4501/assets/rolldown-runtime-XKyaHtl9.js (script)
+GET http://localhost:4501/assets/index-DKFrd_Gt.css (stylesheet)
+GET http://localhost:4501/assets/boot-mock-DXjaokER.js (script)
+GET http://localhost:4501/mockServiceWorker.js (xhr)
+GET http://localhost:4501/assets/ibm-plex-sans-latin-BD64o3ke.woff2 (font)
+GET http://localhost:4501/api/me (fetch)
+GET http://localhost:4501/api/_demo/users (fetch)
+GET http://localhost:4501/assets/plus-jakarta-sans-latin-B2KjpZfh.woff2 (font)
+GET http://localhost:4501/schedule?date=2026-10-30&view=list (document)
+GET http://localhost:4501/assets/index-XJ7kfjok.js (script)
+GET http://localhost:4501/assets/rolldown-runtime-XKyaHtl9.js (script)
+GET http://localhost:4501/assets/index-DKFrd_Gt.css (stylesheet)
+GET http://localhost:4501/assets/boot-mock-DXjaokER.js (script)
+GET http://localhost:4501/mockServiceWorker.js (xhr)
+GET http://localhost:4501/assets/ibm-plex-sans-latin-BD64o3ke.woff2 (font)
+GET http://localhost:4501/api/me (fetch)
+GET http://localhost:4501/api/_demo/users (fetch)
+GET http://localhost:4501/assets/plus-jakarta-sans-latin-B2KjpZfh.woff2 (font)
+GET http://localhost:4501/api/dealerships (fetch)
+GET http://localhost:4501/api/dealerships/dealership-london/schedule?date=2026-10-30 (fetch)
+GET http://localhost:4501/api/dealerships (fetch)
+GET http://localhost:4501/api/dealerships/dealership-london/schedule?date=2026-10-30 (fetch)
+GET http://localhost:4501/api/dealerships (fetch)
+POST http://localhost:4501/api/customers/search (fetch)
+GET http://localhost:4501/api/dealerships (fetch)
+GET http://localhost:4501/api/service-types (fetch)
+GET http://localhost:4501/api/dealerships/dealership-london/schedule?date=2026-10-30 (fetch)
+GET http://localhost:4501/api/dealerships/dealership-london/availability?serviceTypeId=service-oil-change&date=2026-10-28&transport=wait&technicianId=tech-lon-ash (fetch)
+GET http://localhost:4501/api/dealerships/dealership-london/availability?serviceTypeId=service-oil-change&date=2026-10-29&transport=wait&technicianId=tech-lon-ash (fetch)
+GET http://localhost:4501/api/dealerships/dealership-london/availability?serviceTypeId=service-oil-change&date=2026-10-30&transport=wait&technicianId=tech-lon-ash (fetch)
+GET http://localhost:4501/api/dealerships/dealership-london/availability?serviceTypeId=service-oil-change&date=2026-10-31&transport=wait&technicianId=tech-lon-ash (fetch)
+GET http://localhost:4501/api/dealerships/dealership-london/availability?serviceTypeId=service-oil-change&date=2026-11-02&transport=wait&technicianId=tech-lon-ash (fetch)
+GET http://localhost:4501/api/dealerships/dealership-london/availability?serviceTypeId=service-oil-change&date=2026-11-03&transport=wait&technicianId=tech-lon-ash (fetch)
+POST http://localhost:4501/api/availability-checks (fetch)
+POST http://localhost:4501/api/availability-checks (fetch)
+POST http://localhost:4501/api/appointments (fetch)
+GET http://localhost:4501/api/dealerships/dealership-london/availability?serviceTypeId=service-oil-change&date=2026-10-28&transport=wait&technicianId=tech-lon-ash (fetch)
+GET http://localhost:4501/api/dealerships/dealership-london/availability?serviceTypeId=service-oil-change&date=2026-10-29&transport=wait&technicianId=tech-lon-ash (fetch)
+GET http://localhost:4501/api/dealerships/dealership-london/availability?serviceTypeId=service-oil-change&date=2026-10-30&transport=wait&technicianId=tech-lon-ash (fetch)
+GET http://localhost:4501/api/dealerships/dealership-london/availability?serviceTypeId=service-oil-change&date=2026-10-31&transport=wait&technicianId=tech-lon-ash (fetch)
+GET http://localhost:4501/api/dealerships/dealership-london/availability?serviceTypeId=service-oil-change&date=2026-11-02&transport=wait&technicianId=tech-lon-ash (fetch)
+GET http://localhost:4501/api/dealerships/dealership-london/availability?serviceTypeId=service-oil-change&date=2026-11-03&transport=wait&technicianId=tech-lon-ash (fetch)
+GET http://localhost:4501/api/dealerships/dealership-london/schedule?date=2026-10-30 (fetch)
+GET http://localhost:4501/api/customers/customer-c/vehicles (fetch)
+GET http://localhost:4501/api/appointments/e6f08a29-721e-463e-b954-a55b569ed217 (fetch)
+GET http://localhost:4501/api/dealerships (fetch)
+POST http://localhost:4501/api/customers/search (fetch)
+GET http://localhost:4501/ (document)
+GET http://localhost:4501/assets/index-XJ7kfjok.js (script)
+GET http://localhost:4501/assets/rolldown-runtime-XKyaHtl9.js (script)
+GET http://localhost:4501/assets/index-DKFrd_Gt.css (stylesheet)
+GET http://localhost:4501/assets/boot-mock-DXjaokER.js (script)
+GET http://localhost:4501/mockServiceWorker.js (xhr)
+GET http://localhost:4501/assets/ibm-plex-sans-latin-BD64o3ke.woff2 (font)
+GET http://localhost:4501/api/me (fetch)
+GET http://localhost:4501/api/_demo/users (fetch)
+GET http://localhost:4501/assets/plus-jakarta-sans-latin-B2KjpZfh.woff2 (font)
+GET http://localhost:4501/manage/dealership (document)
+GET http://localhost:4501/assets/index-XJ7kfjok.js (script)
+GET http://localhost:4501/assets/rolldown-runtime-XKyaHtl9.js (script)
+GET http://localhost:4501/assets/index-DKFrd_Gt.css (stylesheet)
+GET http://localhost:4501/assets/boot-mock-DXjaokER.js (script)
+GET http://localhost:4501/mockServiceWorker.js (xhr)
+GET http://localhost:4501/assets/ibm-plex-sans-latin-BD64o3ke.woff2 (font)
+GET http://localhost:4501/api/me (fetch)
+GET http://localhost:4501/api/_demo/users (fetch)
+GET http://localhost:4501/assets/plus-jakarta-sans-latin-B2KjpZfh.woff2 (font)
+GET http://localhost:4501/api/dealerships (fetch)
+GET http://localhost:4501/api/appointments?dealershipId=dealership-london&flagged=true (fetch)
+GET http://localhost:4501/api/dealerships/dealership-london (fetch)
+GET http://localhost:4501/api/appointments?dealershipId=dealership-london&flagged=true (fetch)
+PUT http://localhost:4501/api/dealerships/dealership-london/settings?preview=true (fetch)
+PUT http://localhost:4501/api/dealerships/dealership-london/settings (fetch)
+GET http://localhost:4501/api/dealerships (fetch)
+GET http://localhost:4501/api/appointments?dealershipId=dealership-london&flagged=true (fetch)
+GET http://localhost:4501/api/dealerships/dealership-london (fetch)
+GET http://localhost:4501/manage/outbox (document)
+GET http://localhost:4501/assets/index-XJ7kfjok.js (script)
+GET http://localhost:4501/assets/rolldown-runtime-XKyaHtl9.js (script)
+GET http://localhost:4501/assets/index-DKFrd_Gt.css (stylesheet)
+GET http://localhost:4501/assets/boot-mock-DXjaokER.js (script)
+GET http://localhost:4501/mockServiceWorker.js (xhr)
+GET http://localhost:4501/assets/ibm-plex-sans-latin-BD64o3ke.woff2 (font)
+GET http://localhost:4501/api/me (fetch)
+GET http://localhost:4501/api/_demo/users (fetch)
+GET http://localhost:4501/assets/plus-jakarta-sans-latin-B2KjpZfh.woff2 (font)
+GET http://localhost:4501/api/dealerships (fetch)
+GET http://localhost:4501/api/appointments?dealershipId=dealership-london&flagged=true (fetch)
+GET http://localhost:4501/api/outbox?dealershipId=dealership-london (fetch)
+GET http://localhost:4501/api/appointments/e6f08a29-721e-463e-b954-a55b569ed217 (fetch)
+GET http://localhost:4501/api/appointments/a97f5c43-f308-4e49-a775-279bba55401f (fetch)
+
+## Every console message
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"c489ff1ccaf86949cd4efc6c3e8f19cd","route":"GET /me","method":"GET","status":200,"durationMs":0,"actorRole":"customer","outcome":"ok"}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"2023e3695ffa0c039825aaca217dc672","route":"GET /_demo/users","method":"GET","status":200,"durationMs":0,"outcome":"ok"}
+[customer] error: Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' appears in neither the style-src directive nor the default-src directive of the Content Security Policy.
+[customer] pageerror: /localhost:4501/api/dealerships due to access control checks.
+[customer] error: Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' appears in neither the style-src directive nor the default-src directive of the Content Security Policy.
+[customer] error: Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' appears in neither the style-src directive nor the default-src directive of the Content Security Policy.
+[customer] error: Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' appears in neither the style-src directive nor the default-src directive of the Content Security Policy.
+[customer] error: Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' appears in neither the style-src directive nor the default-src directive of the Content Security Policy.
+[customer] error: Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' appears in neither the style-src directive nor the default-src directive of the Content Security Policy.
+[customer] error: Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' appears in neither the style-src directive nor the default-src directive of the Content Security Policy.
+[customer] pageerror: /localhost:4501/api/dealerships due to access control checks.
+[customer] pageerror: /localhost:4501/api/service-types due to access control checks.
+[customer] pageerror: /localhost:4501/api/customers/customer-a/vehicles due to access control checks.
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"ad8c7755cf5254496f0b8df78313bc2f","route":"GET /me","method":"GET","status":200,"durationMs":0,"actorRole":"customer","outcome":"ok"}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"4447298d9bb2625d0d76a5d45c3a2357","route":"GET /_demo/users","method":"GET","status":200,"durationMs":0,"outcome":"ok"}
+[customer] error: Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' appears in neither the style-src directive nor the default-src directive of the Content Security Policy.
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"e997b954d64857ef67dad21513a69e94","durationMs":0}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"e997b954d64857ef67dad21513a69e94","route":"GET /dealerships","method":"GET","status":200,"durationMs":0,"actorRole":"customer","outcome":"ok"}
+[customer] error: Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' appears in neither the style-src directive nor the default-src directive of the Content Security Policy.
+[customer] error: Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' appears in neither the style-src directive nor the default-src directive of the Content Security Policy.
+[customer] error: Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' appears in neither the style-src directive nor the default-src directive of the Content Security Policy.
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"e20d37cfed4ac8cd0e9370952ef4e89a","durationMs":0}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"c436d7ed2e7b582b33579f08931e509a","durationMs":0}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"e20d37cfed4ac8cd0e9370952ef4e89a","route":"GET /dealerships","method":"GET","status":200,"durationMs":0,"actorRole":"customer","outcome":"ok"}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"c436d7ed2e7b582b33579f08931e509a","route":"GET /service-types","method":"GET","status":200,"durationMs":0,"actorRole":"customer","outcome":"ok"}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"14469acc9d1d4835d1508868f167d07e","durationMs":0}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"14469acc9d1d4835d1508868f167d07e","route":"GET /customers/{customerId}/vehicles","method":"GET","status":200,"durationMs":0,"actorRole":"customer","outcome":"ok"}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"24f95fa1fb2475a7df3f46104b4557e4","durationMs":0}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"71427c7d6ed809549b9bd23a83a0975c","durationMs":0}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"08c246e1f98973ca9fec37429439c9b1","durationMs":0}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.check","traceId":"24f95fa1fb2475a7df3f46104b4557e4","durationMs":0}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"24f95fa1fb2475a7df3f46104b4557e4","route":"GET /dealerships/{dealershipId}/availability","method":"GET","status":200,"durationMs":0,"dealershipId":"dealership-london","actorRole":"customer","outcome":"ok"}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"d4465bf3158c81326992fa7d070a53e2","durationMs":0}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"446d8956415ae47a4d23ae7dae170957","durationMs":0}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"8673ebdfde757f64af32c5036d86fec8","durationMs":0}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.check","traceId":"71427c7d6ed809549b9bd23a83a0975c","durationMs":0}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"71427c7d6ed809549b9bd23a83a0975c","route":"GET /dealerships/{dealershipId}/availability","method":"GET","status":200,"durationMs":0,"dealershipId":"dealership-london","actorRole":"customer","outcome":"ok"}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.check","traceId":"08c246e1f98973ca9fec37429439c9b1","durationMs":0}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"08c246e1f98973ca9fec37429439c9b1","route":"GET /dealerships/{dealershipId}/availability","method":"GET","status":200,"durationMs":0,"dealershipId":"dealership-london","actorRole":"customer","outcome":"ok"}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.check","traceId":"d4465bf3158c81326992fa7d070a53e2","durationMs":0}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"d4465bf3158c81326992fa7d070a53e2","route":"GET /dealerships/{dealershipId}/availability","method":"GET","status":200,"durationMs":0,"dealershipId":"dealership-london","actorRole":"customer","outcome":"ok"}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.check","traceId":"446d8956415ae47a4d23ae7dae170957","durationMs":0}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"446d8956415ae47a4d23ae7dae170957","route":"GET /dealerships/{dealershipId}/availability","method":"GET","status":200,"durationMs":0,"dealershipId":"dealership-london","actorRole":"customer","outcome":"ok"}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.check","traceId":"8673ebdfde757f64af32c5036d86fec8","durationMs":0}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"8673ebdfde757f64af32c5036d86fec8","route":"GET /dealerships/{dealershipId}/availability","method":"GET","status":200,"durationMs":0,"dealershipId":"dealership-london","actorRole":"customer","outcome":"ok"}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.check","traceId":"c5b868697f3f5d172ca94e5c31687657","durationMs":0}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"c5b868697f3f5d172ca94e5c31687657","durationMs":0}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"c5b868697f3f5d172ca94e5c31687657","route":"POST /availability-checks","method":"POST","status":200,"durationMs":0,"dealershipId":"dealership-london","actorRole":"customer","outcome":"ok"}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"57614f2ea4f0601f8ca9b225dd7104d9","durationMs":0}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.check","traceId":"57614f2ea4f0601f8ca9b225dd7104d9","durationMs":0}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.write","traceId":"57614f2ea4f0601f8ca9b225dd7104d9","durationMs":0}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"appointment.book","traceId":"57614f2ea4f0601f8ca9b225dd7104d9","route":"POST /appointments","method":"POST","status":201,"dealershipId":"dealership-london","actorRole":"customer","outcome":"confirmed","appointmentId":"a97f5c43-f308-4e49-a775-279bba55401f","technicianId":"tech-lon-birch","serviceBayId":"bay-lon-1"}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"57614f2ea4f0601f8ca9b225dd7104d9","route":"POST /appointments","method":"POST","status":201,"durationMs":0,"dealershipId":"dealership-london","actorRole":"customer","outcome":"ok"}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"d2a78b948367a1533493943bda767408","durationMs":0}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"d2a78b948367a1533493943bda767408","route":"GET /dealerships","method":"GET","status":200,"durationMs":0,"actorRole":"customer","outcome":"ok"}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"87937e3339d5d7831bf3bb37dfc9a6d3","durationMs":0}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"87937e3339d5d7831bf3bb37dfc9a6d3","route":"GET /appointments/{appointmentId}","method":"GET","status":200,"durationMs":0,"dealershipId":"dealership-london","actorRole":"customer","outcome":"ok"}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"310a34d830228459862394639e08ff4b","durationMs":0}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"e64ea64fed8333bfad3a81f9c07fc271","durationMs":0}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.check","traceId":"310a34d830228459862394639e08ff4b","durationMs":0}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"310a34d830228459862394639e08ff4b","route":"GET /dealerships/{dealershipId}/availability","method":"GET","status":200,"durationMs":0,"dealershipId":"dealership-london","actorRole":"customer","outcome":"ok"}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"ea36d2fcf17b2fdc7f7e8be5b44ff0d3","durationMs":0}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"734e2f6cc2cc9384ffc9fad558d8d05c","durationMs":0}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"b159f4a10e530a2c85e644bf128d79ee","durationMs":0}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"ea17453d527205c285ee8a0d92929a53","durationMs":0}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.check","traceId":"e64ea64fed8333bfad3a81f9c07fc271","durationMs":0}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"e64ea64fed8333bfad3a81f9c07fc271","route":"GET /dealerships/{dealershipId}/availability","method":"GET","status":200,"durationMs":0,"dealershipId":"dealership-london","actorRole":"customer","outcome":"ok"}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.check","traceId":"ea36d2fcf17b2fdc7f7e8be5b44ff0d3","durationMs":0}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"ea36d2fcf17b2fdc7f7e8be5b44ff0d3","route":"GET /dealerships/{dealershipId}/availability","method":"GET","status":200,"durationMs":0,"dealershipId":"dealership-london","actorRole":"customer","outcome":"ok"}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.check","traceId":"734e2f6cc2cc9384ffc9fad558d8d05c","durationMs":0}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"734e2f6cc2cc9384ffc9fad558d8d05c","route":"GET /dealerships/{dealershipId}/availability","method":"GET","status":200,"durationMs":0,"dealershipId":"dealership-london","actorRole":"customer","outcome":"ok"}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.check","traceId":"b159f4a10e530a2c85e644bf128d79ee","durationMs":0}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"b159f4a10e530a2c85e644bf128d79ee","route":"GET /dealerships/{dealershipId}/availability","method":"GET","status":200,"durationMs":0,"dealershipId":"dealership-london","actorRole":"customer","outcome":"ok"}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.check","traceId":"ea17453d527205c285ee8a0d92929a53","durationMs":0}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"ea17453d527205c285ee8a0d92929a53","route":"GET /dealerships/{dealershipId}/availability","method":"GET","status":200,"durationMs":0,"dealershipId":"dealership-london","actorRole":"customer","outcome":"ok"}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"2517755ee8944e59a53a61067de40e5a","durationMs":0}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"2517755ee8944e59a53a61067de40e5a","route":"GET /dealerships","method":"GET","status":200,"durationMs":0,"actorRole":"customer","outcome":"ok"}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"8d735a7b8bb07d62293e6958b027627b","durationMs":0}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"8d735a7b8bb07d62293e6958b027627b","route":"GET /appointments/{appointmentId}","method":"GET","status":200,"durationMs":0,"dealershipId":"dealership-london","actorRole":"customer","outcome":"ok"}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"af37911ac590bafc273d4e6d9d77bb7e","durationMs":0}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.write","traceId":"af37911ac590bafc273d4e6d9d77bb7e","durationMs":0}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"appointment.cancel","traceId":"af37911ac590bafc273d4e6d9d77bb7e","route":"POST /appointments/{appointmentId}/cancel","method":"POST","status":200,"dealershipId":"dealership-london","actorRole":"customer","outcome":"ok","appointmentId":"a97f5c43-f308-4e49-a775-279bba55401f","technicianId":"tech-lon-birch","serviceBayId":"bay-lon-1"}
+[customer] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"af37911ac590bafc273d4e6d9d77bb7e","route":"POST /appointments/{appointmentId}/cancel","method":"POST","status":200,"durationMs":0,"dealershipId":"dealership-london","actorRole":"customer","outcome":"ok"}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"8d18e8240a97c308b06b2b4e1bef2fbd","route":"GET /me","method":"GET","status":200,"durationMs":0,"actorRole":"staff","outcome":"ok"}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"095051b2969fa33ff17d04c32fde447f","route":"GET /_demo/users","method":"GET","status":200,"durationMs":0,"outcome":"ok"}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"2c7818efe5639ce0102ec196adc3f307","route":"GET /me","method":"GET","status":200,"durationMs":0,"actorRole":"staff","outcome":"ok"}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"f042e5f932d451e2e4454b153fc69e0a","route":"GET /_demo/users","method":"GET","status":200,"durationMs":0,"outcome":"ok"}
+[staff] error: Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' appears in neither the style-src directive nor the default-src directive of the Content Security Policy.
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"410d978627a88c32692403169fc8e55a","durationMs":0}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"410d978627a88c32692403169fc8e55a","route":"GET /dealerships","method":"GET","status":200,"durationMs":0,"actorRole":"staff","outcome":"ok"}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"96f77f201b125f514ecef49579755b34","durationMs":0}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"96f77f201b125f514ecef49579755b34","route":"GET /dealerships/{dealershipId}/schedule","method":"GET","status":200,"durationMs":0,"dealershipId":"dealership-london","actorRole":"staff","outcome":"ok"}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"8d7bdfadd0c4849fad66013a4ed20330","durationMs":0}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"8d7bdfadd0c4849fad66013a4ed20330","route":"GET /dealerships","method":"GET","status":200,"durationMs":0,"actorRole":"staff","outcome":"ok"}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"41b7d1c1a0400bb748436f2e8b83d0d4","durationMs":0}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"41b7d1c1a0400bb748436f2e8b83d0d4","route":"GET /dealerships/{dealershipId}/schedule","method":"GET","status":200,"durationMs":0,"dealershipId":"dealership-london","actorRole":"staff","outcome":"ok"}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"5daaa6db485787f5efd25af92303d72a","durationMs":0}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"5daaa6db485787f5efd25af92303d72a","route":"GET /dealerships","method":"GET","status":200,"durationMs":0,"actorRole":"staff","outcome":"ok"}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"14f9a8d443d765f5b778e2b6312abffd","durationMs":0}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"14f9a8d443d765f5b778e2b6312abffd","route":"POST /customers/search","method":"POST","status":200,"durationMs":0,"actorRole":"staff","outcome":"ok"}
+[staff] error: Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' appears in neither the style-src directive nor the default-src directive of the Content Security Policy.
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"83d65994a3bc563abd22e9c374c82314","durationMs":0}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"6058d3706bc2fb8ff359b4197d48094f","durationMs":0}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"83d65994a3bc563abd22e9c374c82314","route":"GET /dealerships","method":"GET","status":200,"durationMs":0,"actorRole":"staff","outcome":"ok"}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"6058d3706bc2fb8ff359b4197d48094f","route":"GET /service-types","method":"GET","status":200,"durationMs":0,"actorRole":"staff","outcome":"ok"}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"786be2740b4982d2f5e8f1bed8f95d76","durationMs":0}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"786be2740b4982d2f5e8f1bed8f95d76","route":"GET /dealerships/{dealershipId}/schedule","method":"GET","status":200,"durationMs":0,"dealershipId":"dealership-london","actorRole":"staff","outcome":"ok"}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"2257536e8b8088d4edbb29f5b524c42d","durationMs":0}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.check","traceId":"65e6718e4601c712fe82773e4d0d5e43","durationMs":0}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"65e6718e4601c712fe82773e4d0d5e43","durationMs":0}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"cfd759597e383e9e3edace62cb72c9d7","durationMs":0}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.check","traceId":"2257536e8b8088d4edbb29f5b524c42d","durationMs":0}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"2257536e8b8088d4edbb29f5b524c42d","route":"GET /dealerships/{dealershipId}/availability","method":"GET","status":200,"durationMs":0,"dealershipId":"dealership-london","actorRole":"staff","outcome":"ok"}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"4165e07dd84a135e8ead84635d76e0a9","durationMs":0}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"3f50ac1bbff63b07917e05ed6b1c28d6","durationMs":0}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"ba345569ca23acd1778aa29845e348d4","durationMs":0}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"c96d2380aed7a1b718ab943c51ecb9e6","durationMs":0}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"65e6718e4601c712fe82773e4d0d5e43","route":"POST /availability-checks","method":"POST","status":200,"durationMs":0,"dealershipId":"dealership-london","actorRole":"staff","outcome":"ok"}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.check","traceId":"cfd759597e383e9e3edace62cb72c9d7","durationMs":0}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"cfd759597e383e9e3edace62cb72c9d7","route":"GET /dealerships/{dealershipId}/availability","method":"GET","status":200,"durationMs":0,"dealershipId":"dealership-london","actorRole":"staff","outcome":"ok"}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.check","traceId":"4165e07dd84a135e8ead84635d76e0a9","durationMs":0}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"4165e07dd84a135e8ead84635d76e0a9","route":"GET /dealerships/{dealershipId}/availability","method":"GET","status":200,"durationMs":0,"dealershipId":"dealership-london","actorRole":"staff","outcome":"ok"}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.check","traceId":"3f50ac1bbff63b07917e05ed6b1c28d6","durationMs":0}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"3f50ac1bbff63b07917e05ed6b1c28d6","route":"GET /dealerships/{dealershipId}/availability","method":"GET","status":200,"durationMs":0,"dealershipId":"dealership-london","actorRole":"staff","outcome":"ok"}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.check","traceId":"ba345569ca23acd1778aa29845e348d4","durationMs":0}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"ba345569ca23acd1778aa29845e348d4","route":"GET /dealerships/{dealershipId}/availability","method":"GET","status":200,"durationMs":0,"dealershipId":"dealership-london","actorRole":"staff","outcome":"ok"}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.check","traceId":"c96d2380aed7a1b718ab943c51ecb9e6","durationMs":0}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"c96d2380aed7a1b718ab943c51ecb9e6","route":"GET /dealerships/{dealershipId}/availability","method":"GET","status":200,"durationMs":0,"dealershipId":"dealership-london","actorRole":"staff","outcome":"ok"}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.check","traceId":"f6ad25822dc24113c6a4c50ee7b30a2f","durationMs":0}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"f6ad25822dc24113c6a4c50ee7b30a2f","durationMs":0}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"f6ad25822dc24113c6a4c50ee7b30a2f","route":"POST /availability-checks","method":"POST","status":200,"durationMs":0,"dealershipId":"dealership-london","actorRole":"staff","outcome":"ok"}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"81f3c0a53d84f7f7c944ffbfe62e7172","durationMs":0}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.check","traceId":"81f3c0a53d84f7f7c944ffbfe62e7172","durationMs":0}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.write","traceId":"81f3c0a53d84f7f7c944ffbfe62e7172","durationMs":0}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"appointment.book","traceId":"81f3c0a53d84f7f7c944ffbfe62e7172","route":"POST /appointments","method":"POST","status":201,"dealershipId":"dealership-london","actorRole":"staff","outcome":"confirmed","appointmentId":"e6f08a29-721e-463e-b954-a55b569ed217","technicianId":"tech-lon-ash","serviceBayId":"bay-lon-1"}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"81f3c0a53d84f7f7c944ffbfe62e7172","route":"POST /appointments","method":"POST","status":201,"durationMs":0,"dealershipId":"dealership-london","actorRole":"staff","outcome":"ok"}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"a2eb2a0ea1e4debdd8de80a811d65c95","durationMs":0}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"a2eb2a0ea1e4debdd8de80a811d65c95","route":"GET /customers/{customerId}/vehicles","method":"GET","status":200,"durationMs":0,"actorRole":"staff","outcome":"ok"}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"3dacaacc923cd3c50a80723c0821f72e","durationMs":0}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"3dacaacc923cd3c50a80723c0821f72e","route":"GET /dealerships","method":"GET","status":200,"durationMs":0,"actorRole":"staff","outcome":"ok"}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"a3414546d6b07a844a649f047f978fe7","durationMs":0}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"ff3eaa61a4bcae454e13f31750bc5760","durationMs":0}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"a0f1436ec865e9ef3c9752dcf83eb2cd","durationMs":0}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"49885ce883fe3bc91e3bba30fc28d97f","durationMs":0}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"4ff567841265509913543121376a3a68","durationMs":0}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"c1de55019f8ab87cc258b4450c7a03fe","durationMs":0}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"c215e26583541917157bbd1018eb5311","durationMs":0}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"a3414546d6b07a844a649f047f978fe7","route":"GET /appointments/{appointmentId}","method":"GET","status":200,"durationMs":0,"dealershipId":"dealership-london","actorRole":"staff","outcome":"ok"}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.check","traceId":"ff3eaa61a4bcae454e13f31750bc5760","durationMs":0}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"ff3eaa61a4bcae454e13f31750bc5760","route":"GET /dealerships/{dealershipId}/availability","method":"GET","status":200,"durationMs":0,"dealershipId":"dealership-london","actorRole":"staff","outcome":"ok"}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.check","traceId":"a0f1436ec865e9ef3c9752dcf83eb2cd","durationMs":0}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"a0f1436ec865e9ef3c9752dcf83eb2cd","route":"GET /dealerships/{dealershipId}/availability","method":"GET","status":200,"durationMs":0,"dealershipId":"dealership-london","actorRole":"staff","outcome":"ok"}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.check","traceId":"49885ce883fe3bc91e3bba30fc28d97f","durationMs":0}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"49885ce883fe3bc91e3bba30fc28d97f","route":"GET /dealerships/{dealershipId}/availability","method":"GET","status":200,"durationMs":0,"dealershipId":"dealership-london","actorRole":"staff","outcome":"ok"}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.check","traceId":"4ff567841265509913543121376a3a68","durationMs":0}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"4ff567841265509913543121376a3a68","route":"GET /dealerships/{dealershipId}/availability","method":"GET","status":200,"durationMs":0,"dealershipId":"dealership-london","actorRole":"staff","outcome":"ok"}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.check","traceId":"c1de55019f8ab87cc258b4450c7a03fe","durationMs":0}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"c1de55019f8ab87cc258b4450c7a03fe","route":"GET /dealerships/{dealershipId}/availability","method":"GET","status":200,"durationMs":0,"dealershipId":"dealership-london","actorRole":"staff","outcome":"ok"}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.check","traceId":"c215e26583541917157bbd1018eb5311","durationMs":0}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"c215e26583541917157bbd1018eb5311","route":"GET /dealerships/{dealershipId}/availability","method":"GET","status":200,"durationMs":0,"dealershipId":"dealership-london","actorRole":"staff","outcome":"ok"}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"2a0fa0973a876b6b35b8800a656e2959","durationMs":0}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"2a0fa0973a876b6b35b8800a656e2959","route":"POST /customers/search","method":"POST","status":200,"durationMs":0,"actorRole":"staff","outcome":"ok"}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"5c9880ce1e26765b275b2e49f40837b9","durationMs":0}
+[staff] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"5c9880ce1e26765b275b2e49f40837b9","route":"GET /dealerships/{dealershipId}/schedule","method":"GET","status":200,"durationMs":0,"dealershipId":"dealership-london","actorRole":"staff","outcome":"ok"}
+[manager] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"9cd9299ca07c126812879699b8595f3e","route":"GET /me","method":"GET","status":200,"durationMs":0,"actorRole":"manager","outcome":"ok"}
+[manager] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"835fb15ab3f2af7e2ee46eb6b716d85d","route":"GET /_demo/users","method":"GET","status":200,"durationMs":0,"outcome":"ok"}
+[manager] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"57bb2cb20cb9096e8966367a045f56dd","route":"GET /me","method":"GET","status":200,"durationMs":0,"actorRole":"manager","outcome":"ok"}
+[manager] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"9268608c6571e8c95ad44f5495fc9122","route":"GET /_demo/users","method":"GET","status":200,"durationMs":0,"outcome":"ok"}
+[manager] error: Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' appears in neither the style-src directive nor the default-src directive of the Content Security Policy.
+[manager] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"11d7aa6227bbf365cb32bbcc44d7d025","durationMs":0}
+[manager] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"11d7aa6227bbf365cb32bbcc44d7d025","route":"GET /dealerships","method":"GET","status":200,"durationMs":0,"actorRole":"manager","outcome":"ok"}
+[manager] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"e9dbbd280fd4c5504b59e124b2b274be","durationMs":0}
+[manager] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"130fb86f66a3d2420d318e9de747f5e8","durationMs":0}
+[manager] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"e9dbbd280fd4c5504b59e124b2b274be","route":"GET /dealerships/{dealershipId}","method":"GET","status":200,"durationMs":0,"dealershipId":"dealership-london","actorRole":"manager","outcome":"ok"}
+[manager] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"130fb86f66a3d2420d318e9de747f5e8","route":"GET /appointments","method":"GET","status":200,"durationMs":0,"dealershipId":"dealership-london","actorRole":"manager","outcome":"ok"}
+[manager] error: Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' appears in neither the style-src directive nor the default-src directive of the Content Security Policy.
+[manager] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"0b1ce020a95a771eda4f59d3b26b0a68","durationMs":0}
+[manager] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"0b1ce020a95a771eda4f59d3b26b0a68","route":"GET /appointments","method":"GET","status":200,"durationMs":0,"dealershipId":"dealership-london","actorRole":"manager","outcome":"ok"}
+[manager] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"487a7cd37bcd1e26c3838ad0865ddefd","durationMs":0}
+[manager] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"dealership.settings.update","traceId":"487a7cd37bcd1e26c3838ad0865ddefd","route":"PUT /dealerships/{dealershipId}/settings","method":"PUT","status":200,"dealershipId":"dealership-london","actorRole":"manager","outcome":"ok"}
+[manager] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"487a7cd37bcd1e26c3838ad0865ddefd","route":"PUT /dealerships/{dealershipId}/settings","method":"PUT","status":200,"durationMs":0,"dealershipId":"dealership-london","actorRole":"manager","outcome":"ok"}
+[manager] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"d10ec20e2bf8d40b396ca0b26d899264","durationMs":0}
+[manager] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.write","traceId":"d10ec20e2bf8d40b396ca0b26d899264","durationMs":0}
+[manager] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"dealership.settings.update","traceId":"d10ec20e2bf8d40b396ca0b26d899264","route":"PUT /dealerships/{dealershipId}/settings","method":"PUT","status":200,"dealershipId":"dealership-london","actorRole":"manager","outcome":"ok"}
+[manager] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"d10ec20e2bf8d40b396ca0b26d899264","route":"PUT /dealerships/{dealershipId}/settings","method":"PUT","status":200,"durationMs":0,"dealershipId":"dealership-london","actorRole":"manager","outcome":"ok"}
+[manager] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"9ba4d514462aa80d44a6f63f5434544d","durationMs":0}
+[manager] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"9ba4d514462aa80d44a6f63f5434544d","route":"GET /dealerships","method":"GET","status":200,"durationMs":0,"actorRole":"manager","outcome":"ok"}
+[manager] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"a2f0d0d57d2671fca2ef356313dcdfbc","durationMs":0}
+[manager] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"afe270dc5c93a94279396a89101713f9","durationMs":0}
+[manager] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"a2f0d0d57d2671fca2ef356313dcdfbc","route":"GET /dealerships/{dealershipId}","method":"GET","status":200,"durationMs":0,"dealershipId":"dealership-london","actorRole":"manager","outcome":"ok"}
+[manager] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"afe270dc5c93a94279396a89101713f9","route":"GET /appointments","method":"GET","status":200,"durationMs":0,"dealershipId":"dealership-london","actorRole":"manager","outcome":"ok"}
+[manager] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"eb7ba287e4209b69844aa1241b12d97d","route":"GET /me","method":"GET","status":200,"durationMs":0,"actorRole":"manager","outcome":"ok"}
+[manager] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"2203665ca3a169f62b4a75cc763db13f","route":"GET /_demo/users","method":"GET","status":200,"durationMs":0,"outcome":"ok"}
+[manager] error: Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' appears in neither the style-src directive nor the default-src directive of the Content Security Policy.
+[manager] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"6fff032f4a81e9ad00a0c240265b0761","durationMs":0}
+[manager] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"6fff032f4a81e9ad00a0c240265b0761","route":"GET /dealerships","method":"GET","status":200,"durationMs":0,"actorRole":"manager","outcome":"ok"}
+[manager] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"e7f82a4c25ebe5fa8f3a1e73f8df285b","durationMs":0}
+[manager] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"e7f82a4c25ebe5fa8f3a1e73f8df285b","route":"GET /appointments","method":"GET","status":200,"durationMs":0,"dealershipId":"dealership-london","actorRole":"manager","outcome":"ok"}
+[manager] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"ca4ddfd33449c7c2b05cf80d010e5b37","durationMs":0}
+[manager] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"ca4ddfd33449c7c2b05cf80d010e5b37","route":"GET /outbox","method":"GET","status":200,"durationMs":0,"dealershipId":"dealership-london","actorRole":"manager","outcome":"ok"}
+[manager] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"121edf39db0a6660668b6a1c0fd59d90","durationMs":0}
+[manager] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"121edf39db0a6660668b6a1c0fd59d90","route":"GET /appointments/{appointmentId}","method":"GET","status":200,"durationMs":0,"dealershipId":"dealership-london","actorRole":"manager","outcome":"ok"}
+[manager] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"step.load","traceId":"ca7226e009835ada81fdce28ea101b29","durationMs":0}
+[manager] info: {"ts":"2026-10-28T10:40:00.000Z","level":"info","msg":"http.request","traceId":"ca7226e009835ada81fdce28ea101b29","route":"GET /appointments/{appointmentId}","method":"GET","status":200,"durationMs":0,"dealershipId":"dealership-london","actorRole":"manager","outcome":"ok"}
+
+## Every policy violation event (directive, blocked, element, source)
+style-src-attr inline SELECT web-inspector://bootstrap.js:825:45 (WebKit's own <select> style, set aside: Q-0001-253)
+style-src-attr inline document web-inspector://bootstrap.js:825:45 (WebKit's own <select> style, set aside: Q-0001-253)
+style-src-attr inline document web-inspector://bootstrap.js:825:45 (WebKit's own <select> style, set aside: Q-0001-253)
+style-src-attr inline document web-inspector://bootstrap.js:825:45 (WebKit's own <select> style, set aside: Q-0001-253)
+style-src-attr inline SELECT web-inspector://bootstrap.js:825:45 (WebKit's own <select> style, set aside: Q-0001-253)
+style-src-attr inline SELECT web-inspector://bootstrap.js:825:45 (WebKit's own <select> style, set aside: Q-0001-253)
+style-src-attr inline SELECT web-inspector://bootstrap.js:825:45 (WebKit's own <select> style, set aside: Q-0001-253)
+style-src-attr inline SELECT web-inspector://bootstrap.js:825:45 (WebKit's own <select> style, set aside: Q-0001-253)
+style-src-attr inline SELECT web-inspector://bootstrap.js:825:45 (WebKit's own <select> style, set aside: Q-0001-253)
+style-src-attr inline SELECT web-inspector://bootstrap.js:825:45 (WebKit's own <select> style, set aside: Q-0001-253)
+style-src-attr inline SELECT web-inspector://bootstrap.js:825:45 (WebKit's own <select> style, set aside: Q-0001-253)
+style-src-attr inline SELECT web-inspector://bootstrap.js:825:45 (WebKit's own <select> style, set aside: Q-0001-253)
+style-src-attr inline SELECT web-inspector://bootstrap.js:825:45 (WebKit's own <select> style, set aside: Q-0001-253)
+style-src-attr inline SELECT web-inspector://bootstrap.js:825:45 (WebKit's own <select> style, set aside: Q-0001-253)
+style-src-attr inline SELECT web-inspector://bootstrap.js:825:45 (WebKit's own <select> style, set aside: Q-0001-253)
+style-src-attr inline SELECT web-inspector://bootstrap.js:825:45 (WebKit's own <select> style, set aside: Q-0001-253)
