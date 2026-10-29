@@ -236,6 +236,12 @@ for (const width of widths) {
       await expectNoSidewaysScroll(page);
     }
     await pickRole(page, "Manager");
+    // The role switch keeps the page it was on (/components). Open the manager's home and let it load
+    // before measuring, or a slow machine measures the component sheet mid-switch.
+    await openApp(page, "/");
+    await expect(page).toHaveURL(/\/schedule/);
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await expect(page.locator('[aria-busy="true"]')).toHaveCount(0);
     await expectNoSidewaysScroll(page);
     const small = await page.evaluate(() =>
       [
