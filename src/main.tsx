@@ -1,3 +1,5 @@
+// First: Zod must be set up before any module makes a schema (see the file).
+import "./ui/forms/zod-config";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./styles/app.css";
