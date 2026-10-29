@@ -2,7 +2,7 @@
 // REQ-BOOK-009.AC-2/AC-4, SEC-5, SEC-11.AC-4, SEC-17.AC-2, D-0001-22 a/f, D-0001-60 A, D-0001-77 A, NFR-4, NFR-7).
 // The clock is fixed at Wed 28 Oct 2026, 10:40 in London and moved with Playwright's clock for the cutoff. Data is
 // made by real calls to the mock API from the page. With VIDEO_DIR set, the video test records the main flow.
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 import {
   expectNoSidewaysScroll,
   interceptApi,
@@ -41,6 +41,13 @@ const dialog = (page: Page) => page.getByRole("dialog");
 const upcoming = (page: Page) => page.getByRole("region", { name: "Upcoming" });
 const earlier = (page: Page) =>
   page.getByRole("region", { name: "Past and cancelled" });
+
+/** Waits until every CSS animation on `box` and inside it has ended, so its boxes no longer move. */
+async function settled(box: Locator) {
+  await box.evaluate((el) =>
+    Promise.all(el.getAnimations({ subtree: true }).map((a) => a.finished)),
+  );
+}
 
 /** Staff book new customers at `start` until the time is full (every bay or technician then in use). */
 async function fillTime(page: Page, startAt: string) {
@@ -539,6 +546,116 @@ test.describe("reschedule", () => {
     expect(sent[1]!.key).toBe(sent[0]!.key);
   });
 
+  test("the times are locked while a confirm is on its way; after a failure, Try again sends the time shown, under a new key when it changed", async ({
+    page,
+  }) => {
+    await answerFrom(page, {
+      path: "/reschedule",
+      method: "POST",
+      from: 1,
+      times: 1,
+      status: 500,
+      body: problemBody(500, "INTERNAL"),
+    });
+    await interceptApi(page, { path: "/reschedule", delayMs: 1500 });
+    await recordPosts(page);
+    await start(page, 1440, "/appointments");
+    const fri = await bookAs(page, A, FRI_10);
+    await page.goto(`/appointments/${fri.id}/reschedule`);
+    await page.getByRole("radio", { name: /^Tue 3 Nov,/ }).check();
+    const first = page.getByRole("radio", {
+      name: "13:00 to 16:00",
+      exact: true,
+    });
+    const other = page.getByRole("radio", {
+      name: "14:00 to 17:00",
+      exact: true,
+    });
+    await first.check();
+    await button(page, "Confirm new time").click();
+    await expect(
+      page.getByRole("button", { name: /Confirming…/ }).first(),
+    ).toBeVisible();
+    await expect(first).toBeDisabled();
+    await expect(other).toBeDisabled();
+    await expect(
+      page.getByText(/^Your appointment has not changed\. Try again/),
+    ).toBeVisible();
+    await expect(other).toBeEnabled();
+    await other.check();
+    await page.getByRole("button", { name: "Try again" }).click();
+    await expect(h1(page, "Tue 3 Nov, 14:00 to 17:00")).toBeVisible({
+      timeout: 8000,
+    });
+    expect((await read(page, A, fri.id)).body.start).toBe(
+      "2026-11-03T14:00:00Z",
+    );
+    const sent = await posts(page, `/appointments/${fri.id}/reschedule`);
+    expect(sent).toHaveLength(2);
+    expect(sent[1]!.key).not.toBe(sent[0]!.key);
+  });
+
+  test("Q-0001-236 B: on the appointment's own day with no other time free, the grid keeps Your time and says nothing else is left", async ({
+    page,
+  }) => {
+    await answerFrom(page, {
+      path: "/availability",
+      query: "date=2026-10-30",
+      from: 2,
+      status: 200,
+      body: {
+        date: "2026-10-30",
+        timeZone: "Europe/London",
+        gridMinutes: 15,
+        slots: [],
+      },
+    });
+    await start(page, 1440, "/appointments");
+    const fri = await bookAs(page, A, FRI_10);
+    await page.goto(`/appointments/${fri.id}/reschedule`);
+    await expect(
+      page.getByRole("radio", { name: /^Fri 30 Oct,/ }),
+    ).toBeChecked();
+    // Choosing the day by hand asks again, and this answer has no times left.
+    await page.getByRole("radio", { name: /^Mon 2 Nov,/ }).check();
+    // A click, not check(): the empty answer turns the day Fully booked (not checked), and check() fails when
+    // that answer lands before it reads the radio back. The lines below wait for the outcome.
+    await page.getByRole("radio", { name: /^Fri 30 Oct,/ }).click();
+    await expect(
+      page.getByRole("radio", { name: /^Fri 30 Oct, fully booked/i }),
+    ).toBeVisible();
+    await expect(
+      page.getByText("No other times are left on Fri 30 Oct."),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("radio", { name: "10:00, your time" }),
+    ).toBeDisabled();
+    await expect(page.getByText(/Someone booked the last one/)).toHaveCount(0);
+  });
+
+  test("after a move, Back goes to where the customer came from, not to the finished reschedule screen", async ({
+    page,
+  }) => {
+    await start(page, 1440, "/appointments");
+    const fri = await bookAs(page, A, FRI_10);
+    await page.goto("/appointments");
+    await upcoming(page)
+      .getByRole("article")
+      .filter({ hasText: "Fri 30 Oct" })
+      .getByRole("link", { name: "Reschedule" })
+      .click();
+    await page.getByRole("radio", { name: /^Tue 3 Nov,/ }).check();
+    await page
+      .getByRole("radio", { name: "13:00 to 16:00", exact: true })
+      .check();
+    await button(page, "Confirm new time").click();
+    await expect(h1(page, "Tue 3 Nov, 13:00 to 16:00")).toBeVisible();
+    expect(new URL(page.url()).pathname).toBe(`/appointments/${fri.id}`);
+    await page.goBack();
+    await expect(h1(page, "My appointments")).toBeVisible();
+    expect(new URL(page.url()).pathname).toBe("/appointments");
+  });
+
   test("D-0001-60 A, D-0001-39 B: a reschedule link of a cancelled appointment, and a 409 ALREADY_CANCELLED on confirm, show the cancelled page with one quiet line", async ({
     page,
   }) => {
@@ -665,7 +782,66 @@ test.describe("after the cutoff (D-0001-22 a)", () => {
     ).toBeFocused();
     await dialog(page).getByText("Close", { exact: true }).click();
     await expect(page.getByRole("main").getByRole("button")).toHaveCount(0);
+    // The buttons that opened the dialog are gone: focus is on the title, not lost to the page (WCAG 2.4.3).
+    await expect(page.getByRole("heading", { level: 1 })).toBeFocused();
     expect((await read(page, A, thu.id)).body.cancelledAt).toBeNull();
+  });
+
+  test("WCAG 2.4.3: after a cancel or a refusal the opener is gone, so focus goes to the title or the card, never the page", async ({
+    page,
+  }) => {
+    await start(page, 1440, "/appointments");
+    const fri = await bookAs(page, A, FRI_10);
+    const thu = await bookAs(page, A, "2026-10-29T14:00:00Z");
+    const notBody = () =>
+      expect
+        .poll(() => page.evaluate(() => document.activeElement?.tagName))
+        .not.toBe("BODY");
+
+    // The appointment page: the title.
+    await page.goto(`/appointments/${fri.id}`);
+    await button(page, "Cancel appointment").click();
+    await dialog(page)
+      .getByRole("button", { name: "Cancel appointment" })
+      .click();
+    await expect(page.getByText(/^Cancelled on /)).toBeVisible();
+    await expect(h1(page, /Fri 30 Oct/)).toBeFocused();
+    await notBody();
+
+    // The list after a refusal: the card stays in Upcoming without its buttons; focus is on its date link.
+    const again = await bookAs(page, A, FRI_10);
+    await page.clock.setFixedTime(at("2026-10-29T11:59:00Z"));
+    await page.goto("/appointments");
+    const thuCard = upcoming(page)
+      .getByRole("article")
+      .filter({ hasText: "Thu 29 Oct" });
+    await thuCard.getByRole("button", { name: "Cancel appointment" }).click();
+    await page.clock.setFixedTime(at("2026-10-29T12:01:00Z"));
+    await dialog(page)
+      .getByRole("button", { name: "Cancel appointment" })
+      .click();
+    await dialog(page).getByText("Close", { exact: true }).click();
+    await expect(
+      thuCard.getByRole("button", { name: "Cancel appointment" }),
+    ).toHaveCount(0);
+    await expect(thuCard.getByRole("heading").getByRole("link")).toBeFocused();
+    await notBody();
+    expect((await read(page, A, thu.id)).body.cancelledAt).toBeNull();
+
+    // The list after a cancel: the card moves to Past and cancelled, and focus follows it.
+    await page.clock.setFixedTime(NOW);
+    await page.goto("/appointments");
+    await upcoming(page)
+      .getByRole("article")
+      .filter({ hasText: "Fri 30 Oct" })
+      .getByRole("button", { name: "Cancel appointment" })
+      .click();
+    await dialog(page)
+      .getByRole("button", { name: "Cancel appointment" })
+      .click();
+    const moved = earlier(page).locator(`[href="/appointments/${again.id}"]`);
+    await expect(moved.first()).toBeFocused();
+    await notBody();
   });
 });
 
@@ -784,6 +960,8 @@ test.describe("NFR-4, NFR-7", () => {
     const keep = box.getByRole("button", { name: "Keep appointment" });
     const danger = box.getByRole("button", { name: "Cancel appointment" });
     await expect(keep).toBeFocused();
+    // The sheet rises in with a CSS animation (the fake clock does not stop it): measure once it has ended.
+    await settled(box);
     expect((await danger.boundingBox())!.y).toBeLessThan(
       (await keep.boundingBox())!.y,
     );

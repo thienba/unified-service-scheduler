@@ -2,7 +2,7 @@
 // customer's words, then the view with its cancel dialog. Another customer's id answers 404, so the page is
 // the same as for an id that does not exist (SEC-5.AC-1, AC-2).
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router";
 import { ProblemState } from "../../app/states";
 import { Button } from "../../components/Button";
@@ -51,6 +51,9 @@ export function CustomerAppointmentPage({
   const handed = (useLocation().state ?? {}) as CustomerAppointmentState;
   const [dialog, setDialog] = useState(false);
   const [refused, setRefused] = useState(false);
+  // After a cancel or a refusal both action buttons are gone, the opener with them: focus goes to the title.
+  const [toTitle, setToTitle] = useState(false);
+  const title = useRef<HTMLHeadingElement>(null);
   const appointment = useQuery({
     queryKey: ["appointment", appointmentId],
     queryFn: () =>
@@ -60,6 +63,13 @@ export function CustomerAppointmentPage({
         }),
       ),
   });
+
+  // Runs after the dialog's own clean-up, which tries the opener first (WCAG 2.4.3).
+  useEffect(() => {
+    if (!toTitle || dialog || !title.current) return;
+    title.current.focus();
+    setToTitle(false);
+  }, [toTitle, dialog]);
 
   const back = <PageBack to="/appointments">My appointments</PageBack>;
   const failure = appointment.error ?? dealerships.error;
@@ -142,6 +152,7 @@ export function CustomerAppointmentPage({
         dealership={dealership}
         now={now}
         closed={refused}
+        titleRef={title}
         onCancel={() => setDialog(true)}
         notice={
           handed.alreadyCancelled && a.cancelledAt
@@ -158,10 +169,12 @@ export function CustomerAppointmentPage({
           onRefused={() => {
             setDialog(false);
             setRefused(true);
+            setToTitle(true);
             void appointment.refetch();
           }}
           onCancelled={() => {
             setDialog(false);
+            setToTitle(true);
             toast.show({
               kind: "success",
               message: "Appointment cancelled. The time is free again.",

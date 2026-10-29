@@ -337,7 +337,8 @@ function Rescheduling({
           kind: "success",
           message: `Appointment moved to ${formatDay(moved.start, zone, now)}, ${formatTime(moved.start, zone)}. The old time is free again.`,
         });
-        void navigate(`/appointments/${moved.id}`);
+        // Back from the moved appointment goes where the customer came from, not to this finished task.
+        void navigate(`/appointments/${moved.id}`, { replace: true });
       },
       onError: (error) => {
         busy.current = false;
@@ -445,6 +446,7 @@ function Rescheduling({
               now={now}
               value={start}
               onChoose={chooseTime}
+              disabled={confirming}
             />
           )}
 
@@ -464,9 +466,7 @@ function Rescheduling({
                   icon="refresh"
                   loading={confirming}
                   loadingLabel="Confirming…"
-                  onClick={() => {
-                    if (pending.current && !busy.current) send(pending.current);
-                  }}
+                  onClick={confirm}
                 >
                   Try again
                 </Button>
@@ -545,18 +545,21 @@ function Rescheduling({
               <h2 id="times-title" tabIndex={-1} className="text-xl">
                 Pick a start time
               </h2>
-              <Times
-                appointment={a}
-                day={day}
-                selected={selected}
-                query={day ? byDate.get(day) : undefined}
-                conflict={conflict}
-                dealership={dealership}
-                now={now}
-                thisYear={thisYear}
-                value={start}
-                onChoose={chooseTime}
-              />
+              {/* While a confirm is on its way the times cannot change, so what is sent is what is shown. */}
+              <fieldset disabled={confirming} className="contents">
+                <Times
+                  appointment={a}
+                  day={day}
+                  selected={selected}
+                  query={day ? byDate.get(day) : undefined}
+                  conflict={conflict}
+                  dealership={dealership}
+                  now={now}
+                  thisYear={thisYear}
+                  value={start}
+                  onChoose={chooseTime}
+                />
+              </fieldset>
             </section>
           )}
         </div>
@@ -711,7 +714,8 @@ function Times({
       unavailable: "Just taken",
     });
   }
-  if (free.length === 0 && !struck) {
+  // On the appointment's own day the grid stays, with "Your time" and the line that nothing else is left.
+  if (free.length === 0 && !struck && !own) {
     return (
       <EmptyDay
         appointment={a}
@@ -834,6 +838,7 @@ function ConflictAlert({
   now,
   value,
   onChoose,
+  disabled,
 }: {
   conflict: Conflict;
   current: string;
@@ -842,6 +847,8 @@ function ConflictAlert({
   now: number;
   value: string;
   onChoose: (start: string) => void;
+  /** True while a confirm is on its way. */
+  disabled: boolean;
 }) {
   const label = (instant: string) => formatTime(instant, zone);
   const conflictDay = localDateIn(conflict.start, zone);
@@ -888,7 +895,7 @@ function ConflictAlert({
           </p>
         </>
       ) : (
-        <div className="mt-2 grid gap-4">
+        <fieldset disabled={disabled} className="mt-2 grid min-w-0 gap-4">
           {closest.length > 0 && (
             <SuggestionGroup
               title="Closest to your time"
@@ -909,7 +916,7 @@ function ConflictAlert({
               label={label}
             />
           )}
-        </div>
+        </fieldset>
       )}
     </Alert>
   );

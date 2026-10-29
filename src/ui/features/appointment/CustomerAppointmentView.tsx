@@ -2,7 +2,7 @@
 // the badges, the facts (the technician's name, never the bay: D-0001-26 C), and Reschedule and Cancel while
 // it can still be changed online. From 768 wide the actions sit on the right; below, in the sticky bar.
 // The cancel dialog and the calls live in CustomerAppointmentPage.
-import type { ReactNode } from "react";
+import type { ReactNode, Ref } from "react";
 import { ActionBar } from "../../components/ActionBar";
 import { Alert } from "../../components/Alert";
 import {
@@ -40,6 +40,7 @@ export function CustomerAppointmentView({
   onCancel,
   closed = false,
   notice,
+  titleRef,
 }: AppointmentViewProps & {
   /** Opens the cancel dialog. */
   onCancel?: () => void;
@@ -47,6 +48,8 @@ export function CustomerAppointmentView({
   closed?: boolean;
   /** One quiet line above the page (D-0001-60 A). */
   notice?: ReactNode;
+  /** The title, where focus goes when the buttons it came from are gone (after a cancel). */
+  titleRef?: Ref<HTMLHeadingElement>;
 }) {
   const zone = a.timeZone;
   const status = customerStatus(a, now);
@@ -89,7 +92,11 @@ export function CustomerAppointmentView({
       <div className="grid gap-6 md:flex md:items-start md:gap-8">
         <div className="grid min-w-0 content-start gap-4 md:flex-1">
           <div className="grid gap-2">
-            <h1 tabIndex={-1} className="num text-2xl lg:text-3xl">
+            <h1
+              ref={titleRef}
+              tabIndex={-1}
+              className="num text-2xl lg:text-3xl"
+            >
               {formatDay(a.start, zone, now)},{" "}
               {formatTimeRange(a.start, a.end, zone)}
             </h1>

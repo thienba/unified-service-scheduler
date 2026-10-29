@@ -1,7 +1,7 @@
 // `my-appointments` (customer.md 6, REQ-BOOK-012.AC-1, REQ-BOOK-003.AC-2): the customer's own appointments,
 // read from the API on every visit, so a reload shows the same list. "Upcoming" first, soonest first; then
 // "Past and cancelled", newest first, 10 at a time. Staff and managers never reach it (the route's guard).
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "../../components/Button";
 import { HintBox } from "../../components/TimeChipGrid";
 import { Skeleton, StateBlock } from "../../components/StateBlock";
@@ -25,6 +25,10 @@ export function MyAppointmentsPage() {
   const toast = useToast();
   const [shown, setShown] = useState(PAGE);
   const [cancelling, setCancelling] = useState<Appointment | null>(null);
+  // The card whose Cancel button opened the dialog. After a cancel it moves to "Past and cancelled", and after
+  // a refusal it loses its buttons, so the opener is gone: focus goes to the card's date link instead.
+  const [refocus, setRefocus] = useState<string | null>(null);
+  const title = useRef<HTMLHeadingElement>(null);
   const now = Date.now();
 
   const loading =
@@ -41,10 +45,18 @@ export function MyAppointmentsPage() {
   const dealershipOf = (a: Appointment) =>
     dealerships.data?.find((d) => d.id === a.dealershipId);
 
+  // Runs after the dialog's own clean-up, and again until the list has been read again (WCAG 2.4.3).
+  useEffect(() => {
+    if (refocus === null || cancelling || list.isFetching) return;
+    const link = document.getElementById(`card-${refocus}`)?.querySelector("a");
+    (link ?? title.current)?.focus();
+    setRefocus(null);
+  });
+
   return (
     <div className="grid gap-8">
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
-        <h1 tabIndex={-1} className="text-2xl lg:text-3xl">
+        <h1 ref={title} tabIndex={-1} className="text-2xl lg:text-3xl">
           My appointments
         </h1>
         {!loading && !failure && !empty && (
@@ -156,10 +168,12 @@ export function MyAppointmentsPage() {
           now={now}
           onClose={() => setCancelling(null)}
           onRefused={() => {
+            setRefocus(cancelling.id);
             setCancelling(null);
             void list.refetch();
           }}
           onCancelled={() => {
+            setRefocus(cancelling.id);
             setCancelling(null);
             toast.show({
               kind: "success",

@@ -660,6 +660,24 @@ it("ActionBar: shows its text and buttons, hides from lg on most screens and fro
   expect(container.firstElementChild).toBeNull();
 });
 
+it("ActionBar: with no words, its buttons fill the row (customer-book.html and customer-appointment.html: .abar .btn{flex:1 1 auto})", () => {
+  const { container, rerender } = render(
+    <ActionBar actions={<Button variant="primary">Pick a time</Button>} />,
+  );
+  const row = () => container.firstElementChild!.lastElementChild!;
+  expect(container.firstElementChild!.childElementCount).toBe(1);
+  expect(row().className).toContain("flex-1");
+  expect(row().className).toContain("*:flex-auto");
+  rerender(
+    <ActionBar
+      title="Fri 30 Oct, 10:00"
+      actions={<Button variant="primary">Confirm booking</Button>}
+    />,
+  );
+  expect(container.firstElementChild!.childElementCount).toBe(2);
+  expect(row().className).toContain("shrink-0");
+});
+
 it("FactsList, PageBack, InlineNote and PhoneLink", () => {
   render(
     inRouter(

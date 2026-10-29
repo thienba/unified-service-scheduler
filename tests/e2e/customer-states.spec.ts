@@ -394,7 +394,9 @@ for (const width of [390, 1440]) {
           },
         });
       });
-      await stale.getByRole("radio", { name: /^Tue 3 Nov,/ }).check();
+      // A click, not check(): the empty answer turns the day Fully booked (not checked), and check() fails
+      // when that answer lands before it reads the radio back. The heading below waits for the outcome.
+      await stale.getByRole("radio", { name: /^Tue 3 Nov,/ }).click();
       await expect(
         stale.getByRole("heading", { name: "No times left on Tue 3 Nov." }),
       ).toBeVisible();
