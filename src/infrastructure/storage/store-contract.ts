@@ -401,6 +401,20 @@ export function describeStoreContract(
       expect(await dup("none", "NONE")).toEqual([]);
     });
 
+    it("findDuplicates ignores spaces, brackets and case, but a leading 0 still differs from +44 (D-0001-92)", async () => {
+      const repo = await seeded();
+      const dup = (phone: string, registration: string) =>
+        repo
+          .read((s) => s.customers.findDuplicates(phone, registration))
+          .then((found) => found.map((c) => c.id).sort());
+      expect(await dup("+447700900111", "NONE")).toEqual(["c1"]);
+      expect(await dup("44 7700 900111", "NONE")).toEqual(["c1"]);
+      expect(await dup("+44 (7700) 900-111", "NONE")).toEqual(["c1"]);
+      expect(await dup("07700 900111", "NONE")).toEqual([]);
+      expect(await dup("none", "cd11dem")).toEqual(["c2"]);
+      expect(await dup("none", "cd-11 dem")).toEqual(["c2"]);
+    });
+
     it("idempotency put then get returns the record, and another actor gets nothing", async () => {
       const repo = await seeded();
       const record = {

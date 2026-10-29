@@ -63,7 +63,7 @@ describe("the shipped seed", () => {
     }
   });
 
-  it("has customers A and B with a vehicle and an appointment each, and staff and a manager per dealership and one staff member for both", () => {
+  it("has customers A and B with a vehicle and an appointment each, and staff and a manager per dealership, each at one dealership", () => {
     const seed = buildSeedData(DAY_1);
     for (const id of ["customer-a", "customer-b"]) {
       expect(seed.vehicles.some((v) => v.customerId === id)).toBe(true);
@@ -86,12 +86,10 @@ describe("the shipped seed", () => {
         ).toBe(true);
       }
     }
-    const both = seed.demoUsers.filter(
-      (u) =>
-        u.role === "staff" &&
-        u.dealershipIds.length === seed.dealerships.length,
-    );
-    expect(both).toHaveLength(1);
+    // D-0001-89: no staff member is linked to two dealerships.
+    for (const u of seed.demoUsers.filter((u) => u.role === "staff")) {
+      expect(u.dealershipIds).toHaveLength(1);
+    }
   });
 
   it("holds only made-up contact details", () => {
@@ -221,7 +219,7 @@ describe("loading the seed", () => {
     const repo = createMemoryRepository();
     expect(await loadSeed(repo, DAY_1)).toBe("loaded");
     expect(await repo.getSeedVersion()).toBe(SEED_VERSION);
-    expect((await repo.listDemoUsers()).length).toBeGreaterThanOrEqual(7);
+    expect((await repo.listDemoUsers()).length).toBeGreaterThanOrEqual(6);
     const before = await repo.read((s) =>
       s.appointments.listByCustomer("customer-a"),
     );

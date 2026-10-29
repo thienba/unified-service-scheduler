@@ -83,7 +83,7 @@ for (const width of [390, 1440]) {
       if (wide) {
         // State selected: a 3px outline, the panel filled, focus stays on the block.
         const jan = timeline(page).getByRole("button", {
-          name: "09:15 to 12:15, Full service, Vauxhall Corsa CD34 FGH, Demo Tech Birch, Bay 1, Drop-off",
+          name: "09:15 to 12:15, Full service, Vauxhall Corsa CD34 FGH, Amara Okafor, Bay 1, Drop-off",
         });
         await jan.click();
         await expect(jan).toHaveAttribute("aria-pressed", "true");
@@ -540,11 +540,11 @@ test("the timeline: shading, break, leave, Now line, gaps, names and Tab order",
   await seedBusyDay(page);
   await signIn(page, "Staff");
   await openSchedule(page);
-  const ash = timeline(page).getByRole("group", { name: "Demo Tech Ash" });
+  const ash = timeline(page).getByRole("group", { name: "Oliver Hughes" });
   await expect(ash).toContainText("Mechanic, ev · shift 08:00 to 14:00");
   await expect(ash.getByText("Break 12:00 to 12:30")).toBeAttached();
   await expect(
-    timeline(page).getByRole("group", { name: "Demo Tech Cedar, on leave" }),
+    timeline(page).getByRole("group", { name: "Tom Fletcher, on leave" }),
   ).toContainText("On leave today. No bookings.");
   await expect(timeline(page).getByText("Now 10:40")).toBeVisible();
   // Hatching outside the shift: one before and one after.
@@ -552,12 +552,12 @@ test("the timeline: shading, break, leave, Now line, gaps, names and Tab order",
 
   const flagged = ash.getByRole("button", { name: /, flagged: / });
   await expect(flagged).toHaveAccessibleName(
-    /^13:15 to 14:15, Oil and filter change, Kia Ceed EF56 JKL, Demo Tech Ash, Bay 1, Courtesy car, Car 1, flagged: .+$/,
+    /^13:15 to 14:15, Oil and filter change, Kia Ceed EF56 JKL, Oliver Hughes, Bay 1, Courtesy car, Car 1, flagged: .+$/,
   );
-  const birch = timeline(page).getByRole("group", { name: "Demo Tech Birch" });
+  const birch = timeline(page).getByRole("group", { name: "Amara Okafor" });
   const gap = birch.getByRole("link").first();
   await expect(gap).toHaveAccessibleName(
-    /^Free, \d\d:\d\d to \d\d:\d\d, .+, Demo Tech Birch\. Book this time\.$/,
+    /^Free, \d\d:\d\d to \d\d:\d\d, .+, Amara Okafor\. Book this time\.$/,
   );
   // Rows are groups; Tab walks each row in time order, no custom arrow keys. The expected order comes
   // from the start times in the names, not from the page, so a wrong sort in the row fails here.

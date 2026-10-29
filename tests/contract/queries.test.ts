@@ -317,7 +317,7 @@ describe("searchCustomers and listTechnicians", () => {
       kind: "ok",
     });
     expect(
-      await listTechnicians(as(users.staffBoth), deps, {
+      await listTechnicians(as(users.staffLondon), deps, {
         dealershipId: "nowhere",
         from: "2026-03-01",
         to: "2026-03-01",

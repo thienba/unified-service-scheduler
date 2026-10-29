@@ -17,6 +17,8 @@ import {
   byTechnicianThenDate,
   matchesSearch,
   nameLower,
+  phoneDigits,
+  plateKey,
   touchesRange,
 } from "../shared";
 import {
@@ -150,14 +152,14 @@ function buildStores(db: SchedulerDb): Stores {
         await db.vehicles.add(vehicle);
       },
       findDuplicates: async (phone, registration) => {
-        const byPhone = await db.customers
-          .where("phone")
-          .equals(phone)
-          .toArray();
-        const byVehicle = await db.vehicles
-          .where("registration")
-          .equals(registration)
-          .toArray();
+        const digits = phoneDigits(phone);
+        const plate = plateKey(registration);
+        const byPhone = (await db.customers.toArray()).filter(
+          (row) => digits !== "" && phoneDigits(row.phone) === digits,
+        );
+        const byVehicle = (await db.vehicles.toArray()).filter(
+          (row) => plate !== "" && plateKey(row.registration) === plate,
+        );
         const rows = new Map(byPhone.map((row) => [row.id, row]));
         for (const vehicle of byVehicle) {
           const owner = await db.customers.get(vehicle.customerId);
