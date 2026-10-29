@@ -1,73 +1,141 @@
-# Keyloop Service Scheduler
+# Unified Service Scheduler
 
-This is my submission for the Keyloop Technical Assessment, Scenario A: the Unified Service Scheduler, where a dealership's service department books a vehicle in only when a service bay and a qualified technician are both free for the whole job. It is a frontend with a mocked backend: the "server" is a mock API that runs in your browser, while the scheduling rules are real code behind a documented API contract, so a real backend can take the mock's place. Three kinds of user work with it: customers book and manage their own appointments, garage staff check the schedule and book for customers, and garage managers adjust appointments, opening hours and technician shifts.
+**A booking tool for a car dealership's service department.** A customer picks a day and a time and books a service. The garage books a car in only when a **service bay and a qualified technician are both free for the whole job**. Three kinds of people use it: **customers** book and manage their own appointments, **garage staff** watch the day and book for customers who phone in, and **garage managers** adjust bookings, opening hours and technician shifts.
 
-The System Design Document is [`docs/system-design.md`](docs/system-design.md). The files behind the [AI Collaboration Narrative](#ai-collaboration-narrative) are in [`docs/ai-collaboration/`](docs/ai-collaboration/index.md).
+This is my submission for a technical assessment, Scenario A, "Unified Service Scheduler". It is a React and TypeScript app. There is no real server: the backend is **mocked inside the browser**, behind a written API contract, so a real backend can take its place later.
 
-The hosted demo is at [keyloop-service-scheduler-ivory.vercel.app](https://keyloop-service-scheduler-ivory.vercel.app) (see [Try the app](#try-the-app)). You can also run it on your own machine with the steps below.
+**Try it now: [unified-service-scheduler.vercel.app](https://unified-service-scheduler.vercel.app)**. No sign-in is needed. Use **Viewing as** at the top of the page to switch between the three roles.
 
-## Build, run and test
+![A customer books a full service: pick a day, pick a time, confirm, and see the booking.](docs/images/hero-booking.gif)
 
-You need **Node 22** (the repository pins 22.17.1 in `.nvmrc`; `package.json` asks for 22 or newer) and npm. Run these from the repository's folder, in this order:
+## What you can do
+
+### Customer: book, cancel, reschedule
+
+Pick a dealership, a car and a service. Pick a day and a start time. Choose to wait, drop the car off, or borrow a courtesy car. Confirm. Later, look at **My appointments** and move or cancel a booking.
+
+|                                                              Book (desktop)                                                               |                                              If someone was faster                                              |                                               My appointments                                               |                                         Book (phone)                                          |
+| :---------------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------: |
+| <img src="docs/images/customer-book-desktop.png" alt="The booking page with a day and a time chosen and a summary beside it" width="260"> | <img src="docs/images/customer-just-taken-desktop.png" alt="An apology and the closest free times" width="260"> | <img src="docs/images/customer-appointments-desktop.png" alt="A list of upcoming appointments" width="260"> | <img src="docs/images/customer-book-phone.png" alt="The booking page on a phone" width="150"> |
+|                                      Choose a service, a day and a time. The summary stays in view.                                       |                       The time was taken a moment ago: an apology and the closest times.                        |                                       Reschedule or cancel from here.                                       |                             The same page on a 390 px wide phone.                             |
+
+### Staff: see the day, book for a customer
+
+Staff see each technician's day on a timeline. Free gaps are dashed: tap one to book for a customer, new or existing. Staff work at one dealership only.
+
+|                                                 Schedule (desktop)                                                 |                                           Schedule (phone)                                           |
+| :----------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------: |
+| <img src="docs/images/staff-schedule-desktop.png" alt="A day timeline with a row for each technician" width="420"> | <img src="docs/images/staff-schedule-phone.png" alt="The same day as a list on a phone" width="170"> |
+|                        Bookings, breaks, shifts and free gaps, one row for each technician.                        |                               On a phone the timeline becomes a list.                                |
+
+### Manager: adjust, flag, message
+
+The manager can do all of the above, and also adjust a booking (new time, technician or bay), change opening hours and technician shifts, and read the outbox. When a change leaves a booking outside the hours or the shift, the booking is **not deleted**: it appears in a **Flagged** list for the manager to move or cancel.
+
+|                                                        Flagged list                                                         |                                                 Outbox                                                  |                                          Dev panel                                          |
+| :-------------------------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------: |
+| <img src="docs/images/manager-flagged-desktop.png" alt="Bookings that no longer fit, with the reason for each" width="280"> | <img src="docs/images/manager-outbox-desktop.png" alt="Confirmation and reminder messages" width="280"> | <img src="docs/images/dev-panel-desktop.png" alt="Numbers and recent requests" width="280"> |
+|                                  Each flagged booking says why, and offers Move or Cancel.                                  |          The confirmations and reminders a real system would send. Nothing leaves the browser.          |         Logs and numbers from the demo, for anyone who wants to see what happened.          |
+
+Drop-downs, dates and times use styled controls that work with a keyboard and a screen reader. Here is the calendar on the adjust page, where closed days are hatched and days that cannot be chosen are crossed out:
+
+<img src="docs/images/themed-date-picker.png" alt="The adjust page with its calendar open: closed days are hatched and unavailable days are crossed out" width="520">
+
+On a phone, the same manager screens fit a narrow page:
+
+<img src="docs/images/manager-flagged-phone.png" alt="The flagged list on a phone" width="180"> <img src="docs/images/manager-outbox-phone.png" alt="The outbox on a phone" width="180"> <img src="docs/images/customer-appointments-phone.png" alt="My appointments on a phone" width="180">
+
+## Why it is interesting
+
+- **The first Confirm wins.** Two people pressing Confirm for the same last time get one booking. The other person gets an apology and the closest free times. The page also warns you early if the time you chose has been taken while you were filling in the form.
+- **Time zones and clock changes.** Times are always shown in the dealership's own clock (London and Saigon in the demo), and the page tells you when your browser is in another zone. The tests cover the days when the clocks change.
+- **Shifts, breaks and lead time.** A technician's shift, leave and the rest break after each job decide which times can be offered. There is a minimum notice before a booking, and a limit on how far ahead one can be made.
+- **Flags when hours change.** Shortening a day or changing a shift never deletes a booking. It flags the ones that no longer fit.
+- **Reminders in the outbox.** Every booking creates a confirmation, a reminder 48 hours before and a reminder on the morning of the appointment, ready to read in the manager's outbox.
+- **Built for everyone.** Pages pass automated WCAG AA accessibility checks (axe-core) at phone and desktop widths, for every role.
+- **You can see what it does.** A dev panel shows a log line for every request, timings and counts, with no names or phone numbers in them.
+- **Ready for a real backend.** The screens talk to one typed API client. A build setting points it at a real server instead of the mock, and the repository holds a PostgreSQL schema that lets the database itself refuse an overlapping booking.
+
+The two-tab race, side by side. Both customers press Confirm at the same moment. One gets the booking, the other gets the apology:
+
+![Two browser tabs, Customer A and Customer B, confirm the same time. A is booked; B sees an apology and the closest times.](docs/images/race-two-tabs.gif)
+
+## What's inside
+
+```mermaid
+flowchart LR
+  UI["Browser screens<br/>React"] --> Client["Typed API client<br/>from the contract"]
+  Client -->|"demo mode"| MSW["Mock server<br/>MSW service worker"]
+  MSW --> App["Application<br/>book, cancel, reschedule,<br/>adjust, hours, shifts"]
+  App --> Domain["Domain<br/>the scheduling rules"]
+  App --> DB[("IndexedDB<br/>in your browser")]
+  Client -.->|"remote mode"| API["A real API"]
+  API -.-> PG[("PostgreSQL")]
+```
+
+Solid lines are what runs today. Dotted lines are the design for a real backend: the same contract, a real server and a PostgreSQL database.
+
+### Folder map
+
+```
+src/
+  domain/          the scheduling rules: plain TypeScript, no browser, no framework, no clock
+  application/     the booking commands and queries, and role checks
+  infrastructure/  storage (in memory and IndexedDB), the sample data, logs and metrics
+  api/             the API contract (OpenAPI), the mock server and the typed client
+  ui/              the React screens; they reach everything else only through the API client
+  config/          reads the two settings below
+  styles/          design tokens and fonts
+tests/             contract, end-to-end and script tests
+docs/
+  system-design.md   the System Design Document
+  postgres/          the real backend's database schema, with its checks
+  ai-collaboration/  how the work was run: process, roles, log, cost, requirements and decisions
+  images/            the pictures in this file
+```
+
+**The import rule:** a folder may import only from the layers below it (`domain` imports nothing from the others, and `ui` never imports `domain` or `infrastructure`). The linter fails the build if this is broken.
+
+### Tech stack
+
+| Tool                                | Why                                                                                           |
+| ----------------------------------- | --------------------------------------------------------------------------------------------- |
+| React, TypeScript, Vite             | A fast app to build, with types that keep the scheduling rules honest.                        |
+| Tailwind CSS                        | One file of design tokens keeps colours and spacing the same everywhere.                      |
+| MSW (Mock Service Worker)           | The mock answers the app's real network calls, so the screens do not know it is a mock.       |
+| OpenAPI contract, openapi-fetch     | One written contract; the client types and the tests both come from it, so they cannot drift. |
+| Dexie on IndexedDB                  | Bookings survive a reload, and "check again, then write" is all or nothing.                   |
+| Temporal (polyfill)                 | The clearest way to get clock changes and time zones right.                                   |
+| React Router, TanStack Query        | Deep links, and one setting each for "refresh after a booking" and "never retry a write".     |
+| React Hook Form, Zod                | Describe each field once; the form keeps what you typed after a refused booking.              |
+| Vitest, Testing Library, fast-check | Fast tests for the rules, the screens, and random schedules.                                  |
+| Playwright, axe-core                | Real-browser tests, the two-tab race, and the accessibility checks.                           |
+| ESLint, Prettier, Spectral          | One command checks the code, the folder rules and the API contract.                           |
+| PostgreSQL (design only)            | Exclusion constraints let the database refuse an overlapping booking.                         |
+
+## Run it yourself
+
+You need **Node 22** (the repository pins 22.17.1 in `.nvmrc`) and npm. Run these from the repository's folder:
 
 ```sh
 npm ci                      # install exactly what package-lock.json says
 npm run dev                 # start the app at http://localhost:5173 (stop it with Ctrl+C)
-npm run build               # check the generated API code is current, build into dist/, check the built page
-npm run lint                # ESLint, Prettier and a lint of the OpenAPI contract
-npm run typecheck           # TypeScript, no output files
-npm test                    # all unit, component and contract tests
-npm run test:tz             # the tests that draw no screens, twice: in UTC and in Pacific/Kiritimati
-npm run test:coverage       # all tests, with a coverage report in coverage/
-npm run e2e                 # end-to-end tests in Chromium, against the built app
-npm run check:deps          # every runtime library is on the approved list
-npm run check:remote-build  # a build for a real backend holds no demo-only code
+npm run build               # check the generated API code, build into dist/, check the built page
+npm run preview             # serve the built page, as a real host would
 ```
 
-Notes:
-
-- `npm run e2e` builds the app and serves it with `vite preview` on port 4173. The first time, install the browser with `npx playwright install chromium`. It records a video of every test in `test-results/`.
-- `npm run e2e:other` runs the same tests in Firefox and WebKit (install them with `npx playwright install firefox webkit`). CI treats those two as a warning only; see [Known gaps](#known-gaps).
-- `npm run check:public-docs` checks the copies in `docs/ai-collaboration/` and this README for secrets, local paths, real email addresses and links into the private chat folder. `npm run check:workflows` checks that the CI workflow uses pinned actions and read-only permissions.
-- CI ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs all of these except `npm run dev` on every push and pull request, plus `npm audit`.
+Open the address that `npm run dev` prints. **Reload once after you pull or build a new version:** the mock runs as a service worker, and a browser can keep the old one until the page is reloaded.
 
 ### Settings
 
-| Variable            | Values             | Default | What it does                                                                                                                                                                                                                                                                                              |
-| ------------------- | ------------------ | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `VITE_API_MODE`     | `mock` or `remote` | `mock`  | `mock` starts the mock API (a service worker) in the browser, with the demo users, the dev panel and the sample data. `remote` starts none of that, sends every call to a real backend, and leaves the mock, the sample data and the dev panel out of the build (`npm run check:remote-build` proves it). |
-| `VITE_API_BASE_URL` | an address         | `/api`  | Where the API answers. In `remote` mode it must start with `https://` (or `http://localhost` for local work) and must not hold a user name or password; otherwise the app refuses to start.                                                                                                               |
+| Variable            | Values             | Default | What it does                                                                                                                                                                                                                |
+| ------------------- | ------------------ | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `VITE_API_MODE`     | `mock` or `remote` | `mock`  | `mock` starts the mock server in the browser, with demo users, sample data and the dev panel. `remote` sends every call to a real backend and leaves all of that out of the build (`npm run check:remote-build` proves it). |
+| `VITE_API_BASE_URL` | an address         | `/api`  | Where the API answers. In `remote` mode it must start with `https://` (or `http://localhost` for local work) and hold no user name or password.                                                                             |
 
-Only `src/config/` reads these two variables.
+### Demo users
 
-### Reset the demo data
-
-Your bookings are kept in your browser (IndexedDB), so they survive a reload. To go back to the starting data, either:
-
-- open the **dev panel** (the "Dev panel" link at the bottom of every page, or `/dev`) and press **Reset demo data**, then confirm; or
-- call `POST /api/_demo/reset`. It answers `204` and puts this browser's data back to the seed. For example, with `npm run dev` running, open http://localhost:5173 and type this in the browser's developer console:
-
-  ```js
-  await fetch("/api/_demo/reset", {
-    method: "POST",
-    headers: { "X-Demo-User": "user-manager-london" },
-  }).then((r) => r.status);
-  // 204
-  ```
-
-Both are for the demo only: a `remote` build has no dev panel and no `/_demo/` calls. Other browsers are not touched.
-
-**Reload once after a new version.** The mock runs as a service worker, and a browser can keep the old one until the page is reloaded. After you pull or build a new version, reload the page once.
-
-## Try the app
-
-**Live demo: [keyloop-service-scheduler-ivory.vercel.app](https://keyloop-service-scheduler-ivory.vercel.app).** It is hosted on Vercel and is the same demo build as `npm run build`: the mock API runs inside your browser. Each visitor's data lives only in their own browser (nothing is shared between visitors and nothing is sent to a server). The **Reset demo data** button on the Dev panel (or `POST /api/_demo/reset`, see above) puts your copy back to the sample data. A first visit starts the mock worker by itself and needs no reload; I checked this on a fresh browser profile in Chromium, Firefox and WebKit. Reload once after a new version has been published, as described above.
-
-The live demo needs no sign-in and no account: anyone with the link can open it. The source repository is private; Keyloop's reviewers get read access from the repository owner. The live site is deployed from a local checkout of `main` with the Vercel CLI; it is not linked to the repository, so a push does not redeploy it on its own.
-
-The Content Security Policy is sent by the host as a response header ([`vercel.json`](vercel.json)), the same policy as in the built page plus `frame-ancestors 'none'`. I checked it by hand once on the live site on 2026-10-29: the header is on the page and on the worker script; the first page, a deep link (`/schedule`) and the worker script each answer 200; booking a time as a customer and seeing it on the staff schedule sent every request to the site's own address and raised no policy message. The same check is a test, `tests/e2e/live.spec.ts`, run with `LIVE_URL=<address> npx playwright test -c playwright.live.config.ts`.
-
-This is a demo, not real sign-in: there is no password. Pick who you are with **Viewing as** at the top of the page (on a phone, the button at the top opens the same choice). When a role has more than one user, a **Who** list picks between them. The choice is kept in your browser.
+There is no password: this is a demo. Pick who you are with **Viewing as** at the top (on a phone, the button at the top opens the same choice). Your choice is kept in your browser.
 
 | User                | Role     | Dealership |
 | ------------------- | -------- | ---------- |
@@ -78,127 +146,96 @@ This is a demo, not real sign-in: there is no password. Pick who you are with **
 | Demo Staff Saigon   | staff    | Saigon     |
 | Demo Manager Saigon | manager  | Saigon     |
 
-Each staff member works at one dealership only, so staff see and book only at their own dealership ([D-0001-89](docs/ai-collaboration/context/0001-booking/D-0001-89.md)). The technicians have made-up but real-sounding names, such as Oliver Hughes in London and Minh Tran in Saigon ([D-0001-87](docs/ai-collaboration/context/0001-booking/D-0001-87.md)). All people, cars and contact details in the sample data are made up.
+All people, cars and contact details in the sample data are made up.
 
-Five things to try, in this order:
+### Five things to try, in this order
 
-1. **Book a time.** As Demo Customer A, pick a dealership, a car and a service, then a day and a time, choose wait, drop-off or a courtesy car, and confirm. If someone takes the time first, the page tells you early and offers the closest free times.
-2. **See it on the staff schedule.** Switch to Demo Staff London (or Saigon, if you booked there). Your booking is on its technician's row on **Schedule**. Free gaps are shown; tap one to book for a customer.
-3. **Cancel and reschedule.** Switch back to Demo Customer A and open **My appointments**. Open the booking, move it with **Reschedule** (the old time is kept until the new one is confirmed), or cancel it.
-4. **The manager's adjust and flagged list.** Switch to Demo Manager London. Open a booking on Schedule and **Adjust** it (new time, technician or bay). Then shorten a day's opening hours under **Settings**, or change a technician's shift under **Shifts**: bookings that no longer fit are not deleted, they show up in **Flagged** for you to move.
-5. **The outbox.** As the manager, open **Outbox**: the confirmation and reminder messages (48 hours before, and the morning of) that a real system would send by SMS or email. Nothing leaves the browser.
+1. **Book a time.** As Demo Customer A, pick a dealership, a car and a service, then a day and a time, and confirm.
+2. **See it on the staff schedule.** Switch to Demo Staff London. Your booking is on its technician's row. Tap a free gap to book for a customer.
+3. **Cancel and reschedule.** Switch back to Demo Customer A and open **My appointments**. Move a booking or cancel it.
+4. **Adjust and flag.** Switch to Demo Manager London. Adjust a booking on the schedule. Then shorten a day's opening hours under **Settings**, or change a technician's shift under **Shifts**. Bookings that no longer fit show up under **Flagged**.
+5. **Read the outbox.** As the manager, open **Outbox** to see the confirmations and reminders.
 
-The manager can also book for a customer, from the **Book for a customer** button on Schedule ([D-0001-54](docs/ai-collaboration/context/0001-booking/D-0001-54.md)). Times are always shown in the dealership's own clock; when your browser is in another time zone, every customer screen says so ([D-0001-108](docs/ai-collaboration/context/0001-booking/D-0001-108.md)).
+To see the race yourself, open the app in two tabs as Demo Customer A and Demo Customer B, choose the same time in both, and press Confirm in each.
 
-## Screens
+### Start again
 
-Fifteen screens. `/` sends a customer to `book` and staff or a manager to `schedule`. A role that may not open a page sees `no-permission` in its place. Screenshots come from the evidence of the screen pull requests: phone at 390 px wide, desktop at 1440 px.
+Your bookings live in your browser (IndexedDB), so they survive a reload. To go back to the sample data, open the **Dev panel** (the link at the bottom of every page, or `/dev`) and press **Reset demo data**. Other browsers are not touched.
 
-| Role               | Screen                | Route                                       | Screenshots                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| ------------------ | --------------------- | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| customer           | `book`                | `/book`                                     | [phone](https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-29-time-zone-note-on-every-customer-screen/book-saigon-390.png?raw=true) · [desktop](https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-29-time-zone-note-on-every-customer-screen/book-saigon-1440.png?raw=true)                                                                                                                    |
-| customer           | `book-confirmed`      | `/book/confirmed/:appointmentId`            | [phone](https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-29-time-zone-note-on-every-customer-screen/book-confirmed-saigon-390.png?raw=true) · [desktop](https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-29-time-zone-note-on-every-customer-screen/book-confirmed-saigon-1440.png?raw=true)                                                                                                |
-| customer           | `my-appointments`     | `/appointments`                             | [phone](https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-29-time-zone-note-on-every-customer-screen/my-appointments-saigon-390.png?raw=true) · [desktop](https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-29-time-zone-note-on-every-customer-screen/my-appointments-saigon-1440.png?raw=true)                                                                                              |
-| customer and staff | `appointment`         | `/appointments/:appointmentId`              | [phone](https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-29-time-zone-note-on-every-customer-screen/appointment-saigon-390.png?raw=true) · [desktop](https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-29-time-zone-note-on-every-customer-screen/appointment-saigon-1440.png?raw=true)                                                                                                      |
-| customer           | `reschedule`          | `/appointments/:appointmentId/reschedule`   | [phone](https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-29-time-zone-note-on-every-customer-screen/reschedule-saigon-390.png?raw=true) · [desktop](https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-29-time-zone-note-on-every-customer-screen/reschedule-saigon-1440.png?raw=true)                                                                                                        |
-| staff and manager  | `schedule`            | `/schedule`                                 | [phone](https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-29-merge-wave-2-screens-and-apply-their-answers/staff-header-one-dealership-390.png?raw=true) · [desktop](https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-29-merge-wave-2-screens-and-apply-their-answers/staff-header-one-dealership-1440.png?raw=true)                                                                          |
-| staff and manager  | `book-customer`       | `/book/for-customer`                        | [phone](https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-29-time-zone-note-on-every-customer-screen/book-for-customer-saigon-390.png?raw=true) · [desktop](https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-29-time-zone-note-on-every-customer-screen/book-for-customer-saigon-1440.png?raw=true)                                                                                          |
-| manager            | `adjust`              | `/appointments/:appointmentId/adjust`       | [phone](https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-29-time-zone-note-on-every-customer-screen/adjust-saigon-390.png?raw=true) · [desktop](https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-29-time-zone-note-on-every-customer-screen/adjust-saigon-1440.png?raw=true)                                                                                                                |
-| manager            | `flagged`             | `/manage/flagged`                           | [phone](https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-29-merge-wave-2-screens-and-apply-their-answers/flagged-list-390.png?raw=true) · [desktop](https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-29-merge-wave-2-screens-and-apply-their-answers/flagged-list-1440.png?raw=true)                                                                                                        |
-| manager            | `dealership-settings` | `/manage/dealership`                        | [phone](https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-28-manager-dealership-settings-and-technician-shifts/dealership-settings-idle-390.png?raw=true) · [desktop](https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-28-manager-dealership-settings-and-technician-shifts/dealership-settings-idle-1440.png?raw=true)                                                                      |
-| manager            | `shifts`              | `/manage/shifts`                            | [phone](https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-28-readme-final-pass-and-public-ai-collaboration-docs/shifts-390.png?raw=true) · [desktop, WebKit](https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-29-content-security-policy-messages-in-firefox-and-webkit/webkit-manager-shifts-after.png?raw=true) (the desktop shot is a WebKit shot 2048 pixels wide, not the 1440 px size) |
-| manager            | `outbox`              | `/manage/outbox`                            | [phone](https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-28-manager-outbox-screen/outbox-list-390.png?raw=true) · [desktop](https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-28-manager-outbox-screen/outbox-list-1440.png?raw=true)                                                                                                                                                        |
-| every role (demo)  | `dev-panel`           | `/dev`                                      | [phone](https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-28-dev-panel-logs-metrics-and-reset/dev-panel-logs-390.png?raw=true) · [desktop](https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-28-dev-panel-logs-metrics-and-reset/dev-panel-logs-1440.png?raw=true)                                                                                                                            |
-| every role         | `no-permission`       | in place, on any page the role may not open | [phone](https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-28-app-shell-role-switcher-dealership-picker-and-shared-components/no-permission-customer-schedule-390.png?raw=true) · [desktop](https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-28-app-shell-role-switcher-dealership-picker-and-shared-components/no-permission-customer-schedule-1440.png?raw=true)                            |
-| every role         | `not-found`           | any other address, and any 404 from the API | [phone](https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-28-customer-appointments-list-cancel-and-reschedule/not-found-page-390.png?raw=true) · [desktop](https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-28-customer-appointments-list-cancel-and-reschedule/not-found-page-1440.png?raw=true)                                                                                            |
+## Tests
 
-The `appointment` page is also open to the staff and manager of its dealership; `book` is also used by staff and managers once a customer is chosen. The [System Design Document](docs/system-design.md#screens-and-flows) has the flows of each role.
+The scheduling rules are plain TypeScript with no React and no browser, so they are tested fast and on their own. In plain words, the tests check:
 
-## Where the business logic is and what its tests cover
+- two people confirming the same last time: exactly one wins and the other is offered other times;
+- times that touch but do not overlap (a job ending at 10:00 does not clash with one starting at 10:00);
+- technician shifts, leave and the rest break after each job;
+- opening hours and single-day changes;
+- clock changes, in the dealership's own time zone, with the tests also run on a machine set to two other time zones;
+- that every page each role can open passes the accessibility checks, at phone and desktop width;
+- that no name, phone number or email ends up in a log line.
 
-The scheduling rules are plain TypeScript with no React and no browser: `src/domain` (time, availability, appointments, policies, validation) and `src/application` (the booking and manager commands, and the queries). Their tests sit next to the code. To run only them:
+The numbers come from the [Results](docs/system-design.md#results) of the System Design Document: **more than 1300 unit, component and contract tests**, and **about 380 end-to-end tests** in Chromium, all passing. Coverage of the scheduling rules is above 99% of lines.
 
 ```sh
-npx vitest run src/domain src/application
+npm run lint                # ESLint, Prettier and a lint of the API contract
+npm run typecheck           # TypeScript, no output files
+npm test                    # all unit, component and contract tests
+npm run test:tz             # the tests that draw no screens, in UTC and in Pacific/Kiritimati
+npm run test:coverage       # all tests, with a coverage report in coverage/
+npx playwright install chromium   # once, to get the browser
+npm run e2e                 # end-to-end tests in Chromium, against the built app (about 380 tests)
+npm run check:deps          # every runtime library is on the approved list
+npm run check:remote-build  # a build for a real backend holds no demo-only code
+npm run check:public-docs   # this README and docs/ai-collaboration hold no secrets, local paths or reference codes
 ```
 
-In plain words, the tests check: two people confirming the same last time, where exactly one wins and the other is offered other times; times that are half-open (a job that ends at 10:00 does not clash with one that starts at 10:00); technician shifts, leave and the rest break after each job; opening hours and single-day changes; and clock changes (daylight saving) in the dealership's own time zone. Every test that draws no screens also runs twice with the machine set to two different time zones (`npm run test:tz`).
-
-The numbers, from the [Results](docs/system-design.md#results) of the System Design Document (re-run on `main` at commit `a4f4c24` on 2026-10-29, with the command named):
-
-| What                               | Result                                                                                 | Command                                                |
-| ---------------------------------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------ |
-| Unit, component and contract tests | **1323 passed**, 0 failed, in 61 files                                                 | `npx vitest run --coverage`                            |
-| Coverage of `src/domain`           | lines **99.78%** (449 of 450), branches **99.70%** (330 of 331)                        | the same, from `coverage/coverage-summary.json`        |
-| Coverage of `src/application`      | lines **99.83%** (602 of 603), branches **97.73%** (431 of 441)                        | the same                                               |
-| The same tests in two time zones   | **1112 passed** in 40 files under `TZ=UTC`, and the same under `TZ=Pacific/Kiritimati` | `npm run test:tz`                                      |
-| End-to-end tests in Chromium       | **380 passed**, 0 failed, 4 skipped (the video recordings, which need `VIDEO_DIR`)     | `E2E_PORT=4391 npx playwright test --project=chromium` |
-| Two-tab race, repeated 5 times     | **5 of 5**: one page booked, the other got the apology, one appointment stored         | see the Results table                                  |
-| Accessibility                      | **0 axe-core violations** on every page each role can open, at 390 and 1440 px         | `tests/e2e/whole-app.spec.ts`                          |
-
-The README pass adds 21 tests for the public-docs check. With them, `npm test` counts 1344 and each half of `npm run test:tz` counts 1133 (run on a clean clone of the README pass, commit `494b422`, on 2026-10-29).
-
-## Is this secure?
-
-The "server" runs inside your own browser, so the role and dealership checks show the rules and make them testable, but they protect nothing in the demo: anyone can change the role, edit the stored data or skip a check. The [security section of the System Design Document](docs/system-design.md#security-and-privacy) says what a real backend must do instead.
-
-## Folder map
-
-```
-src/
-  domain/          the scheduling rules: pure TypeScript, no browser, no framework, no clock
-  application/     commands and queries (book, cancel, reschedule, adjust, hours, shifts); role checks; ports for storage
-  infrastructure/  storage (in memory and IndexedDB), the sample data, logs and metrics
-  api/             the OpenAPI contract, the mock API (a service worker) and the typed client
-  ui/              the React screens; they reach the rest only through the API client
-  config/          reads VITE_API_MODE and VITE_API_BASE_URL
-  styles/          design tokens and fonts
-docs/
-  system-design.md   the System Design Document
-  postgres/          the real backend's database schema, with its checks
-  ai-collaboration/  copies of the process, roles, log, cost, requirements, decisions and design notes
-```
-
-**The import rule:** code may import only from the layers below it (`domain` imports nothing from the others; `ui` never imports `domain` or `infrastructure`), and ESLint fails the build if that is broken. The design behind it is in the [System Design Document](docs/system-design.md#layers-and-import-rules).
-
-## Known gaps
-
-- **One car can have two appointments at the same time.** Nothing checks the vehicle, only the bay, the technician and the courtesy car. It was left out for the deadline ([D-0001-27](docs/ai-collaboration/context/0001-booking/D-0001-27.md)).
-- **No time is held** while you fill in the form. The page checks your chosen time again every 30 seconds and warns you early if it was taken; a short hold is a considered extension ([D-0001-107](docs/ai-collaboration/context/0001-booking/D-0001-107.md)).
-- **Two browser messages are set aside** in the Content Security Policy tests: one WebKit message for native drop-down lists, and one Firefox error from the mock's service worker ([D-0001-109](docs/ai-collaboration/context/0001-booking/D-0001-109.md), [D-0001-110](docs/ai-collaboration/context/0001-booking/D-0001-110.md)). The Firefox one has a bug ticket still to do.
-- **The full end-to-end run in Firefox and WebKit is not green.** It is a warning-only job with known failures, mostly focus and visibility checks in WebKit. Only the race and policy tests are claimed for those two browsers.
-- **Thirteen early questions were first taken as assumptions** (Q-0001-1, 2, 7, 9, 10, 11, 12, 13, 18, 19, 20, 21 and 23). I confirmed all thirteen as option A on 2026-10-29 ([D-0001-112](docs/ai-collaboration/context/0001-booking/D-0001-112.md); the decisions are D-0001-117 to D-0001-129 in [`docs/ai-collaboration/context/0001-booking/`](docs/ai-collaboration/context/0001-booking/)). The code uses that option and the tests cover it. The System Design Document lists them under [Assumptions](docs/system-design.md#assumptions).
-- **Some claims are still unverified**, such as where MSW runs its handlers and whether the WebKit message also appears in real Safari. The list, with what is settled, is in the System Design Document under [Claims marked unverified](docs/system-design.md#claims-marked-unverified).
-- **No hosted demo yet.** Hosting is the last step ([D-0000-25](docs/ai-collaboration/context/decisions/D-0000-25.md)).
+To run only the scheduling rules: `npx vitest run src/domain src/application`. `npm run e2e:other` runs the end-to-end tests in Firefox and WebKit too; see [Known limits](#known-limits). GitHub Actions runs all of these on every push and pull request.
 
 ## AI Collaboration Narrative
 
-I used AI agents for most of the typing and kept the decisions, the checking and the corrections for myself. Every file named here is a copy in [`docs/ai-collaboration/`](docs/ai-collaboration/index.md) or a merged pull request.
+I used AI agents for most of the typing and kept the decisions, the checking and the corrections for myself. The files named here are copies in [`docs/ai-collaboration/`](docs/ai-collaboration/index.md).
 
 ### How I guided the AI
 
-- **A process, not a chat.** The work ran through a small process called VTC Lite ([the process](docs/ai-collaboration/claude/skills/vtc-lite/SKILL.md)). Every message I sent was saved word for word in the private work repository, then turned into requirements with acceptance criteria (for example [REQ-BOOK-009](docs/ai-collaboration/context/0001-booking/REQ-BOOK-009.md)) and decisions with reasons (for example [D-0001-6](docs/ai-collaboration/context/0001-booking/D-0001-6.md)), and committed ([how messages are captured](docs/ai-collaboration/claude/skills/vtc-lite/references/context.md)). Each piece of work was a ticket with acceptance criteria, built on its own branch and opened as a pull request.
-- **Roles.** Different agents did different jobs, each with its own instructions: a [researcher](docs/ai-collaboration/claude/agents/researcher.md), an [architect](docs/ai-collaboration/claude/agents/architect.md), a [designer](docs/ai-collaboration/claude/agents/designer.md), a [planner](docs/ai-collaboration/claude/agents/planner.md), an [engineer](docs/ai-collaboration/claude/agents/engineer.md) (the only one that writes product code), a [reviewer](docs/ai-collaboration/claude/agents/reviewer.md) and a [security](docs/ai-collaboration/claude/agents/security.md) reviewer. The reviewer and the security reviewer start with no memory of the builder's work.
-- **Ask, do not decide alone.** I told the AI that anything needing confirmation (a product rule, a new library, a design choice, a trade-off with no clear winner) must be asked, not decided ([D-0000-17](docs/ai-collaboration/context/decisions/D-0000-17.md)). An agent that reaches such a point writes a question file with the options and a recommendation, and waits for me. The product's 111 `D-0001` decisions each record my answer and its reason.
-- **Build order.** The core first: the scheduling rules and their tests, then customer booking, the staff schedule, cancel and reschedule, the manager screens, and last courtesy cars and the reminder outbox ([D-0000-9](docs/ai-collaboration/context/decisions/D-0000-9.md)). Every screen was approved on a clickable prototype before it was coded ([D-0001-44](docs/ai-collaboration/context/0001-booking/D-0001-44.md)).
+- **A process, not a chat.** The work ran through a small process called VTC Lite ([the process](docs/ai-collaboration/claude/skills/vtc-lite/SKILL.md)). Every message I sent was saved word for word in a private work repository, then turned into requirements with acceptance criteria and decisions with reasons, and committed. Each piece of work was a ticket with acceptance criteria, built on its own branch and opened as a pull request.
+- **Roles.** Different agents did different jobs, each with its own instructions: a [researcher](docs/ai-collaboration/claude/agents/researcher.md), an [architect](docs/ai-collaboration/claude/agents/architect.md), a [designer](docs/ai-collaboration/claude/agents/designer.md), a [planner](docs/ai-collaboration/claude/agents/planner.md), an [engineer](docs/ai-collaboration/claude/agents/engineer.md) (the only one that writes product code), a [reviewer](docs/ai-collaboration/claude/agents/reviewer.md) and a [security reviewer](docs/ai-collaboration/claude/agents/security.md). The reviewer and the security reviewer start with no memory of the builder's work.
+- **Ask, do not decide alone.** I told the AI that anything needing confirmation (a product rule, a new library, a design choice, a trade-off with no clear winner) must be asked, not decided. An agent that reaches such a point writes a question with the options and a recommendation, and waits for me. Every answer was recorded with its reason.
+- **Build order.** The core first: the scheduling rules and their tests, then customer booking, the staff schedule, cancel and reschedule, the manager screens, and last courtesy cars and the reminder outbox. Every screen was approved on a clickable prototype before it was coded.
 
 ### How I checked and improved what it gave me
 
-Each example says what I asked, what came back, how I checked it, and whether I kept, changed or dropped it. The first five are from my [AI collaboration log](docs/ai-collaboration/context/ai-collaboration-log.md); the last three come from the screen phase and are recorded in the decisions they name.
+Each example says what I asked, what came back, how I checked it, and whether I kept, changed or dropped it. The first five are from my [AI collaboration log](docs/ai-collaboration/context/ai-collaboration-log.md); the last three come from the screen phase.
 
-1. **Who uses the app (2026-10-28).** I described the problem: customers book, staff check the schedule, the manager adjusts it. The AI wrote the requirements but had assumed only a service advisor uses the app. I read them against the brief and told it that was wrong. **Changed** by me: three kinds of user ([D-0001-1](docs/ai-collaboration/context/0001-booking/D-0001-1.md)).
-2. **One garage (2026-10-28).** I asked for technician shifts and opening hours. The AI had assumed one garage with fixed hours. **Changed** by me: several dealerships, hours each one sets, and a change for a single day ([D-0001-3](docs/ai-collaboration/context/0001-booking/D-0001-3.md), [D-0001-4](docs/ai-collaboration/context/0001-booking/D-0001-4.md)).
-3. **New customers (2026-10-28).** I asked that staff can book for a customer. The AI first allowed existing customers only. **Changed** by me: new customers too ([D-0001-12](docs/ai-collaboration/context/0001-booking/D-0001-12.md)).
-4. **Claims marked UNVERIFIED, then proven (2026-10-28).** In the architecture the AI marked two database claims it could not prove. I had them tested on a real PostgreSQL 17 database before relying on them: the database refuses an overlapping booking with error 23P01, and the uuid columns work with the overlap rule. 20 of 20 checks passed. **Kept**, now proven ([pull request #1](https://github.com/thienba/keyloop-service-scheduler/pull/1)).
-5. **A security review that found what the builder missed (2026-10-28).** The API contract and mock were checked by a separate security agent after the builder and the code reviewer. It found a broken URL escape that crashed the mock with a 500 error, and an "https only" check for a real backend that `http://localhost:x@evil.example/` could trick. **Changed**: both fixed with tests before the pull request ([pull request #10](https://github.com/thienba/keyloop-service-scheduler/pull/10)).
-6. **The manager books for a customer (2026-10-28, prototype review).** The approved design gave "Book for a customer" to staff only. I said the manager must be able to book too, for example when a customer phones in ([D-0001-53](docs/ai-collaboration/context/0001-booking/D-0001-53.md)). The AI then asked where the button goes, and I took its recommendation. **Changed** by me: a "Book for a customer" button on Schedule ([D-0001-54](docs/ai-collaboration/context/0001-booking/D-0001-54.md), built in [pull request #22](https://github.com/thienba/keyloop-service-scheduler/pull/22), checked by end-to-end scenario 5 in [pull request #27](https://github.com/thienba/keyloop-service-scheduler/pull/27)).
-7. **A staff member at two dealerships (2026-10-29).** While building the staff booking screens ([pull request #22](https://github.com/thienba/keyloop-service-scheduler/pull/22)), the AI found that a staff user linked to two dealerships booked at the wrong one from a free gap. The AI offered three fixes, each keeping that user. I read them and chose none: each staff member works at one dealership only. **Changed** by me: the two-site user removed ([D-0001-89](docs/ai-collaboration/context/0001-booking/D-0001-89.md), [pull request #25](https://github.com/thienba/keyloop-service-scheduler/pull/25)).
-8. **Holding a time (2026-10-29).** I asked whether a time can be held while the customer fills in the form. The AI wrote three options with their costs: no hold, a 5-minute hold, or no hold with an early warning. I weighed the costs and took the early warning. **Kept** the recommendation; the hold is written down as a considered extension ([D-0001-107](docs/ai-collaboration/context/0001-booking/D-0001-107.md), [pull request #29](https://github.com/thienba/keyloop-service-scheduler/pull/29)).
+1. **Who uses the app (2026-10-28).** I described the problem: customers book, staff check the schedule, the manager adjusts it. The AI wrote the requirements but had assumed only a service advisor uses the app. I read them against the brief and told it that was wrong. **Changed** by me: three kinds of user.
+2. **One garage (2026-10-28).** I asked for technician shifts and opening hours. The AI had assumed one garage with fixed hours. **Changed** by me: several dealerships, hours each one sets, and a change for a single day.
+3. **New customers (2026-10-28).** I asked that staff can book for a customer. The AI first allowed existing customers only. **Changed** by me: new customers too.
+4. **Claims marked unverified, then proven (2026-10-28).** In the architecture the AI marked two database claims it could not prove. I had them tested on a real PostgreSQL 17 database before relying on them: the database refuses an overlapping booking, and the uuid columns work with the overlap rule. 20 of 20 checks passed. **Kept**, now proven ([the pull request](https://github.com/thienba/unified-service-scheduler/pull/1)).
+5. **A security review that found what the builder missed (2026-10-28).** The API contract and mock were checked by a separate security agent after the builder and the code reviewer. It found a broken URL escape that crashed the mock with a server error, and an "https only" check for a real backend that a tricky address could fool. **Changed**: both fixed with tests before the pull request was merged ([the pull request](https://github.com/thienba/unified-service-scheduler/pull/10)).
+6. **The manager books for a customer (2026-10-28, prototype review).** The approved design gave "Book for a customer" to staff only. I said the manager must be able to book too, for example when a customer phones in. The AI then asked where the button goes, and I took its recommendation. **Changed** by me: a "Book for a customer" button on the schedule ([built here](https://github.com/thienba/unified-service-scheduler/pull/22), checked by an end-to-end scenario in [this pull request](https://github.com/thienba/unified-service-scheduler/pull/27)).
+7. **A staff member at two dealerships (2026-10-29).** While building the staff booking screens, the AI found that a staff user linked to two dealerships booked at the wrong one from a free gap. The AI offered three fixes, each keeping that user. I read them and chose none: each staff member works at one dealership only. **Changed** by me: the two-site user removed ([the pull request](https://github.com/thienba/unified-service-scheduler/pull/25)).
+8. **Holding a time (2026-10-29).** I asked whether a time can be held while the customer fills in the form. The AI wrote three options with their costs: no hold, a 5-minute hold, or no hold with an early warning. I weighed the costs and took the early warning. **Kept** the recommendation; the hold is written down as a considered extension ([the pull request](https://github.com/thienba/unified-service-scheduler/pull/29)).
 
 ### How I made sure the final quality was good
 
-- **Tests written from the acceptance criteria.** Each ticket lists acceptance criteria, and the engineer writes a test for each one and first checks it fails for the reason the ticket names ([engineer instructions](docs/ai-collaboration/claude/agents/engineer.md)). The end-to-end demo scenarios follow the requirements one by one ([pull request #27](https://github.com/thienba/keyloop-service-scheduler/pull/27)). The numbers are in [Where the business logic is](#where-the-business-logic-is-and-what-its-tests-cover).
-- **A reviewer in a fresh context for every ticket.** It checks the diff against the criteria with no memory of the build ([reviewer instructions](docs/ai-collaboration/claude/agents/reviewer.md)). It found a real bug the builder had only worked around: the browser database closed a read early after a few lookups; a new test now fails without the fix ([pull request #7](https://github.com/thienba/keyloop-service-scheduler/pull/7)). In [pull request #22](https://github.com/thienba/keyloop-service-scheduler/pull/22) the first review asked for changes, a fix round added a test for each finding, and a second fresh review passed.
-- **Evidence in every pull request** ([D-0000-13](docs/ai-collaboration/context/decisions/D-0000-13.md)): screenshots of every state at phone and desktop width, test and coverage screenshots, and videos. For example the screens in [pull request #16](https://github.com/thienba/keyloop-service-scheduler/pull/16), and the two-tab race video in [pull request #27](https://github.com/thienba/keyloop-service-scheduler/pull/27).
-- **Claims marked `UNVERIFIED` until a test settles them.** The research and the architecture marked every claim they could not check. Example 4 shows two that a test settled; the rest are listed in the System Design Document under [Claims marked unverified](docs/system-design.md#claims-marked-unverified).
-- **The cost log.** Every run's tokens and price are written down ([cost.md](docs/ai-collaboration/cost.md)). On 2026-10-29, after its last row, the total was **566,550,105 tokens, about 213.46 USD** at API prices, over 8 runs. The research run alone was 2,598,619 tokens, about 1.42 USD.
+- **Tests written from the acceptance criteria.** Each ticket lists acceptance criteria, and the engineer writes a test for each one and first checks that it fails for the reason the ticket names ([engineer instructions](docs/ai-collaboration/claude/agents/engineer.md)). The end-to-end demo scenarios follow the requirements one by one. The numbers are in [Tests](#tests).
+- **A reviewer in a fresh context for every ticket.** It checks the diff against the criteria with no memory of the build ([reviewer instructions](docs/ai-collaboration/claude/agents/reviewer.md)). It found a real bug the builder had only worked around: the browser database closed a read early after a few lookups; a new test now fails without the fix ([the pull request](https://github.com/thienba/unified-service-scheduler/pull/7)). On the staff booking screens, the first review asked for changes, a fix round added a test for each finding, and a second fresh review passed.
+- **Evidence in every pull request.** Screenshots of every state at phone and desktop width, test and coverage screenshots, and videos. For example the screens in [this pull request](https://github.com/thienba/unified-service-scheduler/pull/16), and the two-tab race video in [this one](https://github.com/thienba/unified-service-scheduler/pull/27).
+- **Claims marked unverified until a test settles them.** The research and the architecture marked every claim they could not check. Example 4 shows two that a test settled; the rest are listed in the System Design Document under [Claims marked unverified](docs/system-design.md#claims-marked-unverified).
+- **The cost log.** Every run's tokens and price are written down ([cost log](docs/ai-collaboration/cost.md)). On 2026-10-29, after its last row, the total was **566,550,105 tokens, about 213.46 USD** at API prices, over 8 runs.
+
+## Documents
+
+- [System Design Document](docs/system-design.md): the design, the flows, the security notes, the results and the assumptions.
+- [AI collaboration files](docs/ai-collaboration/index.md): the process, the agent roles, the log, the cost, and the requirements and decisions behind the work.
+- [PostgreSQL schema](docs/postgres/schema.sql) and [its checks](docs/postgres/check.sql): the database a real backend would use.
+- [The API contract](src/api/contract/openapi.yaml): every call the app makes, written first.
+
+## Known limits
+
+- **It is a demo with a mock server.** The "server" runs in your own browser, so the role and dealership checks show the rules and make them testable, but they protect nothing: anyone can change the role or edit the stored data. The [security section](docs/system-design.md#security-and-privacy) of the System Design Document says what a real backend must do instead.
+- **One car can have two appointments at the same time.** Nothing checks the car, only the bay, the technician and the courtesy car. It was left out for the deadline.
+- **No time is held** while you fill in the form. The page checks your chosen time again every 30 seconds and warns you early if it was taken. A short hold is a considered extension.
+- **Firefox and WebKit are only partly covered.** The full end-to-end run there is a warning-only job with known failures, mostly focus and visibility checks in WebKit. Only the race and the security-policy tests are claimed for those two browsers, and two browser messages are set aside in those tests.
+- **Some claims are still unverified**, such as whether one Safari message also appears in real Safari. The list, with what is settled, is in the System Design Document under [Claims marked unverified](docs/system-design.md#claims-marked-unverified).
+- **The live demo is deployed by hand.** It is not linked to the repository, so a push does not update it.
+- **Sample data only.** All people, cars and numbers are made up.

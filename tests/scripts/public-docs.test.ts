@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import {
   findCompanyNameProblems,
   findPublicDocProblems,
+  findReferenceCodes,
   publicDocsDir,
 } from "../../scripts/check-public-docs.mjs";
 
@@ -136,5 +137,36 @@ describe("public docs check (D-0000-36 B, D-0000-11)", () => {
       ),
     );
     expect(problems).toEqual([]);
+  });
+});
+
+describe("README reference codes", () => {
+  it.each([
+    "see D-0001-54",
+    "question Q-0001-12",
+    "REQ-BOOK-009",
+    "SEC-15",
+    "NFR-4",
+    "AD-12",
+    "scenario S3",
+    "the Keyloop assessment",
+    "keyloop-service-scheduler",
+  ])("fails on %s", (text) => {
+    expect(findReferenceCodes("README.md", text)).toHaveLength(1);
+  });
+
+  it("allows plain words", () => {
+    expect(
+      findReferenceCodes("README.md", "Book a time. Pull request 22, 23P01."),
+    ).toEqual([]);
+  });
+
+  it("finds none in the real README", () => {
+    expect(
+      findReferenceCodes(
+        "README.md",
+        readFileSync(path.join(repoRoot, "README.md"), "utf8"),
+      ),
+    ).toEqual([]);
   });
 });
