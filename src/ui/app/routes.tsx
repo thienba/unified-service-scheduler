@@ -10,6 +10,8 @@ import { useSession } from "../session/session";
 import { ComponentSheet } from "../pages/ComponentSheet";
 import { BookPage } from "../features/book/BookPage";
 import { ConfirmedPage } from "../features/book/ConfirmedPage";
+import { AppointmentPage } from "../features/appointment/AppointmentPage";
+import { SchedulePage } from "../features/schedule/SchedulePage";
 import {
   devPanelPath,
   homeFor,
@@ -30,6 +32,8 @@ import {
 const screens: Record<string, ReactElement> = {
   "/book": <BookPage />,
   "/book/confirmed/:appointmentId": <ConfirmedPage />,
+  "/schedule": <SchedulePage />,
+  "/appointments/:appointmentId": <AppointmentPage />,
 };
 
 const rules: readonly RouteRule[] = mockEnabled

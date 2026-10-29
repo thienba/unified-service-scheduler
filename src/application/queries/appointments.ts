@@ -1,7 +1,19 @@
 // Reading appointments (REQ-BOOK-004, 010, 012). Every query checks the Actor before it reads data (AD-3).
 import { canReach, servesDealership, type Actor } from "../actor";
 import { isBlocking } from "../../domain/appointment/blocking";
-import type { Appointment, LocalDate } from "../../domain/model";
+import type { Interval } from "../../domain/appointment/interval";
+import type {
+  Appointment,
+  LocalDate,
+  ServiceBay,
+  Technician,
+} from "../../domain/model";
+import { openingWindow } from "../../domain/policies/opening-window";
+import {
+  nextOpenDate,
+  technicianDay,
+  type TechnicianDay,
+} from "../../domain/schedule/day-plan";
 import { dayBounds, isLocalDate } from "../../domain/time";
 import { viewAppointmentsIn, type AppointmentView } from "./appointmentView";
 import {
@@ -121,6 +133,87 @@ export async function getAppointment(
       }
       const [view] = await viewAppointmentsIn(actor, stores, [appointment]);
       return { kind: "ok", appointment: view! };
+    }),
+  );
+}
+
+export interface ScheduleTechnicianView extends TechnicianDay {
+  technician: Technician;
+}
+
+export type ScheduleDayResult =
+  | {
+      kind: "ok";
+      date: LocalDate;
+      timeZone: string;
+      /** The dealership's open interval that date, or null when it is closed. */
+      opening: Interval | null;
+      nextOpenDate: LocalDate | null;
+      technicians: ScheduleTechnicianView[];
+      bays: ServiceBay[];
+      appointments: AppointmentView[];
+    }
+  | QueryFailure;
+
+/**
+ * One local date of one dealership for the staff schedule (REQ-BOOK-004, D-0001-21 A): the day's
+ * appointments, the active technicians with their shift, break, leave and free windows, and the
+ * active bays. Staff and managers of the dealership only (SEC-3, SEC-4).
+ */
+export async function getScheduleDay(
+  actor: Actor,
+  deps: QueryDeps,
+  request: { dealershipId: string; date: LocalDate },
+): Promise<ScheduleDayResult> {
+  const { dealershipId, date } = request;
+  if (!servesDealership(actor, dealershipId)) return { kind: "forbidden" };
+  if (!isLocalDate(date)) {
+    return invalid("date", "Date must be a real date, YYYY-MM-DD.");
+  }
+  const now = deps.clock.now();
+  return deps.uow.read((stores) =>
+    deps.logger.step("load", async (): Promise<ScheduleDayResult> => {
+      const dealership = await stores.scheduling.getDealership(dealershipId);
+      if (!dealership) return { kind: "not_found" };
+      const bounds = dayBounds(date, dealership.timeZone);
+      const found = (
+        await stores.appointments.listByDealershipDay(
+          dealershipId,
+          bounds.start,
+          bounds.end,
+        )
+      ).filter(isBlocking);
+      // Jobs that hold a technician that day, also ones that started the day before.
+      const blocking = await stores.scheduling.listBlockingAppointments(
+        dealershipId,
+        bounds.start,
+        bounds.end,
+      );
+      const technicians = (
+        await stores.scheduling.listTechnicians(dealershipId)
+      ).filter((t) => t.active);
+      const bays = (
+        await stores.scheduling.listServiceBays(dealershipId)
+      ).filter((b) => b.active);
+      return {
+        kind: "ok",
+        date,
+        timeZone: dealership.timeZone,
+        opening: openingWindow(dealership, date),
+        nextOpenDate: nextOpenDate(dealership, date),
+        technicians: technicians.map((technician) => ({
+          technician,
+          ...technicianDay(
+            technician,
+            dealership,
+            date,
+            blocking.filter((a) => a.technicianId === technician.id),
+            now,
+          ),
+        })),
+        bays,
+        appointments: await viewAppointmentsIn(actor, stores, found),
+      };
     }),
   );
 }
