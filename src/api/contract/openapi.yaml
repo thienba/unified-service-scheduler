@@ -23,6 +23,8 @@ tags:
   - name: appointments
   - name: customers
   - name: outbox
+  - name: demo-only
+    description: Exists only in the demo. A real backend leaves these out.
 
 paths:
   /me:
@@ -578,6 +580,45 @@ paths:
         "401": { $ref: "#/components/responses/Unauthorized" }
         "403": { $ref: "#/components/responses/Forbidden" }
         "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+        "500": { $ref: "#/components/responses/Internal" }
+
+  /_demo/telemetry:
+    get:
+      operationId: getDemoTelemetry
+      tags: [demo-only]
+      summary: Recent log lines and metric values
+      description: |
+        Demo only, for the dev panel. Any signed-in user. The log lines hold the allowed fields only and the
+        metrics are counted in this browser tab (architecture.md section 7.7).
+      parameters:
+        - $ref: "#/components/parameters/Traceparent"
+      responses:
+        "200":
+          description: The newest log lines (at most 500) and the metrics.
+          headers:
+            X-Trace-Id: { $ref: "#/components/headers/TraceId" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Telemetry" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+        "500": { $ref: "#/components/responses/Internal" }
+
+  /_demo/reset:
+    post:
+      operationId: resetDemoData
+      tags: [demo-only]
+      summary: Put the demo data back to the seed
+      description: Demo only. Any signed-in user. Everything stored in this browser is replaced by the seed.
+      parameters:
+        - $ref: "#/components/parameters/Traceparent"
+      responses:
+        "204":
+          description: Reset.
+          headers:
+            X-Trace-Id: { $ref: "#/components/headers/TraceId" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
         "422": { $ref: "#/components/responses/ValidationFailed" }
         "500": { $ref: "#/components/responses/Internal" }
 
@@ -1253,3 +1294,71 @@ components:
         text: { type: string, minLength: 3, maxLength: 50 }
         phone: { $ref: "#/components/schemas/Phone" }
         registration: { $ref: "#/components/schemas/Registration" }
+
+    # --- Demo only ---------------------------------------------------------------------------
+    LogLine:
+      type: object
+      description: One JSON log line. Only these fields can appear (architecture.md section 7.7).
+      additionalProperties: false
+      required: [ts, level, msg]
+      properties:
+        ts: { $ref: "#/components/schemas/Instant" }
+        level: { type: string, enum: [info, error] }
+        msg: { type: string }
+        traceId: { $ref: "#/components/schemas/TraceId" }
+        route: { type: string }
+        method: { type: string }
+        status: { type: integer }
+        durationMs: { type: number }
+        dealershipId: { $ref: "#/components/schemas/Id" }
+        actorRole: { $ref: "#/components/schemas/Role" }
+        outcome: { type: string }
+        code: { type: string }
+        reasons:
+          type: array
+          items: { type: string }
+        appointmentId: { $ref: "#/components/schemas/Id" }
+        technicianId: { $ref: "#/components/schemas/Id" }
+        serviceBayId: { $ref: "#/components/schemas/Id" }
+        candidates: { type: integer }
+    MetricLabels:
+      type: object
+      additionalProperties: { type: string }
+    MetricSample:
+      type: object
+      additionalProperties: false
+      required: [name, labels, value]
+      properties:
+        name: { type: string }
+        labels: { $ref: "#/components/schemas/MetricLabels" }
+        value: { type: number }
+    HistogramSample:
+      type: object
+      additionalProperties: false
+      required: [name, labels, count, sum, p50, p95, max]
+      properties:
+        name: { type: string }
+        labels: { $ref: "#/components/schemas/MetricLabels" }
+        count: { type: integer }
+        sum: { type: number }
+        p50: { type: number }
+        p95: { type: number }
+        max: { type: number }
+    Telemetry:
+      type: object
+      additionalProperties: false
+      required: [logs, counters, histograms, gauges]
+      properties:
+        logs:
+          type: array
+          items: { $ref: "#/components/schemas/LogLine" }
+        counters:
+          type: array
+          items: { $ref: "#/components/schemas/MetricSample" }
+        histograms:
+          type: array
+          items: { $ref: "#/components/schemas/HistogramSample" }
+        gauges:
+          type: array
+          description: Worked out when read, for example `bay_utilisation_ratio`.
+          items: { $ref: "#/components/schemas/MetricSample" }

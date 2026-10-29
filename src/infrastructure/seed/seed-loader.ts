@@ -108,6 +108,20 @@ export function buildSeedData(now: EpochMs): SeedData {
 
 export type SeedLoadResult = "loaded" | "kept" | "reset";
 
+/** Removes everything stored and writes the seed again, counting "today" from `now` (AD-17). */
+export async function resetToSeed(
+  target: SeedTarget,
+  now: EpochMs,
+  version: number = SEED_VERSION,
+): Promise<void> {
+  const data = buildSeedData(now);
+  const problems = validateSeed(data, now);
+  if (problems.length > 0) {
+    throw new Error(`The seed is not valid: ${problems.join("; ")}`);
+  }
+  await target.replaceAll(data, version);
+}
+
 /**
  * Fills an empty store, or resets the demo data when the stored seed version is older than
  * `version`. With the same version the data added since is kept.
@@ -119,11 +133,6 @@ export async function loadSeed(
 ): Promise<SeedLoadResult> {
   const stored = await target.getSeedVersion();
   if (stored !== undefined && stored >= version) return "kept";
-  const data = buildSeedData(now);
-  const problems = validateSeed(data, now);
-  if (problems.length > 0) {
-    throw new Error(`The seed is not valid: ${problems.join("; ")}`);
-  }
-  await target.replaceAll(data, version);
+  await resetToSeed(target, now, version);
   return stored === undefined ? "loaded" : "reset";
 }

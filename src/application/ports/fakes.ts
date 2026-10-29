@@ -27,6 +27,7 @@ export function createFakeIds(prefix = "id"): IdGenerator {
 
 export type LogCall =
   | { kind: "info"; msg: string; fields: LogFields }
+  | { kind: "error"; msg: string; fields: LogFields }
   | { kind: "step"; name: StepName };
 
 export interface FakeLogger extends Logger {
@@ -36,18 +37,27 @@ export interface FakeLogger extends Logger {
 
 export function createFakeLogger(): FakeLogger {
   const calls: LogCall[] = [];
-  return {
-    calls,
-    steps: () =>
-      calls.flatMap((call) => (call.kind === "step" ? [call.name] : [])),
-    info: (msg, fields = {}) => {
-      calls.push({ kind: "info", msg, fields });
-    },
-    step: async (name, work) => {
-      calls.push({ kind: "step", name });
-      return work();
-    },
+  const make = (traceId?: string): FakeLogger => {
+    const traced = (fields: LogFields): LogFields =>
+      traceId === undefined ? fields : { ...fields, traceId };
+    return {
+      calls,
+      steps: () =>
+        calls.flatMap((call) => (call.kind === "step" ? [call.name] : [])),
+      info: (msg, fields = {}) => {
+        calls.push({ kind: "info", msg, fields: traced(fields) });
+      },
+      error: (msg, fields = {}) => {
+        calls.push({ kind: "error", msg, fields: traced(fields) });
+      },
+      step: async (name, work) => {
+        calls.push({ kind: "step", name });
+        return work();
+      },
+      withTrace: make,
+    };
   };
+  return make();
 }
 
 export interface FakeMetrics extends Metrics {

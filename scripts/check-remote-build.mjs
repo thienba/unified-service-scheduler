@@ -9,6 +9,8 @@ import { pathToFileURL } from "node:url";
 const forbiddenStrings = ["X-Demo-User", "/_demo/", "msw"];
 // Words that only the seed files hold.
 const seedMarkers = ["Fakeford Motors", "customer.a@demo.example"];
+// Names that only the demo's logger and metrics hold (SEC-14).
+const telemetryMarkers = ["http_requests_total", "bay_utilisation_ratio"];
 
 /**
  * @param {Map<string, string>} files built file path (relative to the build) to its text
@@ -28,7 +30,11 @@ export function findMockLeaks(files) {
     ) {
       problems.push(`${path} looks like seed data`);
     }
-    for (const word of [...forbiddenStrings, ...seedMarkers]) {
+    for (const word of [
+      ...forbiddenStrings,
+      ...seedMarkers,
+      ...telemetryMarkers,
+    ]) {
       if (text.includes(word)) problems.push(`${path} contains "${word}"`);
     }
   }

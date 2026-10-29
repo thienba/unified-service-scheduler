@@ -207,6 +207,17 @@ export const matrix: Record<string, Row> = {
     query: { dealershipId: LON },
     expect: only({ managerLondon: 200 }, 403),
   },
+  // Demo only, open to every signed-in user (architecture.md section 7.3).
+  getDemoTelemetry: {
+    method: "GET",
+    path: "/_demo/telemetry",
+    expect: only({}, 200),
+  },
+  resetDemoData: {
+    method: "POST",
+    path: "/_demo/reset",
+    expect: only({}, 204),
+  },
 };
 
 beforeAll(startMsw);

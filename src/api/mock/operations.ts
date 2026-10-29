@@ -31,7 +31,9 @@ import {
   viewAppointments,
   type QueryFailure,
 } from "../../application/queries";
+import type { GaugeSample } from "../../application/ports/telemetry";
 import type { DemoUser } from "../../domain/model";
+import type { TelemetryReader } from "../../infrastructure/telemetry";
 import type { components, operations } from "../contract/schema";
 import type { ProblemSpec } from "./problems";
 import {
@@ -63,6 +65,12 @@ export interface Context {
   idempotencyKey: string | undefined;
   /** The origin the request was sent to, for the links in outbox messages. */
   origin: string;
+  /** What the two `_demo` operations need. */
+  demo: {
+    telemetry: TelemetryReader;
+    resetData: () => Promise<void>;
+    bayUtilisation: () => Promise<GaugeSample[]>;
+  };
 }
 
 type Handler = (c: Context) => Promise<Reply>;
@@ -133,6 +141,19 @@ async function flaggedReply(
 }
 
 export const handlers: Record<keyof operations, Handler> = {
+  getDemoTelemetry: async ({ demo }) =>
+    ok({
+      logs: demo.telemetry.lines(),
+      counters: demo.telemetry.counters(),
+      histograms: demo.telemetry.histograms(),
+      gauges: await demo.bayUtilisation(),
+    }),
+
+  resetDemoData: async ({ demo }) => {
+    await demo.resetData();
+    return { status: 204, body: undefined };
+  },
+
   getMe: async ({ user }) =>
     ok({
       userId: user.id,

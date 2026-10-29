@@ -25,7 +25,12 @@ export default defineConfig({
     ],
     coverage: {
       provider: "v8",
-      include: ["src/domain/**", "src/application/**", "src/api/mock/**"],
+      include: [
+        "src/domain/**",
+        "src/application/**",
+        "src/api/mock/**",
+        "src/infrastructure/telemetry/**",
+      ],
       exclude: ["**/*.test.ts", "**/*.d.ts", "src/application/ports/fakes.ts"],
       reporter: ["text", "html", "json-summary"],
       reportsDirectory: "coverage",
@@ -33,6 +38,7 @@ export default defineConfig({
         "src/domain/**": { lines: 90, branches: 90 },
         "src/application/**": { lines: 90, branches: 90 },
         "src/api/mock/**": { lines: 90 },
+        "src/infrastructure/telemetry/**": { lines: 90, branches: 90 },
       },
     },
   },

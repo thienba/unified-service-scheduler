@@ -146,3 +146,61 @@ for (const gapMs of [0, 1000]) {
     }
   });
 }
+
+test("the console shows JSON lines with the trace id, the telemetry answers, and reset brings the seed back", async ({
+  page,
+}) => {
+  const logged: string[] = [];
+  page.on("console", (message) => logged.push(message.text()));
+  await open(page);
+  const start = await contestedStart(page);
+  // Cedar is the one free EV technician: the first booking takes them, the second is refused.
+  const first = await api(page, "/appointments", {
+    user: "user-customer-a",
+    method: "POST",
+    key: crypto.randomUUID(),
+    body: booking(start),
+  });
+  expect(first.status).toBe(201);
+  const booked = await api(page, "/appointments", {
+    user: "user-customer-b",
+    method: "POST",
+    key: crypto.randomUUID(),
+    body: { ...booking(start), vehicleId: "vehicle-b" },
+  });
+  expect(booked.status).toBe(409);
+  const lines = logged.flatMap((text) => {
+    try {
+      return [JSON.parse(text) as Record<string, unknown>];
+    } catch {
+      return [];
+    }
+  });
+  expect(lines).toContainEqual(
+    expect.objectContaining({
+      msg: "appointment.book",
+      traceId: booked.traceId,
+      status: 409,
+      outcome: "slot_unavailable",
+    }),
+  );
+
+  const telemetry = await api(page, "/_demo/telemetry", {
+    user: "user-customer-a",
+  });
+  expect(telemetry.status).toBe(200);
+  expect(telemetry.body.counters).toContainEqual(
+    expect.objectContaining({ name: "appointment_conflicts_total", value: 1 }),
+  );
+
+  const reset = await page.evaluate(async () => {
+    const response = await fetch("/api/_demo/reset", {
+      method: "POST",
+      headers: { "X-Demo-User": "user-customer-a" },
+    });
+    return response.status;
+  });
+  expect(reset).toBe(204);
+  const mine = await api(page, "/appointments", { user: "user-customer-a" });
+  expect(mine.body[0].start).toBe(start);
+});
