@@ -13,7 +13,7 @@ import { BookingSummary } from "../../components/BookingSummary";
 import { Button } from "../../components/Button";
 import { DayStrip } from "../../components/DayStrip";
 import { query, useMediaQuery } from "../../components/hooks";
-import { PageBack, PhoneLink, Plate } from "../../components/Small";
+import { InlineNote, PageBack, PhoneLink, Plate } from "../../components/Small";
 import { Skeleton, StateBlock } from "../../components/StateBlock";
 import {
   HintBox,
@@ -549,6 +549,12 @@ function Rescheduling({
               <h2 id="times-title" tabIndex={-1} className="text-xl">
                 Pick a start time
               </h2>
+              {a.transport === "courtesy_car" && (
+                <InlineNote>
+                  Your appointment includes a courtesy car, so we only show
+                  times when one is free.
+                </InlineNote>
+              )}
               {/* While a confirm is on its way the times cannot change, so what is sent is what is shown. */}
               <fieldset disabled={confirming} className="contents">
                 <Times

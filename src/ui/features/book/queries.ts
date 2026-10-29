@@ -1,5 +1,5 @@
 // The calls the booking screens make, through the typed client only (AD-2).
-import { useQueries, useQuery } from "@tanstack/react-query";
+import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { components } from "../../../api/contract/schema";
 import { call } from "../../data/api-problem";
 import { useSession } from "../../session/session";
@@ -9,6 +9,7 @@ export type Vehicle = components["schemas"]["Vehicle"];
 export type Appointment = components["schemas"]["Appointment"];
 export type Transport = components["schemas"]["Transport"];
 export type BookingRequest = components["schemas"]["BookingRequest"];
+type Availability = components["schemas"]["Availability"];
 
 export function useServiceTypes() {
   const { client, status } = useSession();
@@ -63,16 +64,19 @@ export function useWeekAvailability(
   appointmentId?: string,
 ) {
   const { client } = useSession();
+  const queryClient = useQueryClient();
+  const keyFor = (date: string, t: Transport) =>
+    availabilityKey(
+      dealershipId ?? "",
+      serviceTypeId ?? "",
+      date,
+      t,
+      technicianId,
+      appointmentId,
+    );
   return useQueries({
     queries: dates.map((date) => ({
-      queryKey: availabilityKey(
-        dealershipId ?? "",
-        serviceTypeId ?? "",
-        date,
-        transport,
-        technicianId,
-        appointmentId,
-      ),
+      queryKey: keyFor(date, transport),
       queryFn: () =>
         call(
           client.GET("/dealerships/{dealershipId}/availability", {
@@ -89,9 +93,18 @@ export function useWeekAvailability(
           }),
         ),
       enabled: Boolean(dealershipId && serviceTypeId),
+      // When only the transport changes, the same day's answer for another transport stays on screen
+      // until the new one comes: the strip and the chips are not swapped for a loading block, so a chip
+      // that has focus keeps it (WCAG 2.4.3). Another day, service or technician never lends its answer.
+      placeholderData: () =>
+        TRANSPORTS.filter((t) => t !== transport)
+          .map((t) => queryClient.getQueryData<Availability>(keyFor(date, t)))
+          .find((data) => data !== undefined),
     })),
   });
 }
+
+const TRANSPORTS: readonly Transport[] = ["wait", "drop_off", "courtesy_car"];
 
 export function useAppointment(appointmentId: string) {
   const { client } = useSession();

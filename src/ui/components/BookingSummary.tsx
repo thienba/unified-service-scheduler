@@ -20,6 +20,7 @@ export function BookingSummary({
   onTransportChange,
   transportError,
   transportRef,
+  transportNote,
   confirm,
 }: {
   /** `staff`: "Booking for {name}" and the car choice in the third person (design.md 8.9, B2 P6).
@@ -28,12 +29,14 @@ export function BookingSummary({
   /** For `staff`: whose booking it is. */
   customerName?: string | undefined;
   rows: readonly SummaryRow[];
-  /** One list: the courtesy car is added to it by its own ticket. Left out on `reschedule`. */
+  /** One list: wait, drop off, courtesy car. Left out on `reschedule`. */
   transportChoices?: readonly Choice[];
   transport?: string;
   onTransportChange?: (value: string) => void;
   transportError?: string | undefined;
   transportRef?: Ref<HTMLInputElement>;
+  /** A line under the car choice that says why an option is off or a choice was cleared. */
+  transportNote?: ReactNode;
   /** The Confirm button, when it is drawn here (from 1024 wide). */
   confirm?: ReactNode;
 }) {
@@ -88,6 +91,9 @@ export function BookingSummary({
           error={transportError}
           ref={transportRef}
         />
+      )}
+      {transportNote !== undefined && (
+        <div aria-live="polite">{transportNote}</div>
       )}
       {confirm}
       <p className="text-sm text-text-secondary">
