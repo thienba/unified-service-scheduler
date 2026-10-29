@@ -10,6 +10,7 @@ import {
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "../../app/App";
+import { chooseOption, selectButton } from "../../testing/controls";
 import { fakeApi, json, problem, type FakeHandler } from "../../app/fake-api";
 import { saveUser } from "../../demo/saved-user";
 
@@ -109,10 +110,7 @@ async function chooseTime(name: string) {
   fireEvent.click(await screen.findByRole("radio", { name }));
 }
 async function chooseCar() {
-  await screen.findByRole("option", { name: "Ford Focus, AB12 CDE" });
-  fireEvent.change(await screen.findByRole("combobox", { name: /^Car/ }), {
-    target: { value: "v-focus" },
-  });
+  await chooseOption(/^Car/, "v-focus");
 }
 const confirmButton = () =>
   screen.getByRole("button", { name: "Confirm booking" });
@@ -180,15 +178,13 @@ describe("book", () => {
     const raw = "<script>x</script>";
     open(`/book?dealership=${encodeURIComponent(raw)}&service=nope`);
     await screen.findByRole("heading", { level: 1, name: "Book a service" });
-    await screen.findByRole("option", { name: "Northgate Motors" });
-    const dealership = screen.getByRole("combobox", {
+    const dealership = await screen.findByRole("button", {
       name: /^Dealership/,
-    }) as HTMLSelectElement;
-    const service = screen.getByRole("combobox", {
-      name: /^Service/,
-    }) as HTMLSelectElement;
-    expect(dealership.value).toBe("");
-    expect(service.value).toBe("");
+    });
+    const service = selectButton(/^Service/);
+    expect(dealership.getAttribute("data-value")).toBe("");
+    expect(service.getAttribute("data-value")).toBe("");
+    expect(dealership.textContent).toBe("Choose a dealership");
     expect(document.body.textContent).not.toContain("script");
     expect(new XMLSerializer().serializeToString(document.body)).not.toContain(
       "script>x",
@@ -267,9 +263,7 @@ describe("book", () => {
     fireEvent.click(
       screen.getByRole("link", { name: "Car: choose which car is coming in." }),
     );
-    expect(document.activeElement).toBe(
-      screen.getByRole("combobox", { name: /^Car/ }),
-    );
+    expect(document.activeElement).toBe(selectButton(/^Car/));
   });
 
   it("REQ-BOOK-010.AC-1: the car choice has no default", async () => {
@@ -324,10 +318,7 @@ describe("book", () => {
     expect(
       screen.getAllByRole("button", { name: "Pick a new time to confirm" }),
     ).toHaveLength(1);
-    expect(
-      (screen.getByRole("combobox", { name: /^Car/ }) as HTMLSelectElement)
-        .value,
-    ).toBe("v-focus");
+    expect(selectButton(/^Car/).getAttribute("data-value")).toBe("v-focus");
     expect(
       (screen.getByRole("radio", { name: "Wait on site" }) as HTMLInputElement)
         .checked,
@@ -1008,10 +999,7 @@ describe("book: warn early when the chosen time is taken", () => {
         screen.getByRole("radiogroup", { name: "Closest to your time" }),
       ).getAllByRole("radio").length,
     ).toBeLessThanOrEqual(5);
-    expect(
-      (screen.getByRole("combobox", { name: /^Car/ }) as HTMLSelectElement)
-        .value,
-    ).toBe("v-focus");
+    expect(selectButton(/^Car/).getAttribute("data-value")).toBe("v-focus");
     expect(radio("Wait on site").checked).toBe(true);
     expect(screen.getByText("Just taken")).toBeTruthy();
     expect(posts(api)).toHaveLength(0);

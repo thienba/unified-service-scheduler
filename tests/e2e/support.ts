@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
-import { expect, type Page } from "@playwright/test";
+import { expect, type Locator, type Page } from "@playwright/test";
 
 const require = createRequire(import.meta.url);
 const axeSource = readFileSync(require.resolve("axe-core/axe.min.js"), "utf8");
@@ -119,3 +119,55 @@ export const problemBody = (status: number, code: string) => ({
   code,
   traceId: "4bf92f35a1b2c3d4e5f60718293a4b5c",
 });
+
+// The themed controls (design.md 8.27 to 8.30, D-0001-131). They replace the native drop-down, date and time
+// inputs, so a test chooses the way a person does: open the control, press the option or the day.
+
+/** The button of a Select or TimeField: its name is the label, then the value. */
+export function selectNamed(scope: Page | Locator, label: string): Locator {
+  const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return scope
+    .getByRole("button", { name: new RegExp(`^${escaped}( |$)`) })
+    .and(scope.locator('[aria-haspopup="listbox"]'));
+}
+
+/**
+ * Opens a Select or TimeField and chooses the option with this value (`"vehicle-a"`, `"14:00"`), or with this
+ * visible label. Waits until the list has closed.
+ */
+export async function chooseOption(
+  trigger: Locator,
+  choice: string | { label: string },
+) {
+  const page = trigger.page();
+  await trigger.click();
+  const list = page.getByRole("listbox");
+  const option =
+    typeof choice === "string"
+      ? list.locator(`[role="option"][data-value="${choice}"]`)
+      : list.getByRole("option", { name: choice.label, exact: true });
+  await option.scrollIntoViewIfNeeded();
+  await option.click();
+  await expect(list).toHaveCount(0);
+}
+
+/** A DatePicker by its label: the group of its three segments and the calendar button. */
+export function dateNamed(scope: Page | Locator, label: string): Locator {
+  return scope.getByRole("group", { name: label, exact: true });
+}
+
+/** Types a date (`YYYY-MM-DD`) into a DatePicker's segments, day first (dd/mm/yyyy); empty clears it. */
+export async function typeDate(group: Locator, date: string) {
+  const page = group.page();
+  const segments = group.getByRole("spinbutton");
+  if (date === "") {
+    for (const i of [0, 1, 2]) {
+      await segments.nth(i).click();
+      for (let n = 0; n < 4; n += 1) await page.keyboard.press("Backspace");
+    }
+    return;
+  }
+  const [year, month, day] = date.split("-");
+  await segments.nth(0).click();
+  await page.keyboard.type(`${day}${month}${year}`);
+}

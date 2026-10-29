@@ -1,7 +1,14 @@
 // `dealership-settings` in a real browser (C6, manager.md 4.3, 5.3): the form from the API, its checks, dates with
 // different hours, booking rules, the warning before a save that flags bookings (D-0001-36 A), failures and access.
 import { expect, test, type Page } from "@playwright/test";
-import { interceptApi, problemBody } from "./support";
+import {
+  interceptApi,
+  problemBody,
+  chooseOption,
+  typeDate,
+  dateNamed,
+  selectNamed,
+} from "./support";
 import {
   LONDON,
   SAIGON,
@@ -42,13 +49,25 @@ test("the form shows the dealership's hours, dates and rules from the API, and n
 }) => {
   await openSettings(page);
   for (const name of ["Monday", "Friday"]) {
-    await expect(day(page, name).getByLabel("Opens")).toHaveValue("08:00");
-    await expect(day(page, name).getByLabel("Closes")).toHaveValue("18:00");
+    await expect(selectNamed(day(page, name), "Opens")).toHaveAttribute(
+      "data-value",
+      "08:00",
+    );
+    await expect(selectNamed(day(page, name), "Closes")).toHaveAttribute(
+      "data-value",
+      "18:00",
+    );
   }
-  await expect(day(page, "Saturday").getByLabel("Opens")).toHaveValue("09:00");
-  await expect(day(page, "Saturday").getByLabel("Closes")).toHaveValue("16:00");
+  await expect(selectNamed(day(page, "Saturday"), "Opens")).toHaveAttribute(
+    "data-value",
+    "09:00",
+  );
+  await expect(selectNamed(day(page, "Saturday"), "Closes")).toHaveAttribute(
+    "data-value",
+    "16:00",
+  );
   await expect(day(page, "Sunday").getByLabel("Closed")).toBeChecked();
-  await expect(day(page, "Sunday").getByLabel("Opens")).toBeDisabled();
+  await expect(selectNamed(day(page, "Sunday"), "Opens")).toBeDisabled();
   await expect(
     page.getByRole("heading", { name: "Different hours on one date" }),
   ).toBeVisible();
@@ -79,15 +98,21 @@ test("ticking Closed empties and disables the day; the Save row and the phone ba
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await openSettings(page);
-  await day(page, "Saturday").getByLabel("Closes").fill("14:00");
+  await chooseOption(selectNamed(day(page, "Saturday"), "Closes"), "14:00");
   await expect(page.getByText("Saturday now closes at 14:00")).toBeVisible();
   await expect(
     page.getByText("Unsaved changes", { exact: true }),
   ).toBeVisible();
   await day(page, "Monday").getByLabel("Closed").check();
-  await expect(day(page, "Monday").getByLabel("Opens")).toBeDisabled();
-  await expect(day(page, "Monday").getByLabel("Opens")).toHaveValue("");
-  await expect(day(page, "Monday").getByLabel("Closes")).toHaveValue("");
+  await expect(selectNamed(day(page, "Monday"), "Opens")).toBeDisabled();
+  await expect(selectNamed(day(page, "Monday"), "Opens")).toHaveAttribute(
+    "data-value",
+    "",
+  );
+  await expect(selectNamed(day(page, "Monday"), "Closes")).toHaveAttribute(
+    "data-value",
+    "",
+  );
   await expect(page.getByText("Monday is now closed")).toBeVisible();
 
   await page.setViewportSize({ width: 1440, height: 900 });
@@ -101,13 +126,18 @@ test("six wrong values each show their own message, the summary links to each, a
   await openSettings(page);
   const taken = next(3, today(), 7);
   // A date already in the list.
-  await page.getByLabel("Date", { exact: true }).fill(taken);
-  await page.getByLabel("What happens on this date").selectOption("closed");
+  await typeDate(dateNamed(page, "Date"), taken);
+  await chooseOption(selectNamed(page, "What happens on this date"), "closed");
   await page.getByRole("button", { name: "Add this date" }).click();
-  await page.getByLabel("Date", { exact: true }).fill(taken);
+  await typeDate(dateNamed(page, "Date"), taken);
 
-  await day(page, "Monday").getByLabel("Closes").fill("07:00");
-  await day(page, "Tuesday").getByLabel("Opens").fill("08:10");
+  // design.md 8.30: Closes crosses out the times up to Opens, so Monday's wrong pair is made by moving Opens
+  // past the closing time.
+  await chooseOption(selectNamed(day(page, "Monday"), "Closes"), "09:00");
+  await chooseOption(selectNamed(day(page, "Monday"), "Opens"), "10:00");
+  // D-0001-133: a time off the quarter hour cannot be chosen any more, so Tuesday's wrong value is an
+  // opening time equal to its closing time.
+  await chooseOption(selectNamed(day(page, "Tuesday"), "Opens"), "18:00");
   await page.getByLabel("Shortest notice (hours)").fill("80");
   await page.getByLabel("Furthest ahead (days)").fill("0");
   await page
@@ -120,15 +150,15 @@ test("six wrong values each show their own message, the summary links to each, a
   ).toBeVisible();
   await expect(page.getByText("Fix the 6 things above to save.")).toBeVisible();
   // Focus lands on the first problem, Monday's closing time.
-  await expect(day(page, "Monday").getByLabel("Closes")).toBeFocused();
+  await expect(selectNamed(day(page, "Monday"), "Closes")).toBeFocused();
   await expect(
     page.getByText(
-      "Monday closes at 07:00, before it opens at 08:00. Choose a closing time after 08:00.",
+      "Monday closes at 09:00, before it opens at 10:00. Choose a closing time after 10:00.",
     ),
   ).toBeVisible();
   await expect(
     page.getByText(
-      "Tuesday opens at 08:10. Use a time on the quarter hour, for example 08:15.",
+      "Tuesday closes at 18:00, the same time it opens. Choose a closing time after 18:00.",
     ),
   ).toBeVisible();
   await expect(page.getByText(/^There is already a change for /)).toBeVisible();
@@ -145,19 +175,21 @@ test("six wrong values each show their own message, the summary links to each, a
   ).toBeVisible();
 
   // The row's message is tied to its fields.
-  const mondayClose = day(page, "Monday").getByLabel("Closes");
+  const mondayClose = selectNamed(day(page, "Monday"), "Closes");
   await expect(mondayClose).toHaveAttribute("aria-invalid", "true");
   const described = await mondayClose.getAttribute("aria-describedby");
   expect(described).toBeTruthy();
   await expect(page.locator(`[id="${described}"]`)).toContainText(
-    "Monday closes at 07:00",
+    "Monday closes at 09:00",
   );
 
   // Each summary item moves focus to its row.
   await page
-    .getByRole("link", { name: "Tuesday: use a time on the quarter hour." })
+    .getByRole("link", {
+      name: "Tuesday: closing time must be after opening time.",
+    })
     .click();
-  await expect(day(page, "Tuesday").getByLabel("Opens")).toBeFocused();
+  await expect(selectNamed(day(page, "Tuesday"), "Closes")).toBeFocused();
 
   expect(sent).toEqual([]);
 });
@@ -168,9 +200,9 @@ test("Add this date only adds to the list, marked new, and sends nothing until S
   const sent = writes(page);
   await openSettings(page);
   const date = next(2, today(), 7);
-  await page.getByLabel("Date", { exact: true }).fill(date);
-  await page.getByLabel("Opens", { exact: true }).last().fill("08:00");
-  await page.getByLabel("Closes", { exact: true }).last().fill("20:00");
+  await typeDate(dateNamed(page, "Date"), date);
+  await chooseOption(selectNamed(page, "Opens").last(), "08:00");
+  await chooseOption(selectNamed(page, "Closes").last(), "20:00");
   await page.getByRole("button", { name: "Add this date" }).click();
 
   const list = page.getByRole("list", { name: "Dates with different hours" });
@@ -201,13 +233,19 @@ test("saved dates change what availability lists: longer, shorter, closed, and t
   const closed = next(4, today(), 7);
   const plain = next(5, today(), 7);
   const add = async (date: string, open: string, close: string) => {
-    await page.getByLabel("Date", { exact: true }).fill(date);
+    await typeDate(dateNamed(page, "Date"), date);
     if (open === "") {
-      await page.getByLabel("What happens on this date").selectOption("closed");
+      await chooseOption(
+        selectNamed(page, "What happens on this date"),
+        "closed",
+      );
     } else {
-      await page.getByLabel("What happens on this date").selectOption("hours");
-      await page.getByLabel("Opens", { exact: true }).last().fill(open);
-      await page.getByLabel("Closes", { exact: true }).last().fill(close);
+      await chooseOption(
+        selectNamed(page, "What happens on this date"),
+        "hours",
+      );
+      await chooseOption(selectNamed(page, "Opens").last(), open);
+      await chooseOption(selectNamed(page, "Closes").last(), close);
     }
     await page.getByRole("button", { name: "Add this date" }).click();
   };
@@ -260,15 +298,21 @@ test("two dealerships each show and save their own hours; a change at one leaves
   page,
 }) => {
   await openSettings(page, "user-manager-saigon");
-  await expect(day(page, "Monday").getByLabel("Opens")).toHaveValue("07:30");
+  await expect(selectNamed(day(page, "Monday"), "Opens")).toHaveAttribute(
+    "data-value",
+    "07:30",
+  );
   await expect(page.getByText("Asia/Ho_Chi_Minh")).toBeVisible();
   const saigonBefore = await api(page, `/dealerships/${SAIGON}`, {
     user: "user-manager-saigon",
   });
 
   await openSettings(page);
-  await expect(day(page, "Monday").getByLabel("Opens")).toHaveValue("08:00");
-  await day(page, "Monday").getByLabel("Opens").fill("09:00");
+  await expect(selectNamed(day(page, "Monday"), "Opens")).toHaveAttribute(
+    "data-value",
+    "08:00",
+  );
+  await chooseOption(selectNamed(day(page, "Monday"), "Opens"), "09:00");
   await save(page);
   await expect(
     page.getByRole("heading", { name: "Settings saved" }),
@@ -368,7 +412,7 @@ test("shortening Saturday warns before saving: two bookings listed, Go back save
   const sent = writes(page);
   const before = await appointmentsOn(page, saturday);
 
-  await day(page, "Saturday").getByLabel("Closes").fill("14:00");
+  await chooseOption(selectNamed(day(page, "Saturday"), "Closes"), "14:00");
   const saveButton = page
     .getByRole("button", { name: "Save settings" })
     .first();
@@ -405,7 +449,10 @@ test("shortening Saturday warns before saving: two bookings listed, Go back save
   await page.keyboard.press("Escape");
   await expect(dialog).toBeHidden();
   await expect(saveButton).toBeFocused();
-  await expect(day(page, "Saturday").getByLabel("Closes")).toHaveValue("14:00");
+  await expect(selectNamed(day(page, "Saturday"), "Closes")).toHaveAttribute(
+    "data-value",
+    "14:00",
+  );
 
   // The scrim does not close it.
   await saveButton.click();
@@ -500,7 +547,7 @@ for (const failure of [
   }) => {
     await interceptApi(page, { path: "/settings", ...failure.rule });
     await openSettings(page);
-    await day(page, "Saturday").getByLabel("Closes").fill("15:00");
+    await chooseOption(selectNamed(day(page, "Saturday"), "Closes"), "15:00");
     await save(page);
     await expect(
       page.getByRole("heading", { name: "Your changes were not saved" }),
@@ -511,7 +558,8 @@ for (const failure of [
       ),
     ).toBeVisible();
     await expect(page.getByRole("button", { name: "Try again" })).toBeVisible();
-    await expect(day(page, "Saturday").getByLabel("Closes")).toHaveValue(
+    await expect(selectNamed(day(page, "Saturday"), "Closes")).toHaveAttribute(
+      "data-value",
       "15:00",
     );
   });
@@ -521,7 +569,7 @@ test("leaving with unsaved changes asks first, with Keep editing first", async (
   page,
 }) => {
   await openSettings(page);
-  await day(page, "Saturday").getByLabel("Closes").fill("15:00");
+  await chooseOption(selectNamed(day(page, "Saturday"), "Closes"), "15:00");
   await page
     .getByRole("navigation", { name: "Main" })
     .getByRole("link", { name: "Shifts" })

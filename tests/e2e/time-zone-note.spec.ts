@@ -24,6 +24,7 @@ import {
   signInAs,
 } from "./demo-support";
 import {
+  chooseOption,
   expectNoAxeViolations,
   expectNoSidewaysScroll,
   widths,
@@ -52,10 +53,10 @@ const screens: Screen[] = [
     user: A,
     path: () => DAY,
     before: (page) =>
-      page
-        .getByRole("combobox", { name: /^Car/ })
-        .selectOption("vehicle-a")
-        .then(() => undefined),
+      chooseOption(
+        page.getByRole("button", { name: /^Car/ }),
+        "vehicle-a",
+      ).then(() => undefined),
     // London opens at 08:00: in Saigon's clock that would be 15:00.
     londonTime: (page) => radio(page, /^08:00 to 09:00/),
   },

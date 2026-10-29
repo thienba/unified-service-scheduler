@@ -10,6 +10,8 @@ import {
   pickRole,
   problemBody,
   widths,
+  chooseOption,
+  selectNamed,
 } from "./support";
 import {
   A,
@@ -269,8 +271,8 @@ test.describe("cancel", () => {
     await fillTime(page, FRI_10);
     await switchToB(page);
     expect(await offeredOnFriday(page, "10:00 to 13:00")).toBe(0);
-    await page.getByLabel("Who").selectOption({ label: "Demo Customer A" });
-    await expect(page.getByLabel("Who")).toHaveValue(A);
+    await chooseOption(selectNamed(page, "Who"), { label: "Demo Customer A" });
+    await expect(selectNamed(page, "Who")).toHaveAttribute("data-value", A);
 
     const slow = await page.context().newPage();
     await interceptApi(slow, { path: "/cancel", delayMs: 1500 });
