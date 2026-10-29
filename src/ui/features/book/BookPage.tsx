@@ -216,7 +216,7 @@ function Booking({ who }: { who: Who }) {
   const gap: Gap | null = staff ? fromGap.gap : null;
   const technicianId = gap?.technicianId;
   // While the tapped gap's technician is looked up, or when that look-up failed, nothing is shown or sent
-  // without them: the times wait and Confirm stays disabled (D-0001-20 B, Q-0001-245).
+  // without them: the times wait and Confirm stays disabled (D-0001-20 B, Q-0001-247).
   const gapLoading = staff !== null && fromGap.loading;
   const gapFailure =
     staff !== null && gap === null && fromGap.failure ? fromGap.failure : null;
