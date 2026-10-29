@@ -65,7 +65,9 @@ for (const width of [390, 1440] as const) {
       await chooseOption(selectNamed(day(page, "Saturday"), "Closes"), "14:00");
       await shot(page, "dealership-settings-dirty");
 
-      await chooseOption(selectNamed(day(page, "Monday"), "Closes"), "07:00");
+      // Closes crosses out the times up to Opens (design.md 8.30), so Opens moves past it instead.
+      await chooseOption(selectNamed(day(page, "Monday"), "Closes"), "09:00");
+      await chooseOption(selectNamed(day(page, "Monday"), "Opens"), "10:00");
       // D-0001-133: no time off the quarter hour can be chosen, so Tuesday opens when it closes.
       await chooseOption(selectNamed(day(page, "Tuesday"), "Opens"), "18:00");
       await page.getByLabel("Shortest notice (hours)").fill("80");
@@ -76,6 +78,7 @@ for (const width of [390, 1440] as const) {
       ).toBeVisible();
       await shot(page, "dealership-settings-validation");
 
+      await chooseOption(selectNamed(day(page, "Monday"), "Opens"), "08:00");
       await chooseOption(selectNamed(day(page, "Monday"), "Closes"), "18:00");
       await chooseOption(selectNamed(day(page, "Tuesday"), "Opens"), "08:00");
       await page.getByLabel("Shortest notice (hours)").fill("2");
@@ -221,7 +224,9 @@ for (const width of [390, 1440] as const) {
       await chooseOption(selectNamed(day(page, "Monday"), "Ends"), "16:00");
       await shot(page, "shifts-dirty");
 
-      await chooseOption(selectNamed(day(page, "Tuesday"), "Ends"), "07:00");
+      // Ends crosses out the times up to Starts (design.md 8.30), so Starts moves past it instead.
+      await chooseOption(selectNamed(day(page, "Tuesday"), "Ends"), "10:00");
+      await chooseOption(selectNamed(day(page, "Tuesday"), "Starts"), "11:00");
       await typeDate(dateNamed(page, "First day"), monday);
       await typeDate(dateNamed(page, "Last day (optional)"), today());
       await shiftsSave(page).click();

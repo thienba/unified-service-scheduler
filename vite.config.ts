@@ -3,6 +3,7 @@ import tailwindcss from "@tailwindcss/vite";
 import { defineConfig, loadEnv, type Plugin } from "vite";
 
 import { contentSecurityPolicy } from "./scripts/content-security-policy.mjs";
+import { reactAriaEnglishOnly } from "./scripts/react-aria-locales.mjs";
 
 function addContentSecurityPolicy(): Plugin {
   return {
@@ -66,7 +67,12 @@ function mockBackend(): Plugin {
 }
 
 export default defineConfig({
-  plugins: [tailwindcss(), addContentSecurityPolicy(), mockBackend()],
+  plugins: [
+    tailwindcss(),
+    addContentSecurityPolicy(),
+    mockBackend(),
+    reactAriaEnglishOnly(),
+  ],
   build: {
     // The policy does not allow data: URLs, so fonts and images stay real files.
     assetsInlineLimit: 0,

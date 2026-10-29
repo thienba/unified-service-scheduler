@@ -127,7 +127,9 @@ test("a half break, a break outside the shift, an end before the start and a las
     selectNamed(day(page, "Tuesday"), "Break starts (optional)"),
     "07:00",
   );
-  await chooseOption(selectNamed(day(page, "Wednesday"), "Ends"), "07:00");
+  // Ends crosses out the times up to Starts (design.md 8.30), so Starts moves past it instead.
+  await chooseOption(selectNamed(day(page, "Wednesday"), "Ends"), "09:00");
+  await chooseOption(selectNamed(day(page, "Wednesday"), "Starts"), "10:00");
   const first = next(4, today(), 7);
   await typeDate(dateNamed(page, "First day"), first);
   await typeDate(dateNamed(page, "Last day (optional)"), addDays(first, -1));
@@ -152,7 +154,7 @@ test("a half break, a break outside the shift, an end before the start and a las
   ).toBeVisible();
   await expect(
     page.getByText(
-      "Wednesday ends at 07:00, before it starts at 08:00. Choose an end time after 08:00.",
+      "Wednesday ends at 09:00, before it starts at 10:00. Choose an end time after 10:00.",
     ),
   ).toBeVisible();
   await expect(

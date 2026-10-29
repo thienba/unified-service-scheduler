@@ -64,6 +64,21 @@ export function timeOptions({
   return options;
 }
 
+/**
+ * For an end time (design.md 8.30, "Ends"): the times up to `start` are crossed out, with one line that says why.
+ * `words` finishes the sentence: "end after it starts" gives "Not up to 09:00: this must end after it starts at 09:00."
+ */
+export function afterStart(
+  start: string | undefined,
+  words: string,
+): { min?: string; disabledReason?: string } {
+  if (start === undefined || !CLOCK.test(start)) return {};
+  return {
+    min: timeOf(minutesOf(start) + 1),
+    disabledReason: `Not up to ${start}: this must ${words} at ${start}.`,
+  };
+}
+
 export function TimeField({
   label,
   name,

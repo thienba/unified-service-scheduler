@@ -86,6 +86,55 @@ it("WeekPatternEditor: shift mode has Day off and four time fields", () => {
   ).toBeTruthy();
 });
 
+// design.md 8.30 ("Ends"): an end time crosses out the times up to its start, and says why once at the top.
+for (const [mode, key, label, times, reason] of [
+  [
+    "hours",
+    "close",
+    "Closes",
+    { open: "09:00", close: "18:00" },
+    "Not up to 09:00: this must close after it opens at 09:00.",
+  ],
+  [
+    "shift",
+    "end",
+    "Ends",
+    { start: "09:00", end: "16:30", breakStart: "", breakEnd: "" },
+    "Not up to 09:00: this must end after it starts at 09:00.",
+  ],
+] as const) {
+  it(`WeekPatternEditor: ${label} crosses out the times up to the start, with the reason`, async () => {
+    const onChange = vi.fn();
+    render(
+      <WeekPatternEditor
+        mode={mode}
+        onChange={onChange}
+        days={[{ label: "Monday", off: false, times }]}
+      />,
+    );
+    const monday = screen.getByRole("group", { name: "Monday" });
+    fireEvent.click(
+      within(monday).getByRole("button", { name: new RegExp(`^${label}`) }),
+    );
+    const list = await screen.findByRole("listbox");
+    expect(
+      document.getElementById(list.getAttribute("aria-describedby")!)
+        ?.textContent,
+    ).toBe(reason);
+    const option = (value: string) =>
+      within(list)
+        .getAllByRole("option")
+        .find((o) => o.getAttribute("data-value") === value)!;
+    expect(option("08:00").getAttribute("aria-disabled")).toBe("true");
+    expect(option("09:00").getAttribute("aria-disabled")).toBe("true");
+    expect(option("09:15").getAttribute("aria-disabled")).toBeNull();
+    fireEvent.click(option("09:00"));
+    expect(onChange).not.toHaveBeenCalled();
+    fireEvent.click(option("09:15"));
+    expect(onChange).toHaveBeenCalledWith(0, { key, value: "09:15" });
+  });
+}
+
 it("DateExceptionList: empty text, new badge, remove named by its date, and the line that adding does not save", () => {
   const onRemove = vi.fn();
   const { rerender } = render(
