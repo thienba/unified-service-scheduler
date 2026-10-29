@@ -1,0 +1,85 @@
+$ node link-check.mjs docs/system-design.md   (worktree at commit 2563883)
+ok anchor                        #overview-and-scope
+ok anchor                        #architecture-diagram
+ok anchor                        #components-and-their-roles
+ok anchor                        #data-flow
+ok anchor                        #screens-and-flows
+ok anchor                        #technology-choices
+ok anchor                        #observability
+ok anchor                        #scalability-and-reliability
+ok anchor                        #real-backend-design-postgresql
+ok anchor                        #time-zones
+ok anchor                        #security-and-privacy
+ok anchor                        #results
+ok anchor                        #pull-requests
+ok anchor                        #how-genai-was-used-in-design
+ok anchor                        #assumptions
+ok anchor                        #out-of-scope
+ok anchor                        #concurrency-no-hold-and-an-early-warning
+ok evidence file                 https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-29-time-zone-note-on-every-customer-screen/book-saigon-390.png?raw=true
+ok evidence file                 https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-29-time-zone-note-on-every-customer-screen/book-saigon-1440.png?raw=true
+ok evidence file                 https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-29-time-zone-note-on-every-customer-screen/book-confirmed-saigon-390.png?raw=true
+ok evidence file                 https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-29-time-zone-note-on-every-customer-screen/book-confirmed-saigon-1440.png?raw=true
+ok evidence file                 https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-29-time-zone-note-on-every-customer-screen/my-appointments-saigon-390.png?raw=true
+ok evidence file                 https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-29-time-zone-note-on-every-customer-screen/my-appointments-saigon-1440.png?raw=true
+ok evidence file                 https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-29-time-zone-note-on-every-customer-screen/appointment-saigon-390.png?raw=true
+ok evidence file                 https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-29-time-zone-note-on-every-customer-screen/appointment-saigon-1440.png?raw=true
+ok evidence file                 https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-29-time-zone-note-on-every-customer-screen/reschedule-saigon-390.png?raw=true
+ok evidence file                 https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-29-time-zone-note-on-every-customer-screen/reschedule-saigon-1440.png?raw=true
+ok evidence file                 https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-29-time-zone-note-on-every-customer-screen/book-for-customer-saigon-390.png?raw=true
+ok evidence file                 https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-29-time-zone-note-on-every-customer-screen/book-for-customer-saigon-1440.png?raw=true
+ok evidence file                 https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-28-staff-schedule-timeline-list-and-appointment-view/schedule-list-390.png?raw=true
+ok evidence file                 https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-28-staff-schedule-timeline-list-and-appointment-view/schedule-timeline-1440.png?raw=true
+ok evidence file                 https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-29-time-zone-note-on-every-customer-screen/adjust-saigon-390.png?raw=true
+ok evidence file                 https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-29-time-zone-note-on-every-customer-screen/adjust-saigon-1440.png?raw=true
+ok evidence file                 https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-29-merge-wave-2-screens-and-apply-their-answers/flagged-list-390.png?raw=true
+ok evidence file                 https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-29-merge-wave-2-screens-and-apply-their-answers/flagged-list-1440.png?raw=true
+ok evidence file                 https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-28-manager-dealership-settings-and-technician-shifts/dealership-settings-idle-390.png?raw=true
+ok evidence file                 https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-28-manager-dealership-settings-and-technician-shifts/dealership-settings-idle-1440.png?raw=true
+ok evidence file                 https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-28-manager-dealership-settings-and-technician-shifts/shifts-idle-390.png?raw=true
+ok evidence file                 https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-28-manager-dealership-settings-and-technician-shifts/shifts-idle-1440.png?raw=true
+ok evidence file                 https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-28-manager-outbox-screen/outbox-list-390.png?raw=true
+ok evidence file                 https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-28-manager-outbox-screen/outbox-list-1440.png?raw=true
+ok evidence file                 https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-28-dev-panel-logs-metrics-and-reset/dev-panel-logs-390.png?raw=true
+ok evidence file                 https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-28-dev-panel-logs-metrics-and-reset/dev-panel-logs-1440.png?raw=true
+ok evidence file                 https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-28-app-shell-role-switcher-dealership-picker-and-shared-components/no-permission-customer-schedule-390.png?raw=true
+ok evidence file                 https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-28-app-shell-role-switcher-dealership-picker-and-shared-components/no-permission-customer-schedule-1440.png?raw=true
+ok evidence file                 https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-28-customer-appointments-list-cancel-and-reschedule/not-found-page-390.png?raw=true
+ok evidence file                 https://github.com/thienba/keyloop-service-scheduler/blob/vtc/evidence/2026-10-28-customer-appointments-list-cancel-and-reschedule/not-found-page-1440.png?raw=true
+ok file                          postgres/schema.sql
+ok file                          postgres/check.sql
+ok pull request, merged          https://github.com/thienba/keyloop-service-scheduler/pull/1
+ok pull request, merged          https://github.com/thienba/keyloop-service-scheduler/pull/2
+ok pull request, merged          https://github.com/thienba/keyloop-service-scheduler/pull/3
+ok pull request, merged          https://github.com/thienba/keyloop-service-scheduler/pull/4
+ok pull request, merged          https://github.com/thienba/keyloop-service-scheduler/pull/5
+ok pull request, merged          https://github.com/thienba/keyloop-service-scheduler/pull/6
+ok pull request, merged          https://github.com/thienba/keyloop-service-scheduler/pull/7
+ok pull request, merged          https://github.com/thienba/keyloop-service-scheduler/pull/8
+ok pull request, merged          https://github.com/thienba/keyloop-service-scheduler/pull/9
+ok pull request, merged          https://github.com/thienba/keyloop-service-scheduler/pull/10
+ok pull request, merged          https://github.com/thienba/keyloop-service-scheduler/pull/11
+ok pull request, merged          https://github.com/thienba/keyloop-service-scheduler/pull/12
+ok pull request, merged          https://github.com/thienba/keyloop-service-scheduler/pull/13
+ok pull request, merged          https://github.com/thienba/keyloop-service-scheduler/pull/14
+ok pull request, merged          https://github.com/thienba/keyloop-service-scheduler/pull/15
+ok pull request, merged          https://github.com/thienba/keyloop-service-scheduler/pull/16
+ok pull request, merged          https://github.com/thienba/keyloop-service-scheduler/pull/17
+ok pull request, merged          https://github.com/thienba/keyloop-service-scheduler/pull/18
+ok pull request, merged          https://github.com/thienba/keyloop-service-scheduler/pull/19
+ok pull request, merged          https://github.com/thienba/keyloop-service-scheduler/pull/20
+ok pull request, merged          https://github.com/thienba/keyloop-service-scheduler/pull/21
+ok pull request, merged          https://github.com/thienba/keyloop-service-scheduler/pull/22
+ok pull request, merged          https://github.com/thienba/keyloop-service-scheduler/pull/23
+ok pull request, merged          https://github.com/thienba/keyloop-service-scheduler/pull/24
+ok pull request, merged          https://github.com/thienba/keyloop-service-scheduler/pull/25
+ok pull request, merged          https://github.com/thienba/keyloop-service-scheduler/pull/26
+ok pull request, merged          https://github.com/thienba/keyloop-service-scheduler/pull/27
+ok pull request, merged          https://github.com/thienba/keyloop-service-scheduler/pull/28
+ok pull request, merged          https://github.com/thienba/keyloop-service-scheduler/pull/29
+ok pull request, merged          https://github.com/thienba/keyloop-service-scheduler/pull/30
+ok anchor                        #claims-marked-unverified
+ok anchor                        #known-browser-messages-under-the-content-security-policy
+
+81 distinct links (100 in all), 0 broken, checked 2026-10-29T10:41:28.723Z
+exit 0
