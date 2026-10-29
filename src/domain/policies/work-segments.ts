@@ -10,33 +10,42 @@ function shiftOn(technician: Technician, date: LocalDate): Shift | undefined {
 }
 
 /**
- * Where a technician can work on a local date: the shift (a date exception replaces the weekly
- * pattern), cut to the opening window, minus the shift's own break (Q-0001-10 A).
+ * Where a technician is on shift on a local date: the shift (a date exception replaces the weekly
+ * pattern) minus the shift's own break, whatever the opening hours are (Q-0001-10 A).
  */
-export function workSegments(
+export function shiftSegments(
   technician: Technician,
   dealership: Dealership,
   date: LocalDate,
 ): Interval[] {
   const shift = shiftOn(technician, date);
-  const window = openingWindow(dealership, date);
-  if (shift === undefined || window === null) return [];
+  if (shift === undefined) return [];
   const zone = dealership.timeZone;
-  const shiftSpan = intersect(
-    {
-      start: instantAt(date, shift.start, zone),
-      end: instantAt(date, shift.end, zone),
-    },
-    window,
-  );
+  const span = {
+    start: instantAt(date, shift.start, zone),
+    end: instantAt(date, shift.end, zone),
+  };
   // A shift that ends at or before its start gives no segments.
-  if (shiftSpan === null) return [];
+  if (span.start >= span.end) return [];
   // A break needs both its start and its end; with only one of them there is no break.
   if (shift.breakStart === undefined || shift.breakEnd === undefined) {
-    return [shiftSpan];
+    return [span];
   }
-  return subtract(shiftSpan, {
+  return subtract(span, {
     start: instantAt(date, shift.breakStart, zone),
     end: instantAt(date, shift.breakEnd, zone),
   });
+}
+
+/** Where a technician can work on a local date: the shift segments cut to the opening window. */
+export function workSegments(
+  technician: Technician,
+  dealership: Dealership,
+  date: LocalDate,
+): Interval[] {
+  const window = openingWindow(dealership, date);
+  if (window === null) return [];
+  return shiftSegments(technician, dealership, date).flatMap(
+    (segment) => intersect(segment, window) ?? [],
+  );
 }

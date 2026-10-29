@@ -7,6 +7,7 @@ import {
 } from "./dexie-repository";
 import { describeBookContract } from "../commands/book.contract";
 import { describeChangeContract } from "../commands/change.contract";
+import { describeManagerContract } from "../commands/manager.contract";
 import { describeRaceContract, raceOnce } from "../commands/race.contract";
 import { appointmentsOf } from "../commands/fixtures";
 
@@ -36,6 +37,7 @@ const open = async () => connect(freshName());
 
 describeBookContract("Dexie", open);
 describeChangeContract("Dexie", open);
+describeManagerContract("Dexie", open);
 describeRaceContract("Dexie", open);
 
 describe("Dexie store, two connections", () => {

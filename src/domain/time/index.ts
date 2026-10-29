@@ -43,6 +43,15 @@ export function instantAt(
   return earlier.getTimeZoneTransition("next")!.epochMilliseconds;
 }
 
+/** True when the text is a real calendar date written `YYYY-MM-DD`. */
+export function isLocalDate(text: string): boolean {
+  try {
+    return Temporal.PlainDate.from(text).toString() === text;
+  } catch {
+    return false;
+  }
+}
+
 /** 1 is Monday and 7 is Sunday. */
 export function weekdayOf(localDate: LocalDate): Weekday {
   return Temporal.PlainDate.from(localDate).dayOfWeek as Weekday;
