@@ -1,6 +1,6 @@
 /*
  * The ONE shared token set (D-0000-12), as a Tailwind CSS v4 theme.
- * Brand values come from keyloop.com (extracted 2026-10-28) and are unchanged.
+ * Brand values come from a public dealer-software website (extracted 2026-10-28) and are unchanged.
  * Semantic tokens (surface, text, border, primary, status, focus, appointment parts), spacing, sizes,
  * radius, elevation, motion, breakpoints and layers were added in step B0b. See README.md next to this file.
  * Once the app exists, A1 copies this file to src/styles/tokens.css and imports it after `@import "tailwindcss";`.
@@ -61,7 +61,7 @@
   --measure: 65ch;
 
   /* ------------------------------------------------------------------ */
-  /* Brand core (unchanged from the Keyloop site)                        */
+  /* Brand core (unchanged from the public dealer-software site)        */
   /* ------------------------------------------------------------------ */
   --color-carbon: #11181c;
   --color-graphite: #162228;
