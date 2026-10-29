@@ -101,6 +101,36 @@ export function findPublicDocProblems(file, text, exists) {
   return problems;
 }
 
+/** Reference codes: decision, question, requirement, security, non-functional, architecture and step ids. */
+const referenceCodePatterns = [
+  /\b(?:D|Q)-\d{4}-\d+\b/,
+  /\bREQ-[A-Z]+-\d+/,
+  /\bSEC-\d+/,
+  /\bNFR-\d+/,
+  /\bAD-\d+/,
+  /\bS\d\b/,
+];
+
+/**
+ * The README is written for a first-time reader, so its text holds no reference codes.
+ * @param {string} file path of the file, relative to the repository root
+ * @param {string} text the file's text
+ * @returns {string[]} one line each, as `file:line: problem`
+ */
+export function findReferenceCodes(file, text) {
+  const problems = [];
+  text.split("\n").forEach((line, index) => {
+    for (const re of referenceCodePatterns) {
+      const match = re.exec(line);
+      if (match)
+        problems.push(
+          `${file}:${index + 1}: holds a reference code: ${match[0]}`,
+        );
+    }
+  });
+  return problems;
+}
+
 /** @param {string} dir */
 function markdownFiles(dir) {
   const found = [];
@@ -127,13 +157,16 @@ function main() {
       exists,
     ),
   );
+  problems.push(
+    ...findReferenceCodes("README.md", readFileSync("README.md", "utf8")),
+  );
   for (const problem of problems) console.error(problem);
   if (problems.length > 0) {
     console.error(`${problems.length} problem(s) in the public docs.`);
     process.exit(1);
   }
   console.log(
-    `Public docs are clean: ${files.length} files checked for secrets, local paths, real email addresses and links into references/.`,
+    `Public docs are clean: ${files.length} files checked for secrets, local paths, real email addresses and links into references/, and the README for reference codes.`,
   );
 }
 
