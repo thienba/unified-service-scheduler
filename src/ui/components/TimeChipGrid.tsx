@@ -10,6 +10,8 @@ export interface GridTime {
   end: string;
   /** "Just taken" or "Too soon": shown, not choosable. Reschedule adds "Your time". */
   unavailable?: string;
+  /** The appointment's own start on `reschedule` ("Your time"): not choosable, and not struck through (P4). */
+  own?: boolean;
 }
 
 export interface GridGroup {
@@ -73,7 +75,9 @@ export function TimeChipGrid({
                         className={radio}
                       />
                       <span className="num flex min-h-(--size-target) min-w-(--size-chip) flex-col items-center justify-center rounded-pill border border-border-subtle bg-surface-sunken px-4 py-1 leading-heading text-text-secondary">
-                        <span className="line-through">{start}</span>
+                        <span className={cx(!time.own && "line-through")}>
+                          {start}
+                        </span>
                         <span className="text-xs">{time.unavailable}</span>
                       </span>
                     </label>

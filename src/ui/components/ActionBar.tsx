@@ -23,6 +23,7 @@ export function ActionBar({
   const shell = useContext(ShellContext);
   const bar = useRef<HTMLDivElement>(null);
   const drawn = Boolean(actions);
+  const textual = Boolean(title || status);
   useTaskMode(hideFrom, drawn);
 
   // The page keeps room equal to the bar's height, so a focused control is never behind it.
@@ -51,15 +52,25 @@ export function ActionBar({
         hideFrom === "md" ? "md:hidden" : "lg:hidden",
       )}
     >
-      <div className="min-w-0">
-        {title && <b className="num block font-heading">{title}</b>}
-        {status && (
-          <span className="num block text-sm text-text-secondary">
-            {status}
-          </span>
+      {textual && (
+        <div className="min-w-0">
+          {title && <b className="num block font-heading">{title}</b>}
+          {status && (
+            <span className="num block text-sm text-text-secondary">
+              {status}
+            </span>
+          )}
+        </div>
+      )}
+      {/* Two buttons with no words beside them share the row, and wrap at 320 wide (customer.md P7 b). */}
+      <div
+        className={cx(
+          "flex gap-2",
+          textual ? "shrink-0" : "min-w-0 flex-1 flex-wrap *:flex-auto",
         )}
+      >
+        {actions}
       </div>
-      <div className="flex shrink-0 gap-2">{actions}</div>
     </div>
   );
   if (!shell) return node;
