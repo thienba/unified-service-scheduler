@@ -1,0 +1,10 @@
+
+ RUN  v5.0.5 /Users/bason/Documents/thienba/keyloop-service-scheduler-vtc/.state/2026-10-28-system-design-document-final-pass
+
+
+ Test Files  7 passed (7)
+      Tests  536 passed (536)
+   Start at  17:29:54
+   Duration  1.98s (tests 61%, import 28%, transform 10%, worker 1%)
+
+exit 0
