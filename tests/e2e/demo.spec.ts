@@ -1019,18 +1019,11 @@ test("scenario 8, dev panel (NFR-6): after the race the panel shows the confirme
   await context.close();
 });
 
-// DEFECT, ticket 2026-10-29-time-zone-note-on-every-customer-screen: design.md section 9 ("Formats") says that when
-// the viewer's zone differs from the dealership's, times carry "(London time)" once per screen, and C8 asks for the
-// note on the booking page. The customer booking page in a browser set to Asia/Ho_Chi_Minh shows London wall times
-// with no note at all (src/ui/features/book/BookPage.tsx never calls zoneNote or TimesNote). Kept as an expected
-// failure until that ticket fixes it and removes the test.fail line.
+// design.md section 9 ("Formats"): when the viewer's zone differs from the dealership's, the screen says so once.
+// Found by C8; fixed by ticket 2026-10-29-time-zone-note-on-every-customer-screen.
 test("the customer booking page in a Saigon browser says its times are London time (design.md section 9)", async ({
   browser,
 }) => {
-  test.fail(
-    true,
-    "Defect 2026-10-29-time-zone-note-on-every-customer-screen: the booking page has no time-zone note",
-  );
   const context = await browser.newContext({ timezoneId: "Asia/Ho_Chi_Minh" });
   const page = await pageAs(context, A);
   await page.goto(

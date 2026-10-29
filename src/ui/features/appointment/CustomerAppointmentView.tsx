@@ -31,6 +31,7 @@ import {
   leadWords,
   mayChangeOnline,
 } from "../my-appointments/customer-appointment";
+import { ZoneTimesNote } from "../../session/TimesNote";
 import { dayAndTime, type AppointmentViewProps } from "./AppointmentReadSide";
 
 export function CustomerAppointmentView({
@@ -100,6 +101,7 @@ export function CustomerAppointmentView({
               {formatDay(a.start, zone, now)},{" "}
               {formatTimeRange(a.start, a.end, zone)}
             </h1>
+            <ZoneTimesNote timeZone={zone} />
             <div className="flex flex-wrap gap-2">
               <StatusBadge status={status} />
               {status !== "cancelled" && (

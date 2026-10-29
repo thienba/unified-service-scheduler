@@ -16,6 +16,7 @@ import { Skeleton, StateBlock } from "../../components/StateBlock";
 import { ApiProblem } from "../../data/api-problem";
 import { formatDay, formatTime } from "../../format/format";
 import { useSelectedDealership } from "../../session/dealership";
+import { TimesNote } from "../../session/TimesNote";
 import {
   CustomerFields,
   FormSummary,
@@ -87,6 +88,7 @@ function Heading() {
         <p className="mt-2 max-w-(--measure) text-text-secondary">
           Find the customer who is calling. If they are new, add them.
         </p>
+        {gap && <TimesNote className="mt-2" />}
       </div>
       {gap && (
         <GapNote
