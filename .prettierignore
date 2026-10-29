@@ -7,8 +7,8 @@ playwright-report
 test-results
 docs/licenses
 .state
-# The README is written by a later ticket.
-README.md
+# Copies from the private work repo, kept as they are there (docs/ai-collaboration/index.md).
+docs/ai-collaboration
 
 # Ajv writes these checks out as plain code (scripts/generate-contract.mjs).
 src/api/contract/validators.*.js
