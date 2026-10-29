@@ -67,6 +67,8 @@ function buildStores(db: SchedulerDb): Stores {
   return {
     scheduling: {
       getDealership: (id) => db.dealerships.get(id),
+      listDealerships: () => db.dealerships.toArray().then(byId),
+      listServiceTypes: () => db.serviceTypes.toArray().then(byId),
       listTechnicians: async (dealershipId) => {
         const rows = await db.technicians
           .where("dealershipId")

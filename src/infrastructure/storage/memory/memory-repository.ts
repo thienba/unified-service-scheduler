@@ -86,6 +86,8 @@ function buildStores(data: Data): Stores {
   return {
     scheduling: {
       getDealership: async (id) => copy(data.dealerships.get(id)),
+      listDealerships: async () => copy(byId([...data.dealerships.values()])),
+      listServiceTypes: async () => copy(byId([...data.serviceTypes.values()])),
       listTechnicians: async (id) => copy(byId(listBy(data.technicians, id))),
       listShiftExceptions: async (dealershipId, fromDate, toDate) =>
         byTechnicianThenDate(

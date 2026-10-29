@@ -8,27 +8,37 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "vite build && node scripts/check-build.mjs",
+    "contract": "node scripts/generate-contract.mjs",
+    "build": "node scripts/generate-contract.mjs --check && vite build && node scripts/check-build.mjs",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint . && prettier --check .",
+    "lint": "eslint . && prettier --check . && npm run lint:contract",
+    "lint:contract": "spectral lint src/api/contract/openapi.yaml --ruleset .spectral.mjs --fail-severity=warn",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:tz": "TZ=UTC vitest run --project node && TZ=Pacific/Kiritimati vitest run --project node",
     "e2e": "playwright test --project=chromium",
     "e2e:other": "playwright test --project=firefox --project=webkit --output=test-results/other",
     "check:deps": "node scripts/check-approved-dependencies.mjs",
+    "check:remote-build": "node scripts/check-remote-build.mjs",
     "check:workflows": "node scripts/check-workflows.mjs"
   },
   "dependencies": {
     "@js-temporal/polyfill": "0.5.1",
     "dexie": "4.4.7",
+    "msw": "3.0.3",
+    "openapi-fetch": "0.17.0",
     "react": "19.3.1",
     "react-dom": "19.3.1"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
     "@playwright/test": "1.64.1",
+    "@stoplight/spectral-cli": "6.17.0",
+    "@stoplight/spectral-core": "1.24.0",
+    "@stoplight/spectral-functions": "1.11.0",
+    "@stoplight/spectral-parsers": "1.0.5",
+    "@stoplight/spectral-rulesets": "1.23.0",
     "@tailwindcss/vite": "4.3.3",
     "@testing-library/dom": "10.4.2",
     "@testing-library/react": "16.3.3",
@@ -36,16 +46,23 @@
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
     "@vitest/coverage-v8": "5.0.5",
+    "ajv": "8.20.0",
     "eslint": "10.13.0",
     "eslint-plugin-boundaries": "7.4.0",
     "fake-indexeddb": "6.2.6",
     "fast-check": "4.10.2",
     "jsdom": "29.1.1",
+    "openapi-typescript": "7.13.0",
     "prettier": "3.9.10",
     "tailwindcss": "4.3.3",
     "typescript": "6.0.3",
     "typescript-eslint": "8.72.1",
     "vite": "8.3.5",
     "vitest": "5.0.5"
+  },
+  "overrides": {
+    "openapi-typescript": {
+      "typescript": "$typescript"
+    }
   }
 }
