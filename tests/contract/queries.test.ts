@@ -187,6 +187,8 @@ describe("listMyAppointments, listVehicles and listOutbox", () => {
           kind: "confirmation",
           dedupeKey: "a:c:1",
           dueAt: 1,
+          createdAt: 1,
+          forStart: 1,
           status: "pending",
         },
         {
@@ -195,6 +197,8 @@ describe("listMyAppointments, listVehicles and listOutbox", () => {
           kind: "confirmation",
           dedupeKey: "g:c:1",
           dueAt: 1,
+          createdAt: 1,
+          forStart: 1,
           status: "pending",
         },
       ]);

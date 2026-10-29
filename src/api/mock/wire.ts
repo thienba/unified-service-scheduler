@@ -134,6 +134,8 @@ export const outboxToWire = (
   dealershipId: m.dealershipId,
   kind: m.kind,
   dueAt: instant(m.dueAt),
+  createdAt: instant(m.createdAt),
+  forStart: instant(m.forStart),
   status: m.status,
   links: {
     cancel: `${origin}/appointments/${m.appointmentId}`,

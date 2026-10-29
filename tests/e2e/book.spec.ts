@@ -271,6 +271,9 @@ for (const width of [390, 1440]) {
       await expect(page.getByText("You will wait on site")).toBeVisible();
       await expect(page.getByText("Full service, about 3 hours")).toBeVisible();
       await expect(page.getByText("Service bay")).toHaveCount(0);
+      // D-0001-71: the owner sees the technician's name.
+      await expect(page.getByText("Technician", { exact: true })).toBeVisible();
+      await expect(page.getByText(/^Demo Tech /)).toBeVisible();
       await expect(
         page.getByText(
           /We will send you a confirmation now, and a reminder on the morning of your appointment, at 08:00 on Fri 30 Oct\./,
@@ -293,6 +296,13 @@ for (const width of [390, 1440]) {
       await expect(page.getByText("Fri 30 Oct, 10:00 to 13:00")).toBeVisible();
       const mine = await api(page, "/appointments", "user-customer-a");
       expect(mine.body.map((a: { id: string }) => a.id)).toContain(id);
+
+      // D-0001-71: the appointment page has the Technician row too, and still no bay.
+      await page.goto(`/appointments/${id}`);
+      await expect(page.getByText("Technician", { exact: true })).toBeVisible();
+      await expect(page.getByText(/^Demo Tech /)).toBeVisible();
+      await expect(page.getByText("Service bay")).toHaveCount(0);
+      await shot(page, "technician-row", "appointment-customer");
     });
 
     test("confirming: a double press sends one request with one key and books once", async ({

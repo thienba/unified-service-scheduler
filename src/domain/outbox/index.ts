@@ -23,6 +23,10 @@ export interface PlannedMessage {
   /** `appointmentId:kind:version` (AD-13) */
   dedupeKey: string;
   dueAt: EpochMs;
+  /** When the message was made (D-0001-79). */
+  createdAt: EpochMs;
+  /** The start of the appointment at the time the message was made (D-0001-79). */
+  forStart: EpochMs;
 }
 
 const HOUR_MS = 60 * MINUTE_MS;
@@ -47,12 +51,15 @@ function message(
   appointment: Appointment,
   kind: OutboxKind,
   dueAt: EpochMs,
+  now: EpochMs,
 ): PlannedMessage {
   return {
     appointmentId: appointment.id,
     kind,
     dedupeKey: `${appointment.id}:${kind}:${appointment.version}`,
     dueAt,
+    createdAt: now,
+    forStart: appointment.start,
   };
 }
 
@@ -60,8 +67,8 @@ function message(
 function reminders(appointment: Appointment, now: EpochMs): PlannedMessage[] {
   const times = reminderTimes(appointment.start, appointment.timeZone);
   return [
-    message(appointment, "reminder_48h", times.reminder48h),
-    message(appointment, "reminder_morning", times.morning),
+    message(appointment, "reminder_48h", times.reminder48h, now),
+    message(appointment, "reminder_morning", times.morning, now),
   ].filter((m) => m.dueAt > now);
 }
 
@@ -71,7 +78,7 @@ export function messagesForBooking(
   now: EpochMs,
 ): PlannedMessage[] {
   return [
-    message(appointment, "confirmation", now),
+    message(appointment, "confirmation", now, now),
     ...reminders(appointment, now),
   ];
 }
@@ -81,7 +88,10 @@ export function messagesForMove(
   appointment: Appointment,
   now: EpochMs,
 ): PlannedMessage[] {
-  return [message(appointment, "moved", now), ...reminders(appointment, now)];
+  return [
+    message(appointment, "moved", now, now),
+    ...reminders(appointment, now),
+  ];
 }
 
 /** A cancelled appointment: one cancellation message now. */
@@ -89,7 +99,7 @@ export function messagesForCancel(
   appointment: Appointment,
   now: EpochMs,
 ): PlannedMessage[] {
-  return [message(appointment, "cancellation", now)];
+  return [message(appointment, "cancellation", now, now)];
 }
 
 /** Fixed paths plus the appointment id and nothing else; the app origin is added when read (SEC-17.AC-2). */

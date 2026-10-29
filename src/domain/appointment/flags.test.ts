@@ -128,7 +128,7 @@ describe("flagReason (D-0001-34)", () => {
         d,
         t,
       ),
-    ).toBe("Ash's shift ends at 13:00; this booking ends at 13:45.");
+    ).toBe("Ends after Ash's shift, 13:00");
   });
 
   it("says the shift starts after the booking starts", () => {
@@ -139,7 +139,7 @@ describe("flagReason (D-0001-34)", () => {
         d,
         t,
       ),
-    ).toBe("Ash's shift starts at 08:00; this booking starts at 07:30.");
+    ).toBe("Starts before Ash's shift, 08:00");
   });
 
   it("says when the technician is not working that day, or is unknown", () => {
@@ -150,11 +150,23 @@ describe("flagReason (D-0001-34)", () => {
     );
     const slot = { start: at1("09:00"), end: at1("10:00") };
     expect(flagReason("outside_shift", slot, d, leave)).toBe(
-      "Ash is not working on 2026-11-02.",
+      "Ash is not working this day",
     );
     expect(flagReason("outside_shift", slot, d, undefined)).toBe(
-      "The technician for this booking can no longer be found.",
+      "The technician for this booking can no longer be found",
     );
+  });
+
+  it("uses only the first name of a technician with a longer name", () => {
+    const long = technician("t1", { name: "Demo Tech Ash" }, shift);
+    expect(
+      flagReason(
+        "outside_shift",
+        { start: at1("12:00"), end: at1("13:45") },
+        d,
+        long,
+      ),
+    ).toBe("Ends after Demo's shift, 13:00");
   });
 
   it("says the booking overlaps the technician's break", () => {
@@ -170,17 +182,21 @@ describe("flagReason (D-0001-34)", () => {
         d,
         withBreak,
       ),
-    ).toBe("Ash is on a break during this booking.");
+    ).toBe("Ash is on a break during this booking");
   });
 
   it("says the opening hours, or that the dealership is closed", () => {
     const late = { start: at1("17:30"), end: at1("18:30") };
     expect(flagReason("outside_opening_hours", late, d, t)).toBe(
-      "The dealership is open 08:00 to 18:00 that day; this booking runs 17:30 to 18:30.",
+      "Ends after closing time, 18:00",
+    );
+    const early = { start: at1("07:00"), end: at1("08:30") };
+    expect(flagReason("outside_opening_hours", early, d, t)).toBe(
+      "Starts before opening time, 08:00",
     );
     const closed = dealership({ dateOverrides: { "2026-11-02": "closed" } });
     expect(flagReason("outside_opening_hours", late, closed, t)).toBe(
-      "The dealership is closed on 2026-11-02.",
+      "The dealership is closed this day",
     );
   });
 });

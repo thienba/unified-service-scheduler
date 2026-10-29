@@ -88,12 +88,16 @@ export function describeOutboxContract(
         status: "pending",
         dedupeKey: `${appt.id}:confirmation:1`,
       });
+      expect(list.every((m) => m.createdAt === NOV_2_NINE)).toBe(true);
+      expect(list.every((m) => m.forStart === appt.start)).toBe(true);
       expect(byKind.reminder_48h!.dueAt).toBe(at("10:00", NOV_3));
       expect(byKind.reminder_morning!.dueAt).toBe(at("08:00", NOV_5));
       expect(Object.keys(byKind.confirmation!).sort()).toEqual([
         "appointmentId",
+        "createdAt",
         "dedupeKey",
         "dueAt",
+        "forStart",
         "id",
         "kind",
         "status",
@@ -175,6 +179,39 @@ export function describeOutboxContract(
       // D-0001-50: the confirmation keeps its status.
       expect(summary(list)).toContain("confirmation:pending:1");
       expect(summary(list)).toContain("moved:pending:2");
+    });
+
+    it("D-0001-79: after two moves every message says when it was made and for which start", async () => {
+      const ctx = await setup();
+      const appt = await book(ctx, at("10:00", NOV_5));
+      const first = at("11:00", "2026-11-09");
+      const second = at("14:00", "2026-11-10");
+      const move = (start: number, key: string) =>
+        rescheduleAppointment(
+          customerActor("c1"),
+          ctx.deps,
+          appt.id,
+          { start },
+          key,
+        );
+      expect((await move(first, OTHER_KEY)).kind).toBe("ok");
+      expect((await move(second, "key-three")).kind).toBe("ok");
+      const made = (await rows(ctx.repo)).map(
+        (m) => `${m.dedupeKey.split(":").slice(1).join(":")} ${m.forStart}`,
+      );
+      expect(made.sort()).toEqual(
+        [
+          ...["confirmation:1", "reminder_48h:1", "reminder_morning:1"].map(
+            (key) => `${key} ${appt.start}`,
+          ),
+          ...["moved:2", "reminder_48h:2", "reminder_morning:2"].map(
+            (key) => `${key} ${first}`,
+          ),
+          ...["moved:3", "reminder_48h:3", "reminder_morning:3"].map(
+            (key) => `${key} ${second}`,
+          ),
+        ].sort(),
+      );
     });
 
     it("REQ-BOOK-013.AC-5, AD-13: a booking and a reschedule retried with the same key queue the messages once", async () => {

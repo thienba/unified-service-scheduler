@@ -9,8 +9,9 @@ import type { QueryDeps } from "./shared";
 export interface AppointmentDisplay {
   serviceTypeName: string;
   vehicle: { registration: string; make: string; model: string };
-  /** Only staff and managers see these three (D-0001-40: a customer has no way to know a technician). */
+  /** The technician's name: the owner of the appointment sees it too (D-0001-71). */
   technicianName?: string;
+  /** Only staff and managers see the bay and the customer's name. */
   serviceBayName?: string;
   customerName?: string;
   /** The courtesy car's name, when the appointment has one (REQ-BOOK-010.AC-2). */
@@ -75,10 +76,10 @@ async function build(
       );
       if (car) display.courtesyCarName = car.name;
     }
+    if (technician) display.technicianName = technician.name;
     if (actor.role !== "customer") {
       const bays = await bayList(appointment.dealershipId);
       display.customerName = customer!.name;
-      if (technician) display.technicianName = technician.name;
       const bay = bays.find((b) => b.id === appointment.serviceBayId);
       if (bay) display.serviceBayName = bay.name;
     }

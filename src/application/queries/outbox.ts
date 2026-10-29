@@ -10,6 +10,8 @@ export interface OutboxEntry {
   dealershipId: string;
   kind: string;
   dueAt: EpochMs;
+  createdAt: EpochMs;
+  forStart: EpochMs;
   status: OutboxStatus;
 }
 
@@ -57,6 +59,8 @@ export async function listOutbox(
             dealershipId: appointment.dealershipId,
             kind: message.kind,
             dueAt: message.dueAt,
+            createdAt: message.createdAt,
+            forStart: message.forStart,
             status: message.status,
           });
         }

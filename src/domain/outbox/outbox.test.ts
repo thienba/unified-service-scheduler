@@ -71,18 +71,24 @@ describe("messages for an event", () => {
         kind: "confirmation",
         dedupeKey: "a1:confirmation:1",
         dueAt: booked,
+        createdAt: booked,
+        forStart: start,
       },
       {
         appointmentId: "a1",
         kind: "reminder_48h",
         dedupeKey: "a1:reminder_48h:1",
         dueAt: utc("2026-11-03T10:00:00Z"),
+        createdAt: booked,
+        forStart: start,
       },
       {
         appointmentId: "a1",
         kind: "reminder_morning",
         dedupeKey: "a1:reminder_morning:1",
         dueAt: utc("2026-11-05T08:00:00Z"),
+        createdAt: booked,
+        forStart: start,
       },
     ]);
   });
@@ -117,6 +123,18 @@ describe("messages for an event", () => {
     ]);
   });
 
+  it("D-0001-79: a message says when it was made and which start it was made for", () => {
+    const moved = messagesForMove(
+      appointment(start, "Europe/London", 2),
+      booked,
+    );
+    expect(moved.map((m) => [m.createdAt, m.forStart])).toEqual([
+      [booked, start],
+      [booked, start],
+      [booked, start],
+    ]);
+  });
+
   it("REQ-BOOK-013.AC-3: a cancel makes one cancellation message", () => {
     expect(
       messagesForCancel(appointment(start, "Europe/London", 2), booked),
@@ -126,6 +144,8 @@ describe("messages for an event", () => {
         kind: "cancellation",
         dedupeKey: "a1:cancellation:2",
         dueAt: booked,
+        createdAt: booked,
+        forStart: start,
       },
     ]);
   });
