@@ -1,0 +1,46 @@
+
+ RUN  v5.0.5 /Users/bason/Documents/thienba/keyloop-service-scheduler-vtc/.state/2026-10-28-system-design-document-final-pass
+      Coverage enabled with v8
+
+searchDay (one day): 18.4 ms (budget 50 ms)
+suggest (14 days): 20.1 ms (budget 200 ms)
+
+ Test Files  61 passed (61)
+      Tests  1323 passed (1323)
+   Start at  17:28:17
+   Duration  8.43s (tests 50%, environment 25%, import 12%, transform 11%, worker 2%)
+
+[34m % [39m[2mCoverage report from [22m[33mv8[39m
+-------------------|---------|----------|---------|---------|-------------------
+File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+-------------------|---------|----------|---------|---------|-------------------
+All files          |   99.24 |       98 |   99.72 |   99.76 |                   
+ api/mock          |   98.15 |       95 |     100 |   99.48 |                   
+  api.ts           |    98.7 |    96.55 |     100 |     100 | 92,152            
+  operations.ts    |   96.87 |    94.11 |     100 |   98.82 | 98                
+  trace.ts         |     100 |       90 |     100 |     100 | 10                
+  wire.ts          |     100 |    91.66 |     100 |     100 | 77                
+ application       |   98.03 |    96.15 |     100 |     100 |                   
+  idempotency.ts   |   94.11 |    91.66 |     100 |     100 | 7                 
+ ...ation/commands |   98.93 |    98.09 |     100 |    99.7 |                   
+  ...ppointment.ts |   98.48 |     98.5 |     100 |     100 | 123               
+  ...ppointment.ts |   99.04 |    98.76 |     100 |   98.97 | 110               
+  ...ppointment.ts |   98.21 |    97.22 |     100 |     100 | 115               
+  shared.ts        |      96 |    88.88 |     100 |     100 | 104               
+  ...cianShifts.ts |     100 |    95.65 |     100 |     100 | 99                
+ ...cation/queries |   99.59 |    97.36 |     100 |     100 |                   
+  ...ntmentView.ts |     100 |    81.25 |     100 |     100 | 77-79,84          
+  dealerships.ts   |   97.22 |    91.66 |     100 |     100 | 99                
+ ...in/appointment |   98.14 |      100 |   92.85 |   97.91 |                   
+  flags.ts         |   94.73 |      100 |   83.33 |   93.75 | 54                
+ domain/schedule   |     100 |       95 |     100 |     100 |                   
+  day-plan.ts      |     100 |       95 |     100 |     100 | 94                
+-------------------|---------|----------|---------|---------|-------------------
+
+=============================== Coverage summary ===============================
+Statements   : 99.24% ( 1451/1462 )
+Branches     : 98% ( 931/950 )
+Functions    : 99.72% ( 358/359 )
+Lines        : 99.76% ( 1299/1302 )
+================================================================================
+exit 0
