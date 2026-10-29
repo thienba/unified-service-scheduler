@@ -1,6 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 
-const port = 4173;
+// E2E_PORT lets parallel worktrees each run against their own build: with a fixed port,
+// reuseExistingServer would pick up another worktree's server without warning.
+const port = Number(process.env["E2E_PORT"] ?? 4173);
 
 export default defineConfig({
   testDir: "tests/e2e",

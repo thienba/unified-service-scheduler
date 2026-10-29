@@ -183,6 +183,7 @@
   --size-ruler: 3.5rem;        /* hour labels beside the one-technician day */
   --size-hatch: 0.4rem;        /* spacing of the off-shift hatching */
   --size-sheet-max: 90dvh;     /* tallest bottom sheet */
+  --size-form: 60rem;          /* B4: widest settings form (hours, shifts), so lines stay short */
 
   /* Line widths */
   --border-width: 1px;         /* every panel, field and block edge */

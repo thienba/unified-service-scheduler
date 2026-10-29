@@ -818,6 +818,31 @@ describe.each(transports)("API contract through $name", (transport) => {
       expect(moved.body.flags).toEqual([]);
     });
 
+    it("a booking that has already ended is never in the preview or the save (D-0001-46 A)", async () => {
+      const body = await settingsBody();
+      // Customer A's booking runs 10:00 to 11:00; these hours leave it outside.
+      const cut = {
+        ...body,
+        dateOverrides: { [SEEDED_A.date]: { open: "11:00", close: "16:00" } },
+      };
+      // Still running: it is tested and would be flagged.
+      world.clock.set(Date.parse(at(SEEDED_A.date, "10:30")));
+      expect(
+        (await put(cut, true)).body.flagged.map((a: { id: string }) => a.id),
+      ).toEqual([SEEDED_A.id]);
+      // Ended: it is left out of the preview and of the save, and keeps no flag.
+      world.clock.set(Date.parse(at(SEEDED_A.date, "11:00")));
+      expect((await put(cut, true)).body.flagged).toEqual([]);
+      const saved = await put(cut);
+      expect(saved.status).toBe(200);
+      expect(saved.body.flagged).toEqual([]);
+      const flagged = await send("/appointments", {
+        user: users.managerLondon,
+        query: { dealershipId: LON, flagged: true },
+      });
+      expect(flagged.body).toEqual([]);
+    });
+
     it("an invalid body is 422 naming the field", async () => {
       const body = await settingsBody();
       const bad = await put({

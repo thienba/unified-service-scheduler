@@ -12,6 +12,8 @@ import { BookPage } from "../features/book/BookPage";
 import { ConfirmedPage } from "../features/book/ConfirmedPage";
 import { AppointmentPage } from "../features/appointment/AppointmentPage";
 import { SchedulePage } from "../features/schedule/SchedulePage";
+import { DealershipSettingsPage } from "../features/manage/DealershipSettingsPage";
+import { ShiftsPage } from "../features/manage/ShiftsPage";
 import {
   devPanelPath,
   homeFor,
@@ -34,6 +36,8 @@ const screens: Record<string, ReactElement> = {
   "/book/confirmed/:appointmentId": <ConfirmedPage />,
   "/schedule": <SchedulePage />,
   "/appointments/:appointmentId": <AppointmentPage />,
+  "/manage/dealership": <DealershipSettingsPage />,
+  "/manage/shifts": <ShiftsPage />,
 };
 
 const rules: readonly RouteRule[] = mockEnabled
