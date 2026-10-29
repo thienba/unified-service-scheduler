@@ -48,6 +48,7 @@ export interface ButtonProps {
   "aria-haspopup"?: "dialog";
   "aria-expanded"?: boolean;
   "aria-controls"?: string;
+  "aria-describedby"?: string;
   id?: string;
   className?: string;
 }
