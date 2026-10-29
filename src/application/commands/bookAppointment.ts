@@ -5,6 +5,7 @@ import { keyRecord, lookupKey, requestHash } from "../idempotency";
 import { loadSnapshot } from "../load-snapshot";
 import type { Outcome } from "../ports";
 import type { SchedulingSnapshot } from "../../domain/availability";
+import { messagesForBooking } from "../../domain/outbox";
 import { MINUTE_MS } from "../../domain/time";
 import type {
   Appointment,
@@ -23,6 +24,7 @@ import {
 import {
   ROUTES,
   logOutcome,
+  outboxRows,
   runCheck,
   slotUnavailable,
   type CommandResult,
@@ -305,6 +307,9 @@ async function book(
         await stores.customers.insertVehicle(created.vehicle);
       }
       await stores.appointments.insert(appointment);
+      await stores.outbox.add(
+        outboxRows(deps, messagesForBooking(appointment, now)),
+      );
       await stores.idempotency.put(
         keyRecord(actor, idempotencyKey, hash, appointment.id, now),
       );
