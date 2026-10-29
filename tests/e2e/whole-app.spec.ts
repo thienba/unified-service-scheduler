@@ -32,10 +32,11 @@ import {
 
 const NOW = new Date("2026-10-28T10:40:00Z");
 
-// Firefox now and then prints this, with no file or line, as the test moves a page on. It is not a
-// policy message and our page code does not raise it: no "error" or "unhandledrejection" event reaches
-// the page, and it comes and goes with the mock's service worker hand-over between pages. Set aside in
-// Firefox only until Q-0001-254 is answered; every other console error still fails the test.
+// Firefox now and then prints this, with no file or line, as the test moves a page on. It comes from
+// MSW 3.0.3: `get-worker-instance.ts` calls `registration.update()` without catching it, and the update
+// can reject while the worker of the page just left is unregistering itself. Reported upstream as
+// https://github.com/mswjs/msw/issues/2827. Set aside in Firefox only (D-0001-110, D-0001-130); every
+// other console error still fails the test. Remove this once MSW catches that rejection.
 const firefoxMockWorkerMessage =
   '[JavaScript Error: "InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable"]';
 
