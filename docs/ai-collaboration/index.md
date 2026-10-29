@@ -2,7 +2,7 @@
 
 These are copies of files from my private work repository, the place where the requirements, decisions, tickets and cost of this project are kept while the AI builds the product in this repository. They are here so a reviewer can open the files the README's [AI Collaboration Narrative](../../README.md#ai-collaboration-narrative) and the [System Design Document](../system-design.md) name, for example "D-0001-26" or "REQ-BOOK-009" (decisions D-0000-36 B and D-0001-63 B).
 
-Copied on 2026-10-29 by a script kept in the work repository, so the copies can be made again the same way. The work repository keeps changing; these copies do not follow it.
+Copied (last refreshed on 2026-10-29, after my answers D-0001-112 to D-0001-129) by a script kept in the work repository, so the copies can be made again the same way. The work repository keeps changing; these copies do not follow it.
 
 ## What was changed in the copies
 
@@ -13,7 +13,7 @@ Nothing, except two things:
 
 The check `npm run check:public-docs` ([`scripts/check-public-docs.mjs`](../../scripts/check-public-docs.mjs)) runs in CI on every push. It fails if a file here, or the README, holds a secret-looking string, a local path, an email address that is not an obviously made-up one, or a link into the private `references/` folder.
 
-Some links inside the copies point at files that were not copied, so they do not open here: the clickable design pages (`context/design/*.html`), the brief, the work repository's index pages, and one question that was later answered and removed.
+Some links inside the copies point at files that were not copied, so they do not open here: the clickable design pages (`context/design/*.html`), the brief, the work repository's index pages, and the question files that were answered and removed.
 
 ## The files
 
@@ -25,7 +25,7 @@ Some links inside the copies point at files that were not copied, so they do not
 | [context/ai-collaboration-log.md](context/ai-collaboration-log.md) | **The AI collaboration log**: what I asked, what came back, how I checked it, and whether I kept, changed or dropped it. |
 | [cost.md](cost.md) | **The cost log**: tokens and price (at API prices) of every run. |
 | [context/overview.md](context/overview.md) | The product in short, and the non-functional requirements NFR-1 to NFR-7. |
-| [context/0001-booking/](context/0001-booking/) | **The requirements** `REQ-BOOK-001` to `REQ-BOOK-014`, each with acceptance criteria; **the decisions** `D-0001-n`, each with the question, the options and my answer; and **the questions** `Q-0001-n` that are still open. |
+| [context/0001-booking/](context/0001-booking/) | **The requirements** `REQ-BOOK-001` to `REQ-BOOK-014`, each with acceptance criteria; and **the decisions** `D-0001-n`, each with the question, the options and my answer. No question file is left: every `Q-` question has been answered and its file removed from the work repository. |
 | [context/decisions/](context/decisions/) | Project-wide decisions `D-0000-n` (scope, stack, process, evidence, build order). |
 | [context/design.md](context/design.md) | The design foundation: tokens, shared parts, words, the phone and desktop rules. |
 | [context/design/](context/design/) | The design notes: the three [directions](context/design/directions.md) I chose from, and the [customer](context/design/customer.md), [staff](context/design/staff.md) and [manager](context/design/manager.md) flows. |
@@ -33,7 +33,7 @@ Some links inside the copies point at files that were not copied, so they do not
 ## How to read the ids
 
 - `D-0000-n`, `D-0001-n`: a decision I made, with my reason. Most say "the recommended option": the AI wrote the options and a recommendation, and I chose.
-- `Q-0001-n`: a question that is still open. It lists the options and a recommendation, and says which option the code uses until I answer.
+- `Q-0001-n`: a question the AI asked me. Every one is answered now and its file is removed, so ids like `Q-0001-256` appear only in the text of decisions. The decision that answers it ("resolves: Q-0001-n") holds the question and the options.
 - `REQ-BOOK-n`: a requirement; `REQ-BOOK-n.AC-m` is one of its acceptance criteria.
 - `NFR-n`: a non-functional requirement ([overview.md](context/overview.md)).
 - `AD-n` (architecture), `SEC-n` (security) and `S1`… (the scorecard) live in files that were not copied; the [System Design Document](../system-design.md) explains each one it uses.
