@@ -29,6 +29,8 @@ jobs:
         run: npm run check:deps
       - name: Workflows are pinned and read-only
         run: npm run check:workflows
+      - name: Public docs hold no secret, local path, real email or link into references/
+        run: npm run check:public-docs
 
       - name: Audit runtime dependencies (high and critical fail the build)
         run: npm audit --omit=dev --audit-level=high
