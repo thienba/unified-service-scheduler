@@ -935,6 +935,8 @@ describe.each(transports)("API contract through $name", (transport) => {
             kind: "confirmation",
             dedupeKey: `${SEEDED_A.id}:confirmation:1`,
             dueAt: Date.parse("2026-11-02T09:00:00Z"),
+            createdAt: Date.parse("2026-11-02T09:00:00Z"),
+            forStart: Date.parse("2026-11-02T09:00:00Z"),
             status: "pending",
           },
         ]);
@@ -948,6 +950,8 @@ describe.each(transports)("API contract through $name", (transport) => {
           dealershipId: LON,
           kind: "confirmation",
           dueAt: "2026-11-02T09:00:00Z",
+          createdAt: "2026-11-02T09:00:00Z",
+          forStart: "2026-11-02T09:00:00Z",
           status: "pending",
           links: {
             cancel: `${origin}/appointments/${SEEDED_A.id}`,

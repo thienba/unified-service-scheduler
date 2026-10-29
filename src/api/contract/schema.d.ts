@@ -754,6 +754,10 @@ export interface components {
       dealershipId: components["schemas"]["Id"];
       kind: string;
       dueAt: components["schemas"]["Instant"];
+      /** @description When the message was made. */
+      createdAt: components["schemas"]["Instant"];
+      /** @description The start of the appointment at the time the message was made. */
+      forStart: components["schemas"]["Instant"];
       /** @enum {string} */
       status: "pending" | "sent" | "cancelled";
       links: components["schemas"]["OutboxMessageLinks"];

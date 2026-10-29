@@ -1323,13 +1323,30 @@ components:
       type: object
       description: Ids only; a real sender looks the contact details up when it sends.
       additionalProperties: false
-      required: [id, appointmentId, dealershipId, kind, dueAt, status, links]
+      required:
+        [
+          id,
+          appointmentId,
+          dealershipId,
+          kind,
+          dueAt,
+          createdAt,
+          forStart,
+          status,
+          links,
+        ]
       properties:
         id: { $ref: "#/components/schemas/Id" }
         appointmentId: { $ref: "#/components/schemas/Id" }
         dealershipId: { $ref: "#/components/schemas/Id" }
         kind: { type: string }
         dueAt: { $ref: "#/components/schemas/Instant" }
+        createdAt:
+          allOf: [{ $ref: "#/components/schemas/Instant" }]
+          description: When the message was made.
+        forStart:
+          allOf: [{ $ref: "#/components/schemas/Instant" }]
+          description: The start of the appointment at the time the message was made.
         status: { type: string, enum: [pending, sent, cancelled] }
         links: { $ref: "#/components/schemas/OutboxMessageLinks" }
 

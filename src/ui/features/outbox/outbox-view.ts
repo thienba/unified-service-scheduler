@@ -3,7 +3,7 @@
 // message are made here from the appointment, never stored.
 import type { components } from "../../../api/contract/schema";
 import type { IconName } from "../../components/Icon";
-import { formatDay, formatTime, localDateIn } from "../../format/format";
+import { formatDay, formatTime } from "../../format/format";
 
 export type OutboxMessage = components["schemas"]["OutboxMessage"];
 export type Appointment = components["schemas"]["Appointment"];
@@ -49,13 +49,6 @@ export function stateOf(message: OutboxMessage, now: number): MessageState {
 export function firstNameOf(name: string | undefined): string {
   const first = name?.trim().split(/\s+/)[0];
   return first ? first : "the customer";
-}
-
-/** A start the screen knows exactly, by its date only, or not at all (see `buildGroups`). */
-export type KnownStart = Start | null;
-interface Start {
-  at: number;
-  exact: boolean;
 }
 
 export interface MessageLink {
@@ -107,59 +100,17 @@ export interface ViewContext {
   origin: string;
 }
 
-const HOUR_MS = 3_600_000;
 const EVENT_KINDS = ["confirmation", "moved"];
 const REMINDER_KINDS = ["reminder_48h", "reminder_morning"];
 
 const byDue = (a: OutboxMessage, b: OutboxMessage) =>
   Date.parse(a.dueAt) - Date.parse(b.dueAt) || a.id.localeCompare(b.id);
 
-/**
- * The start a reminder was made for. The API sends the due time only (Q-0001-217): 48 hours before is
- * exact; the morning reminder is 08:00 on the day, or 2 hours before a start at or before 08:00, so
- * from 08:00 only the date is known.
- */
-function startOfReminder(m: OutboxMessage, zone: string): Start {
-  const due = Date.parse(m.dueAt);
-  if (m.kind === "reminder_48h") return { at: due + 48 * HOUR_MS, exact: true };
-  if (formatTime(due, zone) === "08:00") return { at: due, exact: false };
-  return { at: due + 2 * HOUR_MS, exact: true };
-}
+/** The order the messages were made in (D-0001-79). */
+const byMade = (a: OutboxMessage, b: OutboxMessage) =>
+  Date.parse(a.createdAt) - Date.parse(b.createdAt) || byDue(a, b);
 
-interface ReminderSet {
-  date: string;
-  start: Start;
-  reminders: OutboxMessage[];
-}
-
-/** Cancelled reminders made together share their appointment's day: one set per earlier time. */
-function setsOf(cancelled: OutboxMessage[], zone: string): ReminderSet[] {
-  const sets: ReminderSet[] = [];
-  for (const m of [...cancelled].sort(byDue)) {
-    const start = startOfReminder(m, zone);
-    const date = localDateIn(start.at, zone);
-    const set = sets.find(
-      (s) => s.date === date && !s.reminders.some((r) => r.kind === m.kind),
-    );
-    if (set) {
-      set.reminders.push(m);
-      if (start.exact) set.start = start;
-    } else {
-      sets.push({ date, start, reminders: [m] });
-    }
-  }
-  return sets;
-}
-
-export function startWords(
-  start: KnownStart,
-  zone: string,
-  now: number,
-): string | null {
-  if (!start) return null;
-  const day = formatDay(start.at, zone, now);
-  return start.exact ? `${day}, ${formatTime(start.at, zone)}` : day;
-}
+const startOf = (m: OutboxMessage) => Date.parse(m.forStart);
 
 const dayTime = (at: number, zone: string, now: number) =>
   `${formatDay(at, zone, now)}, ${formatTime(at, zone)}`;
@@ -189,8 +140,7 @@ function ownLinks(m: OutboxMessage, origin: string): MessageLink[] {
 function textOf(
   m: OutboxMessage,
   a: Appointment,
-  start: KnownStart,
-  previous: KnownStart,
+  previous: number | null,
   ctx: ViewContext,
 ): string[] {
   const { zone, now, dealershipName } = ctx;
@@ -198,43 +148,34 @@ function textOf(
   const service = a.display.serviceTypeName;
   const what = `your ${service} at ${dealershipName}`;
   const length = Date.parse(a.end) - Date.parse(a.start);
-  const span = (s: KnownStart) =>
-    s?.exact
-      ? `${formatDay(s.at, zone, now)}, ${formatTime(s.at, zone)} to ${formatTime(s.at + length, zone)}`
-      : startWords(s, zone, now);
-  const time = start?.exact ? formatTime(start.at, zone) : null;
+  const start = startOf(m);
+  const span = `${dayTime(start, zone, now)} to ${formatTime(start + length, zone)}`;
   switch (m.kind) {
-    case "confirmation": {
-      const when = span(start);
+    case "confirmation":
       return [
         `Hi ${first},`,
-        `Your ${service} at ${dealershipName} is booked${when ? ` for ${when}` : ""}. ${transportWords[a.transport] ?? ""}`.trim(),
+        `Your ${service} at ${dealershipName} is booked for ${span}. ${transportWords[a.transport] ?? ""}`.trim(),
       ];
-    }
     case "reminder_48h":
       return [
         `Hi ${first},`,
-        `A reminder: ${what} is on ${start ? formatDay(start.at, zone, now) : "its day"}${time ? ` at ${time}` : ""}.`,
+        `A reminder: ${what} is on ${formatDay(start, zone, now)} at ${formatTime(start, zone)}.`,
       ];
     case "reminder_morning":
       return [
         `Good morning ${first},`,
-        `Your ${service} at ${dealershipName} is today${time ? ` at ${time}` : ""}.`,
+        `Your ${service} at ${dealershipName} is today at ${formatTime(start, zone)}.`,
       ];
-    case "moved": {
-      const was = startWords(previous, zone, now);
+    case "moved":
       return [
         `Hi ${first},`,
-        `We have moved ${what} to ${span(start) ?? "a new time"}.${was ? ` It was ${was}.` : ""}`,
+        `We have moved ${what} to ${span}.${previous === null ? "" : ` It was ${dayTime(previous, zone, now)}.`}`,
       ];
-    }
-    case "cancellation": {
-      const when = startWords(start, zone, now);
+    case "cancellation":
       return [
         `Hi ${first},`,
-        `Your ${service} at ${dealershipName}${when ? ` on ${when}` : ""} has been cancelled.`,
+        `Your ${service} at ${dealershipName} on ${dayTime(start, zone, now)} has been cancelled.`,
       ];
-    }
     default:
       return [`Hi ${first},`];
   }
@@ -242,10 +183,9 @@ function textOf(
 
 /**
  * One group per appointment, newest activity first; inside a group the messages in the order they were
- * made: each booking or move, then the reminders it made, and the cancellation last. The API sends no
- * creation time and no "for which start" (Q-0001-217), so both are worked out: a confirmation, a move
- * and a cancellation are due when they are made; reminders still waiting belong to the newest booking
- * or move; cancelled ones to the earlier ones (or to the newest when the appointment was cancelled).
+ * made (`createdAt`): each booking or move, then the reminders made with it (same `createdAt` and
+ * `forStart`), and the cancellation last. `forStart` is the start each message was made for, so the old
+ * time of a move is read, not worked out (D-0001-79).
  */
 export function buildGroups(
   messages: readonly OutboxMessage[],
@@ -264,49 +204,35 @@ export function buildGroups(
     const a = appointments.get(appointmentId);
     if (!a) continue;
     const firstName = firstNameOf(a.display.customerName);
-    const current: KnownStart = { at: Date.parse(a.start), exact: true };
-    const events = list.filter((m) => EVENT_KINDS.includes(m.kind)).sort(byDue);
+    const events = list
+      .filter((m) => EVENT_KINDS.includes(m.kind))
+      .sort(byMade);
     const cancellations = list
       .filter((m) => m.kind === "cancellation")
-      .sort(byDue);
+      .sort(byMade);
     const reminders = list.filter((m) => REMINDER_KINDS.includes(m.kind));
-    const others = list.filter(
-      (m) =>
-        !EVENT_KINDS.includes(m.kind) &&
-        m.kind !== "cancellation" &&
-        !REMINDER_KINDS.includes(m.kind),
-    );
+    const sameMaking = (event: OutboxMessage, m: OutboxMessage) =>
+      m.createdAt === event.createdAt && m.forStart === event.forStart;
+    // A reminder with no booking or move beside it is listed after them.
+    const others = [
+      ...reminders.filter((r) => !events.some((e) => sameMaking(e, r))),
+      ...list.filter(
+        (m) =>
+          !EVENT_KINDS.includes(m.kind) &&
+          m.kind !== "cancellation" &&
+          !REMINDER_KINDS.includes(m.kind),
+      ),
+    ];
     const cancelled = a.status === "cancelled";
-
-    // Which event made which reminders, and the start each event was for.
-    const made: OutboxMessage[][] = events.map(() => []);
-    const starts: KnownStart[] = events.map(() => null);
-    if (events.length > 0) starts[events.length - 1] = current;
     const last = events.length - 1;
-    const earlier = cancelled ? events.length : events.length - 1;
-    const sets = setsOf(
-      reminders.filter((r) => r.status === "cancelled"),
-      zone,
-    );
-    sets.forEach((set, i) => {
-      const at = Math.min(i, Math.max(earlier - 1, 0));
-      made[at]?.push(...set.reminders);
-      if (at < last) starts[at] = set.start;
-    });
-    if (events.length === 0) {
-      others.push(...reminders);
-    } else {
-      made[last]!.push(...reminders.filter((r) => r.status !== "cancelled"));
-    }
     const moved = last > 0 && events[last]!.kind === "moved";
-    const previousStart = moved ? (starts[last - 1] ?? null) : null;
+    const previousStart = moved ? startOf(events[last - 1]!) : null;
 
     const view = (
       m: OutboxMessage,
-      start: KnownStart,
       note: string | null,
       notSent: string | null,
-      previous: KnownStart = null,
+      previous: number | null = null,
     ): MessageView => {
       const due = Date.parse(m.dueAt);
       const state = stateOf(m, now);
@@ -329,66 +255,55 @@ export function buildGroups(
         firstName,
         note,
         notSent: state === "cancelled" ? notSent : null,
-        lines: textOf(m, a, start, previous, ctx),
+        lines: textOf(m, a, previous, ctx),
         links: m.kind === "cancellation" ? [] : ownLinks(m, ctx.origin),
       };
     };
 
     const ordered: MessageView[] = [];
     events.forEach((event, i) => {
-      const start = starts[i] ?? null;
-      const words = startWords(start, zone, now);
+      const words = dayTime(startOf(event), zone, now);
       ordered.push(
         view(
           event,
-          start,
-          words ? `${event.kind === "moved" ? "To" : "For"} ${words}` : null,
+          `${event.kind === "moved" ? "To" : "For"} ${words}`,
           null,
-          i > 0 ? (starts[i - 1] ?? null) : null,
+          i > 0 ? startOf(events[i - 1]!) : null,
         ),
       );
       const replacedBy =
-        i < last ? startWords(starts[i + 1] ?? null, zone, now) : null;
-      for (const r of made[i]!.sort(byDue)) {
-        const own = startOfReminder(r, zone);
-        const forStart = start ?? own;
-        const forWords = startWords(forStart, zone, now);
+        i < last ? dayTime(startOf(events[i + 1]!), zone, now) : null;
+      for (const r of reminders
+        .filter((r) => sameMaking(event, r))
+        .sort(byDue)) {
         ordered.push(
           view(
             r,
-            forStart,
-            forWords
-              ? i < last
-                ? `For the old time, ${forWords}`
-                : `For ${forWords}`
-              : null,
+            i < last ? `For the old time, ${words}` : `For ${words}`,
             i < last
-              ? `This message will not be sent. The appointment moved to ${replacedBy ?? "a new time"}, so this reminder was replaced by a new one.`
+              ? `This message will not be sent. The appointment moved to ${replacedBy}, so this reminder was replaced by a new one.`
               : "This message will not be sent. The appointment was cancelled.",
           ),
         );
       }
     });
     for (const m of [...others.sort(byDue), ...cancellations]) {
-      const words = startWords(current, zone, now);
       ordered.push(
         view(
           m,
-          current,
-          words ? `For ${words}` : null,
+          `For ${dayTime(startOf(m), zone, now)}`,
           "This message will not be sent. The appointment was cancelled.",
         ),
       );
     }
 
     const startText = dayTime(Date.parse(a.start), zone, now);
-    const previousWords = startWords(previousStart, zone, now);
     const lead = cancelled
       ? a.cancelledAt
         ? `Cancelled on ${dayTime(Date.parse(a.cancelledAt), zone, now)}. `
         : "Cancelled. "
-      : previousWords
-        ? `Moved from ${previousWords}. `
+      : previousStart !== null
+        ? `Moved from ${dayTime(previousStart, zone, now)}. `
         : "";
     groups.push({
       appointmentId,
@@ -399,7 +314,7 @@ export function buildGroups(
       latest: Math.max(
         ...list
           .filter((m) => !REMINDER_KINDS.includes(m.kind))
-          .map((m) => Date.parse(m.dueAt)),
+          .map((m) => Date.parse(m.createdAt)),
         0,
       ),
       messages: ordered,

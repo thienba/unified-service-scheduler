@@ -145,12 +145,9 @@ export function outboxRows(
   deps: CommandDeps,
   planned: PlannedMessage[],
 ): OutboxMessage[] {
-  return planned.map(({ appointmentId, kind, dedupeKey, dueAt }) => ({
+  return planned.map((message) => ({
     id: deps.ids.next(),
-    appointmentId,
-    kind,
-    dedupeKey,
-    dueAt,
+    ...message,
     status: "pending",
   }));
 }

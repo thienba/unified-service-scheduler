@@ -1653,6 +1653,8 @@
           "dealershipId",
           "kind",
           "dueAt",
+          "createdAt",
+          "forStart",
           "status",
           "links"
         ],
@@ -1662,6 +1664,14 @@
           "dealershipId": { "$ref": "#/components/schemas/Id" },
           "kind": { "type": "string" },
           "dueAt": { "$ref": "#/components/schemas/Instant" },
+          "createdAt": {
+            "allOf": [{ "$ref": "#/components/schemas/Instant" }],
+            "description": "When the message was made."
+          },
+          "forStart": {
+            "allOf": [{ "$ref": "#/components/schemas/Instant" }],
+            "description": "The start of the appointment at the time the message was made."
+          },
           "status": {
             "type": "string",
             "enum": ["pending", "sent", "cancelled"]

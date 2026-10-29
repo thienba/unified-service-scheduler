@@ -109,9 +109,7 @@ for (const width of [390, 1440]) {
             "The booking is still valid. The garage manager can move it.",
           ),
         ).toBeVisible();
-        await expect(
-          page.getByText("Courtesy car, Car 1"),
-        ).toBeVisible();
+        await expect(page.getByText("Courtesy car, Car 1")).toBeVisible();
         await checkState(page, "schedule-selected-flagged");
 
         await page

@@ -50,6 +50,8 @@ function msg(
   dueAt: string,
   status: OutboxMessage["status"] = "pending",
   appointmentId = "ap-1",
+  made = dueAt,
+  forStart = "2026-11-02T09:00:00Z",
 ): OutboxMessage {
   n += 1;
   return {
@@ -58,6 +60,8 @@ function msg(
     dealershipId: "d-1",
     kind,
     dueAt,
+    createdAt: made,
+    forStart,
     status,
     links: {
       cancel: `${origin}/appointments/${appointmentId}`,
@@ -80,7 +84,16 @@ describe("times in the dealership's zone, across a clock change", () => {
       end: "2026-03-30T10:00:00Z",
     });
     const [group] = buildGroups(
-      [msg("reminder_morning", "2026-03-30T07:00:00Z")],
+      [
+        msg(
+          "reminder_morning",
+          "2026-03-30T07:00:00Z",
+          "pending",
+          "ap-1",
+          "2026-03-20T09:00:00Z",
+          "2026-03-30T09:00:00Z",
+        ),
+      ],
       new Map([[a.id, a]]),
       { ...ctx, now: Date.parse("2026-03-20T12:00:00Z") },
     );
@@ -108,13 +121,30 @@ describe("states", () => {
 
 describe("one booking, moved once (the prototype's AP-1042)", () => {
   const a = appointment();
+  const oldStart = "2026-10-30T09:15:00Z";
+  const booked = "2026-10-26T14:02:00Z";
+  const movedAt = "2026-10-28T10:38:00Z";
   const messages = [
-    msg("reminder_morning", "2026-11-02T08:00:00Z"),
-    msg("moved", "2026-10-28T10:38:00Z"),
-    msg("confirmation", "2026-10-26T14:02:00Z"),
-    msg("reminder_48h", "2026-10-31T09:00:00Z"),
-    msg("reminder_morning", "2026-10-30T08:00:00Z", "cancelled"),
-    msg("reminder_48h", "2026-10-28T09:15:00Z", "cancelled"),
+    msg("reminder_morning", "2026-11-02T08:00:00Z", "pending", "ap-1", movedAt),
+    msg("moved", movedAt),
+    msg("confirmation", booked, "pending", "ap-1", booked, oldStart),
+    msg("reminder_48h", "2026-10-31T09:00:00Z", "pending", "ap-1", movedAt),
+    msg(
+      "reminder_morning",
+      "2026-10-30T08:00:00Z",
+      "cancelled",
+      "ap-1",
+      booked,
+      oldStart,
+    ),
+    msg(
+      "reminder_48h",
+      "2026-10-28T09:15:00Z",
+      "cancelled",
+      "ap-1",
+      booked,
+      oldStart,
+    ),
   ];
   const [group] = one(messages, a);
 
@@ -179,6 +209,107 @@ describe("one booking, moved once (the prototype's AP-1042)", () => {
   });
 });
 
+describe("a booking moved twice (D-0001-79)", () => {
+  const first = "2026-10-30T09:15:00Z";
+  const second = "2026-11-02T09:00:00Z";
+  const third = "2026-11-04T11:00:00Z";
+  const made1 = "2026-10-26T14:02:00Z";
+  const made2 = "2026-10-27T10:00:00Z";
+  const made3 = "2026-10-28T10:38:00Z";
+  const a = appointment({ start: third, end: "2026-11-04T14:00:00Z" });
+  // Sent in no useful order; the old morning reminders are for 09:00 and 09:15, 08:00 shows only the time of the start.
+  const messages = [
+    msg(
+      "reminder_48h",
+      "2026-11-02T11:00:00Z",
+      "pending",
+      "ap-1",
+      made3,
+      third,
+    ),
+    msg("moved", made3, "pending", "ap-1", made3, third),
+    msg(
+      "reminder_morning",
+      "2026-11-04T08:00:00Z",
+      "pending",
+      "ap-1",
+      made3,
+      third,
+    ),
+    msg(
+      "reminder_morning",
+      "2026-11-02T08:00:00Z",
+      "cancelled",
+      "ap-1",
+      made2,
+      second,
+    ),
+    msg("moved", made2, "pending", "ap-1", made2, second),
+    msg(
+      "reminder_48h",
+      "2026-10-31T09:00:00Z",
+      "cancelled",
+      "ap-1",
+      made2,
+      second,
+    ),
+    msg(
+      "reminder_morning",
+      "2026-10-30T08:00:00Z",
+      "cancelled",
+      "ap-1",
+      made1,
+      first,
+    ),
+    msg("confirmation", made1, "pending", "ap-1", made1, first),
+    msg(
+      "reminder_48h",
+      "2026-10-28T09:15:00Z",
+      "cancelled",
+      "ap-1",
+      made1,
+      first,
+    ),
+  ];
+  const [group] = one(messages, a);
+
+  it("lists each move with the reminders it made, in the order they were made", () => {
+    expect(group!.messages.map((m) => m.kindLabel)).toEqual([
+      "Confirmation",
+      "Reminder, 48 hours before",
+      "Reminder, morning of the appointment",
+      "Moved to a new time",
+      "Reminder, 48 hours before",
+      "Reminder, morning of the appointment",
+      "Moved to a new time",
+      "Reminder, 48 hours before",
+      "Reminder, morning of the appointment",
+    ]);
+  });
+  it("names the old time after each move, exactly, even for a morning reminder", () => {
+    expect(group!.subLine).toBe(
+      "Moved from Mon 2 Nov, 09:00. In the order the messages were made.",
+    );
+    expect(group!.messages.map((m) => m.note)).toEqual([
+      "For Fri 30 Oct, 09:15",
+      "For the old time, Fri 30 Oct, 09:15",
+      "For the old time, Fri 30 Oct, 09:15",
+      "To Mon 2 Nov, 09:00",
+      "For the old time, Mon 2 Nov, 09:00",
+      "For the old time, Mon 2 Nov, 09:00",
+      "To Wed 4 Nov, 11:00",
+      "For Wed 4 Nov, 11:00",
+      "For Wed 4 Nov, 11:00",
+    ]);
+    expect(group!.messages[6]!.lines[1]).toBe(
+      "We have moved your Full service at Northgate Motors to Wed 4 Nov, 11:00 to 14:00. It was Mon 2 Nov, 09:00.",
+    );
+    expect(group!.messages[2]!.lines[1]).toBe(
+      "Your Full service at Northgate Motors is today at 09:15.",
+    );
+  });
+});
+
 describe("a cancelled booking", () => {
   const a = appointment({
     id: "ap-2",
@@ -192,10 +323,32 @@ describe("a cancelled booking", () => {
       customerName: "Noor",
     },
   });
+  const start = "2026-10-29T14:00:00Z";
   const messages = [
-    msg("cancellation", "2026-10-28T10:15:00Z", "pending", "ap-2"),
-    msg("reminder_morning", "2026-10-29T08:00:00Z", "cancelled", "ap-2"),
-    msg("confirmation", "2026-10-27T16:30:00Z", "pending", "ap-2"),
+    msg(
+      "cancellation",
+      "2026-10-28T10:15:00Z",
+      "pending",
+      "ap-2",
+      undefined,
+      start,
+    ),
+    msg(
+      "reminder_morning",
+      "2026-10-29T08:00:00Z",
+      "cancelled",
+      "ap-2",
+      "2026-10-27T16:30:00Z",
+      start,
+    ),
+    msg(
+      "confirmation",
+      "2026-10-27T16:30:00Z",
+      "pending",
+      "ap-2",
+      undefined,
+      start,
+    ),
   ];
   const [group] = buildGroups(messages, new Map([[a.id, a]]), ctx);
 
