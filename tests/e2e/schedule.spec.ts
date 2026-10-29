@@ -27,6 +27,8 @@ import {
   pickRole,
   problemBody,
   widths,
+  chooseOption,
+  selectNamed,
 } from "./support";
 
 // Screenshots go to the ticket's evidence folder when EVIDENCE_DIR is set (D-0000-13).
@@ -200,7 +202,8 @@ for (const width of [390, 1440]) {
         await checkState(page, "schedule-bay-day");
         return;
       }
-      await expect(page.getByLabel("Technician", { exact: true })).toHaveValue(
+      await expect(selectNamed(page, "Technician")).toHaveAttribute(
+        "data-value",
         "tech-lon-ash",
       );
       await page.getByRole("button", { name: "Next technician" }).click();
@@ -221,7 +224,10 @@ for (const width of [390, 1440]) {
         .getByRole("group", { name: "Rows" })
         .getByRole("button", { name: "Bays" })
         .click();
-      await expect(page.getByLabel("Service bay")).toHaveValue("bay-lon-1");
+      await expect(selectNamed(page, "Service bay")).toHaveAttribute(
+        "data-value",
+        "bay-lon-1",
+      );
       await checkState(page, "schedule-bay-day");
     });
 
@@ -453,21 +459,23 @@ for (const width of [390, 1440]) {
       expect(asked).toEqual([]);
 
       await signIn(page, "Staff");
-      if (wide) {
-        await page
-          .getByLabel("Who")
-          .selectOption({ label: "Demo Staff London" });
-      } else {
+      // Demo Staff London is the first staff user and already chosen, and a themed list sends no change for
+      // the option already chosen. So Who switches to Saigon and back, and each switch shows its toast.
+      if (!wide) {
         await page.getByRole("button", { name: /^Viewing as/ }).click();
-        await page
-          .getByRole("dialog", { name: "Viewing as" })
-          .getByLabel("Who")
-          .selectOption({ label: "Demo Staff London" });
-        await page.keyboard.press("Escape");
       }
-      await expect(
-        page.getByText(/Now viewing as Staff, Demo Staff London/),
-      ).toBeVisible();
+      const who = () =>
+        selectNamed(
+          wide ? page : page.getByRole("dialog", { name: "Viewing as" }),
+          "Who",
+        );
+      for (const name of ["Demo Staff Saigon", "Demo Staff London"]) {
+        await chooseOption(who(), { label: name });
+        await expect(
+          page.getByText(`Now viewing as Staff, ${name}`),
+        ).toBeVisible();
+      }
+      if (!wide) await page.keyboard.press("Escape");
       asked.length = 0;
       await page.goto("/schedule?dealership=dealership-saigon");
       await expect(

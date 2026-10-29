@@ -14,6 +14,7 @@ import {
   openApp,
   pickRole,
   widths,
+  chooseOption,
 } from "./support";
 
 const NOW = new Date("2026-10-28T10:40:00Z");
@@ -84,7 +85,7 @@ async function takeTheCar(page: Page, time: string) {
 
 /** The customer's car and Fri 30 Oct. */
 async function carAndDay(page: Page) {
-  await page.getByRole("combobox", { name: /^Car/ }).selectOption("vehicle-a");
+  await chooseOption(page.getByRole("button", { name: /^Car/ }), "vehicle-a");
   await day(page, "Fri 30 Oct").check();
 }
 
@@ -455,7 +456,7 @@ test("courtesy-cleared on a week only searched with the courtesy car: the strip 
   page,
 }) => {
   await start(page, 1440, DEEP);
-  await page.getByRole("combobox", { name: /^Car/ }).selectOption("vehicle-a");
+  await chooseOption(page.getByRole("button", { name: /^Car/ }), "vehicle-a");
   await expect(day(page, "Wed 28 Oct")).toBeVisible();
   // The courtesy car is chosen before the next week is ever searched for waiting.
   await option(page, CAR).check();
@@ -537,9 +538,7 @@ test("video: a customer chooses a courtesy car, sees it greyed out for a busy ti
   await second.goto(DEEP);
   await expect(day(second, "Wed 28 Oct")).toBeChecked();
   await slow(second);
-  await second
-    .getByRole("combobox", { name: /^Car/ })
-    .selectOption("vehicle-a");
+  await chooseOption(second.getByRole("button", { name: /^Car/ }), "vehicle-a");
   await slow(second);
   await day(second, "Fri 30 Oct").check();
   await slow(second);

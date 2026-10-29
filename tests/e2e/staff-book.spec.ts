@@ -23,6 +23,8 @@ import {
   pickRole,
   problemBody,
   widths,
+  chooseOption,
+  selectNamed,
 } from "./support";
 
 const NOW = new Date("2026-10-28T10:40:00Z");
@@ -133,8 +135,7 @@ const chip = (page: Page, name: string) =>
   page.getByRole("radio", { name, exact: true });
 const confirm = (page: Page) =>
   page.getByRole("button", { name: "Confirm booking" });
-const service = (page: Page) =>
-  page.getByRole("combobox", { name: "Service (required)" });
+const service = (page: Page) => selectNamed(page, "Service (required)");
 
 /** Search for Marta, pick her and her Ford Focus, and continue to the staff `book` page. */
 async function pickMarta(page: Page) {
@@ -271,7 +272,7 @@ for (const width of [390, 1440]) {
       await expect(
         page.getByRole("region", { name: "Booking for" }),
       ).toContainText(`${MARTA}Phone ending 0123 · Ford Focus, AB12 CDE`);
-      await service(page).selectOption("service-full");
+      await chooseOption(service(page), "service-full");
       await day(page, "Fri 30 Oct").check();
       await chip(page, "10:00 to 13:00").check();
       await page.getByRole("radio", { name: "Drops the car off" }).check();
@@ -556,7 +557,7 @@ for (const width of [390, 1440]) {
         ).toBeVisible();
       await shot(page, "book", "idle");
 
-      await service(page).selectOption("service-full");
+      await chooseOption(service(page), "service-full");
       await expect(
         page.getByRole("heading", {
           level: 1,
@@ -652,7 +653,7 @@ for (const width of [390, 1440]) {
       ).toHaveValue("PN21 XYZ");
       await continueButton(page).click();
       const bookings = watchBookings(page);
-      await service(page).selectOption("service-oil-change");
+      await chooseOption(service(page), "service-oil-change");
       await day(page, "Fri 30 Oct").check();
       await chip(page, "09:00 to 10:00").check();
       await page.getByRole("radio", { name: "Waits on site" }).check();
@@ -733,7 +734,7 @@ for (const width of [390, 1440]) {
       await expect(page.getByText("From the gap you tapped.")).toBeVisible();
       await shot(page, "book", "from-gap");
 
-      await service(page).selectOption("service-oil-change");
+      await chooseOption(service(page), "service-oil-change");
       await expect(day(page, "Wed 28 Oct")).toBeChecked();
       await expect(
         page.getByRole("radio", { name: new RegExp(`^${hhmm} to `) }),
@@ -749,7 +750,7 @@ for (const width of [390, 1440]) {
       );
       await shot(page, "book", "from-gap-fits");
 
-      await service(page).selectOption("service-full");
+      await chooseOption(service(page), "service-full");
       await expect(
         page.getByText(
           `A full service does not fit at ${hhmm} with Amara Okafor.`,
@@ -807,7 +808,7 @@ for (const width of [390, 1440]) {
     }) => {
       await start(page, width, "/book/for-customer", { seed: seedMarta });
       await pickMarta(page);
-      await service(page).selectOption("service-full");
+      await chooseOption(service(page), "service-full");
       await day(page, "Fri 30 Oct").check();
       await chip(page, "10:00 to 13:00").check();
       await page.getByRole("radio", { name: "Drops the car off" }).check();
@@ -846,7 +847,7 @@ for (const width of [390, 1440]) {
         model: "Fabia",
       });
       await continueButton(page).click();
-      await service(page).selectOption("service-full");
+      await chooseOption(service(page), "service-full");
       await day(page, "Mon 2 Nov").check();
       await chip(page, "10:00 to 13:00").check();
       await page.getByRole("radio", { name: "Waits on site" }).check();
@@ -936,7 +937,7 @@ for (const width of [390, 1440]) {
         "/book/for-customer?start=2026-10-28T13%3A00%3A00Z&technicianId=tech-lon-birch",
       );
       await pickMarta(page);
-      await service(page).selectOption("service-oil-change");
+      await chooseOption(service(page), "service-oil-change");
       await page.getByRole("radio", { name: "Waits on site" }).check();
       await confirm(page).click();
       await expect(
@@ -1016,7 +1017,7 @@ for (const width of [390, 1440]) {
           }),
       });
       await pickMarta(page);
-      await service(page).selectOption("service-full");
+      await chooseOption(service(page), "service-full");
       await expect(page.getByText("Loading the days and times")).toBeAttached();
       await shot(page, "book", "loading");
       await day(page, "Sat 31 Oct").check();
@@ -1122,7 +1123,7 @@ test("the manager books for a customer from the Schedule button with the same sc
   ).toBeVisible();
   const bookings = watchBookings(page);
   await pickMarta(page);
-  await service(page).selectOption("service-full");
+  await chooseOption(service(page), "service-full");
   await day(page, "Fri 30 Oct").check();
   await chip(page, "10:00 to 13:00").check();
   await page.getByRole("radio", { name: "Waits on site" }).check();
@@ -1199,7 +1200,7 @@ test("D-0001-29 B: Add another vehicle books the new car for the picked customer
     "Phone ending 0123 · Nissan Note, NN22 ABC",
   );
   const bookings = watchBookings(page);
-  await service(page).selectOption("service-oil-change");
+  await chooseOption(service(page), "service-oil-change");
   await day(page, "Fri 30 Oct").check();
   await chip(page, "09:00 to 10:00").check();
   await page.getByRole("radio", { name: "Waits on site" }).check();
@@ -1417,7 +1418,7 @@ for (const width of [390, 1440] as const) {
     );
     const bookings = watchBookings(page);
     await pickMarta(page);
-    await service(page).selectOption("service-full");
+    await chooseOption(service(page), "service-full");
     await expect(
       page.getByRole("heading", {
         name: "We could not check the gap you tapped.",
@@ -1489,7 +1490,7 @@ test("video: a staff member taps a free gap, finds a customer, picks a car, a se
   await slow();
   await continueButton(page).click();
   await slow();
-  await service(page).selectOption("service-oil-change");
+  await chooseOption(service(page), "service-oil-change");
   await slow();
   await page.getByRole("radio", { name: "Waits on site" }).check();
   await slow();
@@ -1516,7 +1517,7 @@ test("video: a staff member taps a free gap, finds a customer, picks a car, a se
   await slow();
   await continueButton(page).click();
   await slow();
-  await service(page).selectOption("service-full");
+  await chooseOption(service(page), "service-full");
   await slow();
   await day(page, "Mon 2 Nov").check();
   await slow();

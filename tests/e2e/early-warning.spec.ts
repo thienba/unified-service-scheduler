@@ -29,7 +29,14 @@ import {
   plusMinutes,
   signInAs,
 } from "./demo-support";
-import { expectNoAxeViolations, expectNoSidewaysScroll } from "./support";
+import {
+  expectNoAxeViolations,
+  expectNoSidewaysScroll,
+  chooseOption,
+  typeDate,
+  dateNamed,
+  selectNamed,
+} from "./support";
 
 const EV = "service-ev-check";
 const OLIVER = "tech-lon-ash";
@@ -179,14 +186,14 @@ test("D-0001-107, REQ-BOOK-009.AC-2: book: page B books the time page A chose; p
   const start = await contestedStart(a);
   const link = `/book?dealership=${LONDON}&service=${EV}&date=${londonDate(start)}`;
   await a.goto(link);
-  await a.getByRole("combobox", { name: /^Car/ }).selectOption("vehicle-a");
+  await chooseOption(a.getByRole("button", { name: /^Car/ }), "vehicle-a");
   const choice = await chooseOnBook(a, start, "Wait on site");
   // The check sent when the time was chosen answers first (it found the time free); B books after it.
   await checkAnswered(a, start);
 
   // Page B books the same time through its own booking page.
   await b.goto(link);
-  await b.getByRole("combobox", { name: /^Car/ }).selectOption("vehicle-b");
+  await chooseOption(b.getByRole("button", { name: /^Car/ }), "vehicle-b");
   await chooseOnBook(b, start, "Wait on site");
   await b.getByRole("button", { name: "Confirm booking" }).click();
   await expect(
@@ -197,7 +204,8 @@ test("D-0001-107, REQ-BOOK-009.AC-2: book: page B books the time page A chose; p
   await expectEarly(a, apology(start));
   await expect(choice).toBeFocused();
   await expect(choice).toBeChecked();
-  await expect(a.getByRole("combobox", { name: /^Car/ })).toHaveValue(
+  await expect(a.getByRole("button", { name: /^Car/ })).toHaveAttribute(
+    "data-value",
     "vehicle-a",
   );
   await expect(
@@ -288,9 +296,9 @@ test("D-0001-107: adjust: page B books the start the manager typed; the clash st
   const start = await contestedStart(a);
   const moving = await anotherEvCheck(a, start);
   await a.goto(`/appointments/${moving.id}/adjust`);
-  await a.getByLabel("Date", { exact: true }).fill(londonDate(start));
-  const time = a.getByLabel("Start time");
-  await time.fill(londonTime(start));
+  await typeDate(dateNamed(a, "Date"), londonDate(start));
+  const time = selectNamed(a, "Start time");
+  await chooseOption(time, londonTime(start));
   await time.focus();
   // The check sent when the time was chosen answers first (it found the time free); B books after it.
   await checkAnswered(a, start);
@@ -343,7 +351,7 @@ test("D-0001-107: a failed check shows nothing new and does not block Confirm, w
   await a.goto(
     `/book?dealership=${LONDON}&service=${EV}&date=${londonDate(start)}`,
   );
-  await a.getByRole("combobox", { name: /^Car/ }).selectOption("vehicle-a");
+  await chooseOption(a.getByRole("button", { name: /^Car/ }), "vehicle-a");
   await chooseOnBook(a, start, "Wait on site");
   await bBooks(a, start);
   const before = (await posts(a, "/appointments")).length;
@@ -376,7 +384,7 @@ test("early warning video: page A has a time chosen, page B books it, page A sho
   const link = `/book?dealership=${LONDON}&service=${EV}&date=${londonDate(start)}`;
   await a.goto(link);
   await beat(a);
-  await a.getByRole("combobox", { name: /^Car/ }).selectOption("vehicle-a");
+  await chooseOption(a.getByRole("button", { name: /^Car/ }), "vehicle-a");
   await beat(a);
   await chooseOnBook(a, start, "Wait on site");
   // The check sent when the time was chosen answers first (it found the time free); B books after it.
@@ -384,7 +392,7 @@ test("early warning video: page A has a time chosen, page B books it, page A sho
   await beat(a, 1500);
   await b.goto(link);
   await beat(b);
-  await b.getByRole("combobox", { name: /^Car/ }).selectOption("vehicle-b");
+  await chooseOption(b.getByRole("button", { name: /^Car/ }), "vehicle-b");
   await beat(b);
   await chooseOnBook(b, start, "Wait on site");
   await beat(b);

@@ -3,19 +3,16 @@
 // would flag (D-0001-36 A).
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useRef, useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import { Alert } from "../../components/Alert";
 import { Button } from "../../components/Button";
 import { DateExceptionList } from "../../components/DateExceptionList";
 import { Dialog } from "../../components/Dialog";
-import {
-  DateField,
-  SelectField,
-  TextField,
-  TimeField,
-  focusField,
-} from "../../components/Fields";
+import { TextField, focusField } from "../../components/Fields";
+import { DatePicker } from "../../components/DatePicker";
+import { Select } from "../../components/Select";
+import { afterStart, TimeField } from "../../components/TimeField";
 import { FlagImpactDialog } from "../../components/FlagImpactDialog";
 import { useToast } from "../../components/Toast";
 import { WeekPatternEditor } from "../../components/WeekPatternEditor";
@@ -347,39 +344,59 @@ function SettingsForm({ dealership }: { dealership: Dealership }) {
               addNote="Adding a date does not save it. Nothing is saved until you press Save settings."
             >
               <div className="grid gap-4 sm:grid-cols-2">
-                <DateField
-                  label="Date"
-                  thisYear={Number(today.slice(0, 4))}
-                  min={today}
-                  error={problemAt(shown, "add.date")}
-                  {...form.register("add.date")}
-                  value={add.date}
+                <Controller
+                  control={form.control}
+                  name="add.date"
+                  render={({ field }) => (
+                    <DatePicker
+                      label="Date"
+                      today={today}
+                      min={today}
+                      error={problemAt(shown, "add.date")}
+                      {...field}
+                      disabled={busy}
+                    />
+                  )}
                 />
-                <SelectField
-                  label="What happens on this date"
-                  options={[
-                    { value: "hours", label: "Open different hours" },
-                    { value: "closed", label: "Closed all day" },
-                  ]}
-                  {...form.register("add.kind")}
-                  value={add.kind}
+                <Controller
+                  control={form.control}
+                  name="add.kind"
+                  render={({ field }) => (
+                    <Select
+                      label="What happens on this date"
+                      options={[
+                        { value: "hours", label: "Open different hours" },
+                        { value: "closed", label: "Closed all day" },
+                      ]}
+                      {...field}
+                    />
+                  )}
                 />
               </div>
               {add.kind === "hours" && (
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <TimeField
-                    label="Opens"
-                    className="num"
-                    error={problemAt(shown, "add.open")}
-                    {...form.register("add.open")}
-                    value={add.open}
+                  <Controller
+                    control={form.control}
+                    name="add.open"
+                    render={({ field }) => (
+                      <TimeField
+                        label="Opens"
+                        error={problemAt(shown, "add.open")}
+                        {...field}
+                      />
+                    )}
                   />
-                  <TimeField
-                    label="Closes"
-                    className="num"
-                    error={problemAt(shown, "add.close")}
-                    {...form.register("add.close")}
-                    value={add.close}
+                  <Controller
+                    control={form.control}
+                    name="add.close"
+                    render={({ field }) => (
+                      <TimeField
+                        label="Closes"
+                        error={problemAt(shown, "add.close")}
+                        {...afterStart(add.open, "close after it opens")}
+                        {...field}
+                      />
+                    )}
                   />
                 </div>
               )}

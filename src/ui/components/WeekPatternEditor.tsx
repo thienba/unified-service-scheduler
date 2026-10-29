@@ -1,8 +1,8 @@
 // design.md 8.23. One row per weekday: its name, a Closed (or Day off) checkbox and the times. Each weekday is a
 // `group` labelled by its name; a row's error sits under the row and is tied to every field of the row.
-import { Checkbox, TimeField } from "./Fields";
+import { Checkbox, FieldError } from "./Fields";
 import { cx } from "./cx";
-import { FieldError } from "./Fields";
+import { afterStart, TimeField } from "./TimeField";
 
 export type WeekMode = "hours" | "shift";
 
@@ -18,6 +18,12 @@ const fieldsOf = {
     { key: "breakEnd", label: "Break ends (optional)" },
   ],
 } as const;
+
+// design.md 8.30: an end time cannot be chosen up to its start time; those times are crossed out with the reason.
+const endsAfter: Record<string, { start: string; words: string }> = {
+  close: { start: "open", words: "close after it opens" },
+  end: { start: "start", words: "end after it starts" },
+};
 
 const heads = {
   hours: ["Opens", "Closes"],
@@ -104,26 +110,22 @@ export function WeekPatternEditor({
             </div>
             {fields.map((f) => {
               const bad = day.error?.fields.includes(f.key) ?? false;
+              const after = endsAfter[f.key];
               return (
-                <div
-                  key={f.key}
-                  className={cx("lg:[&_label]:sr-only lg:min-w-0", timeWidth)}
-                >
+                <div key={f.key} className={cx("lg:min-w-0", timeWidth)}>
                   <TimeField
                     id={`field-${idPrefix}.${i}.${f.key}`}
                     label={f.label}
+                    hideLabel="lg"
+                    optional={f.label.endsWith("(optional)")}
                     value={day.off ? "" : (day.times[f.key] ?? "")}
                     disabled={disabled || day.off}
-                    className={cx(
-                      "num",
-                      bad &&
-                        "border-text-danger inset-ring inset-ring-text-danger hover:border-text-danger",
-                    )}
-                    aria-invalid={bad || undefined}
-                    aria-describedby={day.error ? errorId : undefined}
-                    onChange={(e) =>
-                      onChange(i, { key: f.key, value: e.target.value })
-                    }
+                    invalid={bad}
+                    describedBy={day.error ? errorId : undefined}
+                    onChange={(value) => onChange(i, { key: f.key, value })}
+                    {...(after && !day.off
+                      ? afterStart(day.times[after.start], after.words)
+                      : {})}
                   />
                 </div>
               );

@@ -18,14 +18,14 @@ import { Dialog } from "../components/Dialog";
 import {
   Checkbox,
   ChoiceCards,
-  DateField,
   EmailField,
-  SelectField,
   Switch,
   TelField,
   TextField,
-  TimeField,
 } from "../components/Fields";
+import { DatePicker } from "../components/DatePicker";
+import { Select } from "../components/Select";
+import { TimeField } from "../components/TimeField";
 import { SegmentedControl } from "../components/SegmentedControl";
 import {
   FactsList,
@@ -37,6 +37,231 @@ import {
 import { Skeleton, StateBlock } from "../components/StateBlock";
 import { useToast } from "../components/Toast";
 import { FormSummary } from "../forms/FormSummary";
+
+const services = [
+  { value: "full", label: "Full service" },
+  { value: "oil", label: "Oil change" },
+  { value: "brakes", label: "Brake pads" },
+  {
+    value: "ev",
+    label: "EV battery check",
+    disabledReason: "Not offered at Northgate Motors (sample).",
+  },
+];
+
+/** The themed Select, DatePicker and TimeField in each state (design.md 8.27 to 8.30, controls.html). */
+function ThemedControls() {
+  const [service, setService] = useState("full");
+  const [empty, setEmpty] = useState("");
+  const [date, setDate] = useState("2026-10-30");
+  const [time, setTime] = useState("08:00");
+  const [ends, setEnds] = useState("09:30");
+  const [pause, setPause] = useState("");
+  return (
+    <>
+      <Case name="Select">
+        <Select
+          label="Service"
+          name="sheet-service"
+          required
+          value={service}
+          onChange={setService}
+          options={services}
+        />
+      </Case>
+      <Case name="Select, nothing chosen">
+        <Select
+          label="Service"
+          name="sheet-service-empty"
+          required
+          placeholder="Choose a service"
+          value={empty}
+          onChange={setEmpty}
+          options={services}
+        />
+      </Case>
+      <Case name="Select, error">
+        <Select
+          label="Service"
+          name="sheet-service-error"
+          required
+          placeholder="Choose a service"
+          error="Service is missing. Choose one from the list."
+          value=""
+          onChange={() => {}}
+          options={services}
+        />
+      </Case>
+      <Case name="Select, disabled">
+        <Select
+          label="Technician"
+          name="sheet-tech-disabled"
+          disabled
+          helper="Pick a start time first. Then you can choose a technician."
+          value="maya"
+          onChange={() => {}}
+          options={[{ value: "maya", label: "Maya Okafor" }]}
+        />
+      </Case>
+      <Case name="Select, read-only">
+        <Select
+          label="Dealership"
+          name="sheet-dealership-readonly"
+          readOnly
+          helper="You are changing an existing appointment, so the dealership stays the same."
+          value="north"
+          onChange={() => {}}
+          options={[
+            {
+              value: "north",
+              label: "Northgate Motors, Leeds (sample dealership)",
+            },
+          ]}
+        />
+      </Case>
+      <Case name="Select, loading">
+        <Select
+          label="Service"
+          name="sheet-service-loading"
+          required
+          loading
+          loadingText="Loading services…"
+          value=""
+          onChange={() => {}}
+          options={[]}
+        />
+      </Case>
+      <Case name="Select, could not load">
+        <Select
+          label="Service"
+          name="sheet-service-failed"
+          required
+          placeholder="Choose a service"
+          loadError="Could not load the services. Nothing was changed."
+          onRetry={() => {}}
+          value=""
+          onChange={() => {}}
+          options={[]}
+        />
+      </Case>
+      <Case name="Select, empty">
+        <Select
+          label="Service"
+          name="sheet-service-none"
+          required
+          placeholder="Choose a service"
+          emptyText="No services are set up for this dealership. Choose another dealership, or contact this one."
+          value=""
+          onChange={() => {}}
+          options={[]}
+        />
+      </Case>
+      <Case name="DatePicker">
+        <DatePicker
+          label="Date"
+          name="sheet-date"
+          required
+          today="2026-10-28"
+          min="2026-10-28"
+          max="2026-11-27"
+          closed={(d) => new Date(`${d}T12:00:00Z`).getUTCDay() === 0}
+          limitsText="Crossed-out days cannot be chosen: bookings need 2 hours notice and open up to 30 days ahead, until Fri 27 Nov."
+          value={date}
+          onChange={setDate}
+        />
+      </Case>
+      <Case name="DatePicker, error">
+        <DatePicker
+          label="Date"
+          name="sheet-date-error"
+          required
+          today="2026-10-28"
+          value=""
+          error="Date is missing. Type the day, for example 30/10/2026, or open the calendar."
+          onChange={() => {}}
+        />
+      </Case>
+      <Case name="DatePicker, disabled, read-only and loading">
+        <div className="grid gap-3">
+          <DatePicker
+            label="Date, disabled"
+            name="sheet-date-disabled"
+            today="2026-10-28"
+            value="2026-10-30"
+            disabled
+            helper="This appointment starts in less than 2 hours, so the date can no longer be changed online."
+            onChange={() => {}}
+          />
+          <DatePicker
+            label="Date, read-only"
+            name="sheet-date-readonly"
+            today="2026-10-28"
+            value="2026-10-30"
+            readOnly
+            helper="Fixed by the time you tapped on the schedule."
+            onChange={() => {}}
+          />
+          <DatePicker
+            label="Date, loading"
+            name="sheet-date-loading"
+            today="2026-10-28"
+            value=""
+            loading
+            onChange={() => {}}
+          />
+        </div>
+      </Case>
+      <Case name="TimeField">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <TimeField
+            label="Start time"
+            name="sheet-time"
+            required
+            value={time}
+            onChange={setTime}
+          />
+          <TimeField
+            label="Ends"
+            name="sheet-time-ends"
+            required
+            min="09:15"
+            disabledReason="Not up to 09:00: this must end after it starts at 09:00."
+            value={ends}
+            onChange={setEnds}
+          />
+          <TimeField
+            label="Break starts (optional)"
+            name="sheet-time-break"
+            optional
+            value={pause}
+            onChange={setPause}
+          />
+          <TimeField
+            label="Opens"
+            name="sheet-time-current"
+            value="08:10"
+            onChange={() => {}}
+          />
+          <TimeField
+            label="Closes"
+            name="sheet-time-error"
+            value="07:00"
+            error="Closes at 07:00, which is before Opens at 08:00. Choose a time after 08:00."
+            onChange={() => {}}
+          />
+          <TimeField
+            label="Closes, disabled"
+            name="sheet-time-disabled"
+            value="17:30"
+            disabled
+            helper="This day is marked Closed. Untick Closed to set its hours."
+            onChange={() => {}}
+          />
+        </div>
+      </Case>
+    </>
+  );
+}
 
 function Part({
   title,
@@ -209,37 +434,7 @@ export function ComponentSheet() {
           <Case name="Email">
             <EmailField label="Email" name="sheet-email" />
           </Case>
-          <Case name="Select">
-            <SelectField
-              label="Service"
-              name="sheet-service"
-              placeholder="Choose a service"
-              options={[
-                { value: "full", label: "Full service" },
-                { value: "mot", label: "MOT" },
-              ]}
-            />
-          </Case>
-          <Case name="Select, error">
-            <SelectField
-              label="Service"
-              name="sheet-service-error"
-              placeholder="Choose a service"
-              error="Service is missing. Choose one from the list."
-              options={[{ value: "full", label: "Full service" }]}
-            />
-          </Case>
-          <Case name="Date and time">
-            <div className="grid gap-3 sm:grid-cols-2">
-              <DateField
-                label="Date"
-                name="sheet-date"
-                thisYear={2026}
-                defaultValue="2026-10-30"
-              />
-              <TimeField label="Start" name="sheet-time" defaultValue="10:00" />
-            </div>
-          </Case>
+          <ThemedControls />
         </div>
         <div className="grid gap-4 sm:max-w-md">
           <FormSummary

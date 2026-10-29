@@ -107,6 +107,504 @@
   }
 }
 
+/* The themed Select, DatePicker and TimeField (design.md 8.27 to 8.30, D-0001-131). React Aria Components gives
+   each part data attributes (data-hovered, data-pressed, data-open, data-focus-visible, data-selected, ...);
+   the looks below hang on them. Every value is a token. */
+@layer components {
+  /* React Aria would add this rule in an inline <style>, which the policy refuses (index.html takes its id). */
+  [data-react-aria-pressable] {
+    touch-action: pan-x pan-y pinch-zoom;
+  }
+  /* The closed control of a Select or TimeField: a button. */
+  .ctl {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    width: 100%;
+    min-height: var(--size-field);
+    padding: 0 var(--space-3);
+    border: var(--border-width) solid var(--color-border-strong);
+    border-radius: var(--radius-control);
+    background: var(--color-surface);
+    color: var(--color-text);
+    text-align: start;
+    transition:
+      border-color var(--duration-fast) var(--ease-out),
+      background-color var(--duration-fast) var(--ease-out);
+  }
+  .ctl-value {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  /* In a form, a long value is cut with an ellipsis and never widens the form (design.md 8.28, real data). */
+  .ctl-fill .ctl-value {
+    contain: inline-size;
+  }
+  .ctl-value[data-placeholder] {
+    color: var(--color-text-secondary);
+  }
+  .ctl[data-hovered] {
+    border-color: var(--color-text);
+  }
+  .ctl[data-pressed] {
+    background: var(--color-surface-sunken);
+  }
+  .ctl[data-pressed][data-open],
+  [data-open] > .ctl {
+    background: var(--color-surface);
+  }
+  /* Open: a 2px navy edge (1px edge and 1px inside). No ring for a pointer. */
+  [data-open] > .ctl,
+  .ctl[data-open] {
+    border-color: var(--color-text);
+    box-shadow: inset 0 0 0 var(--border-width) var(--color-text);
+  }
+  [data-open] > .ctl:not([data-focus-visible]) {
+    outline: none;
+  }
+  .ctl[aria-invalid="true"],
+  .ctl.is-invalid {
+    border-color: var(--color-text-danger);
+    box-shadow: inset 0 0 0 var(--border-width) var(--color-text-danger);
+  }
+  .ctl.is-readonly {
+    background: var(--color-surface-page);
+  }
+  .ctl[data-disabled] {
+    background: var(--color-surface-sunken);
+    color: var(--color-text-secondary);
+    border-color: var(--color-border-subtle);
+    box-shadow: none;
+  }
+  .ctl.is-loading {
+    cursor: progress;
+  }
+
+  /* The closed DatePicker: a group of three segments and the calendar button. */
+  .dgrp {
+    display: flex;
+    align-items: stretch;
+    min-height: var(--size-field);
+    padding-inline-start: var(--space-1);
+    border: var(--border-width) solid var(--color-border-strong);
+    border-radius: var(--radius-control);
+    background: var(--color-surface);
+    color: var(--color-text);
+    transition: border-color var(--duration-fast) var(--ease-out);
+  }
+  .dgrp[data-hovered] {
+    border-color: var(--color-text);
+  }
+  .dgrp:has(.sg[data-focus-visible]),
+  .dgrp:has(.sg:focus-visible) {
+    outline: var(--focus-ring-width) solid var(--color-focus-ring);
+    outline-offset: var(--focus-ring-offset);
+  }
+  [data-open] > .dgrp {
+    border-color: var(--color-text);
+    box-shadow: inset 0 0 0 var(--border-width) var(--color-text);
+  }
+  .dgrp[data-invalid],
+  .dgrp.is-invalid {
+    border-color: var(--color-text-danger);
+    box-shadow: inset 0 0 0 var(--border-width) var(--color-text-danger);
+  }
+  .dgrp.is-readonly {
+    background: var(--color-surface-page);
+  }
+  .dgrp[data-disabled] {
+    background: var(--color-surface-sunken);
+    color: var(--color-text-secondary);
+    border-color: var(--color-border-subtle);
+    box-shadow: none;
+  }
+  .sg {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--size-target);
+    padding: 0 var(--space-1);
+    border-radius: var(--radius-xs);
+    font-variant-numeric: tabular-nums;
+    caret-color: transparent;
+  }
+  .sg[data-type="literal"] {
+    min-width: 0;
+    padding: 0;
+    color: var(--color-text-secondary);
+  }
+  .sg[data-type="year"] {
+    min-width: calc(var(--size-target) + var(--space-3));
+  }
+  .sg[data-placeholder] {
+    color: var(--color-text-secondary);
+  }
+  .sg:focus-visible,
+  .sg[data-focused] {
+    outline: 0;
+    background: var(--color-info-tint);
+    box-shadow: inset 0 calc(var(--border-width-strong) * -1) 0
+      var(--color-text);
+  }
+  .cbtn {
+    margin-inline-start: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: var(--size-target);
+    border: 0;
+    border-inline-start: var(--border-width) solid var(--color-border-subtle);
+    background: transparent;
+    color: var(--color-text);
+    border-start-end-radius: var(--radius-control);
+    border-end-end-radius: var(--radius-control);
+  }
+  .cbtn[data-hovered] {
+    background: var(--color-surface-page);
+  }
+  .cbtn[data-pressed],
+  [data-open] > .dgrp .cbtn {
+    background: var(--color-surface-sunken);
+  }
+  .cbtn:focus-visible {
+    outline-offset: calc(var(--focus-ring-offset) * -1);
+  }
+  .cbtn[data-disabled] {
+    background: transparent;
+    color: var(--color-text-secondary);
+  }
+  /* When the edge is 2px (open, invalid), the inner 1px is an inset shadow: the button's fill stays inside it,
+     so the edge is as thick behind the button as on the left (design.md 8.29, D-0001-134). */
+  [data-open] > .dgrp .cbtn,
+  .dgrp[data-invalid] .cbtn,
+  .dgrp.is-invalid .cbtn {
+    margin: var(--border-width);
+    margin-inline-start: auto;
+    border-start-end-radius: calc(
+      var(--radius-control) - var(--border-width) * 2
+    );
+    border-end-end-radius: calc(
+      var(--radius-control) - var(--border-width) * 2
+    );
+  }
+
+  /* The popover (640 px and up) and the bottom sheet (below). */
+  .ctl-pop {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--color-surface);
+    border: var(--border-width) solid var(--color-border-strong);
+    border-radius: var(--radius-control);
+    box-shadow: var(--shadow-raised);
+    z-index: var(--z-overlay);
+  }
+  .ctl-pop[data-entering] {
+    animation: fade-in var(--duration-fast) var(--ease-out);
+  }
+  .ctl-pop.is-list {
+    width: var(--trigger-width);
+    max-width: var(--size-dialog);
+  }
+  .ctl-pop.is-calendar {
+    width: var(--size-calendar);
+    max-width: calc(100vw - var(--space-4));
+    border-radius: var(--radius-card);
+    overflow: auto;
+  }
+  .ctl-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-overlay);
+    display: flex;
+    align-items: flex-end;
+    background: var(--color-surface-scrim);
+  }
+  .ctl-sheet {
+    width: 100%;
+    max-height: var(--size-sheet-max);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    overflow: hidden;
+    background: var(--color-surface);
+    border-radius: var(--radius-card) var(--radius-card) 0 0;
+    box-shadow: var(--shadow-card);
+    padding: var(--space-3) 0 calc(var(--space-6) + env(safe-area-inset-bottom));
+    animation: rise var(--duration-slow) var(--ease-out) both;
+  }
+  .ctl-sheet-dialog {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    min-height: 0;
+    outline: none;
+  }
+  .ctl-sheet-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding: 0 var(--space-3) 0 var(--space-4);
+  }
+  .ctl-sheet-body {
+    overflow: auto;
+    overscroll-behavior: contain;
+    min-height: 0;
+  }
+  .ctl-sheet.is-calendar {
+    padding-inline: var(--space-1);
+  }
+  .ctl-sheet.is-calendar .ctl-sheet-head {
+    padding-inline: var(--space-3);
+  }
+  .ctl-note {
+    display: flex;
+    gap: var(--space-2);
+    align-items: flex-start;
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+    background: var(--color-surface-page);
+    border-bottom: var(--border-width) solid var(--color-border-subtle);
+  }
+  .ctl-sheet .ctl-note {
+    border-top: var(--border-width) solid var(--color-border-subtle);
+  }
+  .ctl-msg {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-3);
+  }
+  .ctl-skel {
+    display: grid;
+    gap: var(--space-2);
+    padding: var(--space-3);
+  }
+  .ctl-skel .skeleton {
+    min-height: var(--space-6);
+  }
+
+  /* The list and its options. */
+  .lb {
+    max-height: var(--size-listbox);
+    overflow: auto;
+    overscroll-behavior: contain;
+    flex: 1;
+    min-height: 0;
+    outline: none;
+  }
+  .lb.lines .opt + .opt {
+    border-top: var(--border-width) solid var(--color-border-subtle);
+  }
+  .lb.hours .opt.is-hour:not(:first-child) {
+    border-top: var(--border-width) solid var(--color-border-subtle);
+  }
+  .opt {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-height: var(--size-target);
+    padding: var(--space-2) var(--space-3);
+    background: transparent;
+    color: var(--color-text);
+    cursor: pointer;
+    outline: none;
+    transition: background-color var(--duration-fast) var(--ease-out);
+  }
+  .ctl-sheet .lb {
+    max-height: none;
+  }
+  .ctl-sheet .opt {
+    padding-inline: var(--space-4);
+  }
+  .opt-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    overflow-wrap: anywhere;
+  }
+  .opt small {
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+  }
+  .opt[data-selected] small {
+    color: inherit;
+  }
+  .opt .opt-tick {
+    visibility: hidden;
+  }
+  .opt[data-selected] .opt-tick {
+    visibility: visible;
+  }
+  .opt[data-hovered] {
+    background: var(--color-info-tint);
+  }
+  .opt[data-pressed] {
+    background: var(--color-info-tint-strong);
+  }
+  .opt[data-focus-visible] {
+    background: var(--color-info-tint);
+    outline: var(--focus-ring-width) solid var(--color-focus-ring);
+    outline-offset: calc(var(--focus-ring-width) * -1);
+  }
+  .opt[data-selected],
+  .opt[data-selected][data-hovered],
+  .opt[data-selected][data-focus-visible] {
+    background: var(--color-surface-selected);
+    color: var(--color-text-on-selected);
+  }
+  .opt[data-selected][data-focus-visible] {
+    outline-color: var(--color-focus-ring-on-dark);
+  }
+  .opt[data-disabled] {
+    background: transparent;
+    color: var(--color-text-secondary);
+    cursor: not-allowed;
+  }
+  .opt.is-struck .opt-label {
+    text-decoration: line-through;
+  }
+
+  /* The calendar. */
+  .cal {
+    padding: var(--space-4);
+  }
+  .ctl-sheet .cal {
+    padding: 0;
+  }
+  .cal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+  }
+  .ctl-sheet .cal-head,
+  .ctl-sheet .cal-note,
+  .ctl-sheet .cal-key,
+  .ctl-sheet .cal-foot {
+    padding-inline: var(--space-2);
+  }
+  .cal-head h3 {
+    flex: 1;
+    text-align: center;
+    font-size: var(--text-lg);
+  }
+  .cal-grid {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+  .cal-grid th {
+    height: var(--space-8);
+    font-size: var(--text-sm);
+    font-weight: var(--font-weight-normal);
+    color: var(--color-text-secondary);
+  }
+  .cal-grid td {
+    padding: 0;
+  }
+  .cd {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-width: 0;
+    height: var(--size-target);
+    border-radius: var(--radius-control);
+    background: transparent;
+    color: var(--color-text);
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+    outline: none;
+    transition: background-color var(--duration-fast) var(--ease-out);
+  }
+  .cd[data-outside-month] {
+    visibility: hidden;
+  }
+  .cd[data-hovered] {
+    background: var(--color-info-tint);
+  }
+  .cd[data-pressed] {
+    background: var(--color-info-tint-strong);
+  }
+  .cd[data-focus-visible] {
+    outline: var(--focus-ring-width) solid var(--color-focus-ring);
+    outline-offset: calc(var(--focus-ring-width) * -1);
+  }
+  .cd.is-today {
+    text-decoration: underline;
+    text-decoration-thickness: var(--border-width-strong);
+    text-underline-offset: var(--space-1);
+  }
+  .cd[data-selected],
+  .cd[data-selected][data-hovered] {
+    background: var(--color-surface-selected);
+    color: var(--color-text-on-selected);
+    font-weight: var(--font-weight-bold);
+  }
+  .cd[data-selected][data-focus-visible] {
+    outline-color: var(--color-focus-ring-on-dark);
+  }
+  .cd[data-disabled],
+  .cd[data-unavailable],
+  .cd.is-off,
+  .cd.is-closed {
+    background-color: var(--color-surface-sunken);
+    color: var(--color-text-secondary);
+    text-decoration: line-through;
+    cursor: not-allowed;
+  }
+  .cd[data-unavailable]:not([data-disabled]),
+  .cd.is-closed {
+    background-image: repeating-linear-gradient(
+      135deg,
+      var(--color-off-shift-line) 0 var(--border-width),
+      transparent var(--border-width) var(--size-hatch)
+    );
+  }
+  .cal-key-mark {
+    display: inline-flex;
+    width: var(--size-icon-lg);
+    height: var(--size-icon-lg);
+    font-size: var(--text-sm);
+    border-radius: var(--radius-xs);
+    pointer-events: none;
+  }
+  .cal-note {
+    margin-top: var(--space-3);
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+  }
+  .cal-key {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1) var(--space-4);
+    margin-top: var(--space-2);
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+  }
+  .cal-key > span {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+  .cal-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    margin-top: var(--space-2);
+  }
+}
+
 @keyframes spin {
   to {
     transform: rotate(1turn);
@@ -120,6 +618,11 @@
 @keyframes rise {
   from {
     transform: translateY(100%);
+  }
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
   }
 }
 @keyframes fade {

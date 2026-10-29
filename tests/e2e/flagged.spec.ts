@@ -16,7 +16,13 @@ import {
   start,
   videoDir,
 } from "./adjust-support";
-import { expectNoSidewaysScroll, problemBody, widths } from "./support";
+import {
+  expectNoSidewaysScroll,
+  problemBody,
+  widths,
+  chooseOption,
+  selectNamed,
+} from "./support";
 
 /** Four flagged bookings on three days; Aisha's has both reasons. Returns their ids, soonest first. */
 async function fourFlagged(
@@ -430,7 +436,7 @@ test("video: open a flagged booking, move it, hit a clash, pick a closest time, 
     page.getByRole("group", { name: "Times that fit" }),
   ).toBeVisible();
   await pause(1500);
-  await page.getByLabel("Start time").fill("14:00");
+  await chooseOption(selectNamed(page, "Start time"), "14:00");
   await pause();
   await page.getByRole("button", { name: "Save change" }).click();
   await expect(

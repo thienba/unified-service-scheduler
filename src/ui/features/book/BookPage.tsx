@@ -7,7 +7,7 @@
 // technician (D-0001-20 B, D-0001-31 A). One strip, one chip grid, one summary for both.
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
-import { useForm, useWatch } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { useNavigate, useSearchParams } from "react-router";
 import { z } from "zod";
 import { startConfirmPress } from "../../../api/client";
@@ -18,7 +18,8 @@ import { Alert } from "../../components/Alert";
 import { BookingSummary } from "../../components/BookingSummary";
 import { Button } from "../../components/Button";
 import { DayStrip } from "../../components/DayStrip";
-import { focusField, SelectField, type Choice } from "../../components/Fields";
+import { focusField, type Choice } from "../../components/Fields";
+import { Select } from "../../components/Select";
 import { query, useMediaQuery } from "../../components/hooks";
 import { ForCustomerPanel } from "../../components/ForCustomer";
 import { InlineNote, PageBack, PhoneLink, Plate } from "../../components/Small";
@@ -966,7 +967,7 @@ function Booking({ who }: { who: Who }) {
           >
             {!staff && (
               <div className="sm:col-span-2">
-                <SelectField
+                <Select
                   label="Dealership"
                   required
                   name="dealershipId"
@@ -976,9 +977,9 @@ function Booking({ who }: { who: Who }) {
                     value: d.id,
                     label: d.name,
                   }))}
-                  onChange={(e) => {
+                  onChange={(value) => {
                     resetChoice();
-                    dealerships.select(e.target.value);
+                    dealerships.select(value);
                   }}
                 />
               </div>
@@ -998,20 +999,26 @@ function Booking({ who }: { who: Who }) {
             ) : (
               <>
                 {!staff && (
-                  <SelectField
-                    label="Car"
-                    required
-                    placeholder="Choose a car"
-                    options={(vehicles.data ?? []).map((v) => ({
-                      value: v.id,
-                      label: `${v.make} ${v.model}, ${v.registration}`,
-                    }))}
-                    error={errors.vehicleId?.message}
-                    {...register("vehicleId")}
+                  <Controller
+                    control={form.control}
+                    name="vehicleId"
+                    render={({ field }) => (
+                      <Select
+                        label="Car"
+                        required
+                        placeholder="Choose a car"
+                        options={(vehicles.data ?? []).map((v) => ({
+                          value: v.id,
+                          label: `${v.make} ${v.model}, ${v.registration}`,
+                        }))}
+                        error={errors.vehicleId?.message}
+                        {...field}
+                      />
+                    )}
                   />
                 )}
                 <div className={staff ? "sm:col-span-2" : undefined}>
-                  <SelectField
+                  <Select
                     label="Service"
                     required
                     name="serviceTypeId"
@@ -1023,11 +1030,11 @@ function Booking({ who }: { who: Who }) {
                         ? `${s.name} (about ${formatDuration(s.durationMinutes)})`
                         : `${s.name}, about ${formatDuration(s.durationMinutes)}`,
                     }))}
-                    onChange={(e) => {
+                    onChange={(value) => {
                       resetChoice();
                       setParams((previous) => {
                         const next = new URLSearchParams(previous);
-                        next.set("service", e.target.value);
+                        next.set("service", value);
                         next.delete("date");
                         return next;
                       });
