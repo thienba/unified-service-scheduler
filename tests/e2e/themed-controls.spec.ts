@@ -274,6 +274,36 @@ for (const width of [390, 1440] as const) {
   });
 }
 
+/** The open list's left edge and width match its control's, within 1 px (D-0001-140). */
+async function expectListAsWide(page: Page, control: Locator) {
+  const pop = page.locator(".ctl-pop.is-list");
+  await expect(pop).toBeVisible();
+  const [a, b] = [(await control.boundingBox())!, (await pop.boundingBox())!];
+  expect(Math.abs(b.x - a.x)).toBeLessThanOrEqual(1);
+  expect(Math.abs(b.width - a.width)).toBeLessThanOrEqual(1);
+}
+
+for (const width of [768, 1440]) {
+  test(`at ${width} wide an open list is exactly as wide as its control, wide or narrow`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.clock.setFixedTime(new Date("2026-10-28T10:40:00Z"));
+    await openApp(page);
+    await pickRole(page, "Customer");
+    await page.goto("/book");
+    const dealership = selectNamed(page, "Dealership (required)");
+    await dealership.click();
+    await expectListAsWide(page, dealership);
+    await check(page, "select-book-dealership-open");
+    await page.keyboard.press("Escape");
+    await pickRole(page, "Staff");
+    const who = selectNamed(page, "Who");
+    await who.click();
+    await expectListAsWide(page, who);
+  });
+}
+
 test("at 320 wide every popup is a sheet that fits: the calendar keeps 44 px days, nothing scrolls sideways", async ({
   page,
 }) => {
