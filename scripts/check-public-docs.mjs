@@ -101,6 +101,33 @@ export function findPublicDocProblems(file, text, exists) {
   return problems;
 }
 
+/**
+ * D-0000-40: the public project does not carry the company's name, in any case.
+ * @param {string} file path of the file, relative to the repository root
+ * @param {string} text the file's text
+ * @returns {string[]} what is wrong, one line each, as `file:line: problem`
+ */
+export function findCompanyNameProblems(file, text) {
+  return text
+    .split("\n")
+    .flatMap((line, index) =>
+      /keyloop/i.test(line)
+        ? [`${file}:${index + 1}: names the company (D-0000-40)`]
+        : [],
+    );
+}
+
+/** @param {string} dir */
+function textFiles(dir) {
+  return readdirSync(dir).flatMap((entry) => {
+    const path = join(dir, entry);
+    if (statSync(path).isDirectory()) return textFiles(path);
+    return /\.(?:md|mdx|ts|tsx|js|mjs|css|html|json|yaml|yml)$/.test(entry)
+      ? [path]
+      : [];
+  });
+}
+
 /** @param {string} dir */
 function markdownFiles(dir) {
   const found = [];
@@ -127,13 +154,24 @@ function main() {
       exists,
     ),
   );
+  // README.md is left out of the company-name check until the README ticket lands; then add it here.
+  const named = [
+    ...textFiles("docs"),
+    ...textFiles("src"),
+    "index.html",
+    "package.json",
+    "vercel.json",
+  ].flatMap((file) =>
+    findCompanyNameProblems(file, readFileSync(file, "utf8")),
+  );
+  problems.push(...named);
   for (const problem of problems) console.error(problem);
   if (problems.length > 0) {
     console.error(`${problems.length} problem(s) in the public docs.`);
     process.exit(1);
   }
   console.log(
-    `Public docs are clean: ${files.length} files checked for secrets, local paths, real email addresses and links into references/.`,
+    `Public docs are clean: ${files.length} files checked for secrets, local paths, real email addresses, links into references/ and the company name (in docs/ and src/).`,
   );
 }
 

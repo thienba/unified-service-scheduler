@@ -1,5 +1,5 @@
 {
-  "name": "keyloop-service-scheduler",
+  "name": "unified-service-scheduler",
   "version": "0.0.0",
   "private": true,
   "type": "module",
