@@ -295,8 +295,12 @@ test("D-0001-107: adjust: page B books the start the manager typed; the clash st
   // The check sent when the time was chosen answers first (it found the time free); B books after it.
   await checkAnswered(a, start);
   await bBooks(a, start);
-  const title = "That change was not saved.";
+  // Save was not pressed, so the early title does not say a change was not saved (D-0001-111).
+  const title = "That time is no longer free.";
   await nextCheck(a, title);
+  await expect(
+    a.getByRole("heading", { name: "That change was not saved." }),
+  ).toHaveCount(0);
   await expect(a.getByRole("heading", { name: title })).toBeVisible();
   await expect(a.getByRole("heading", { name: title })).not.toBeFocused();
   await expect(a.getByRole("status").filter({ hasText: title })).toHaveCount(1);

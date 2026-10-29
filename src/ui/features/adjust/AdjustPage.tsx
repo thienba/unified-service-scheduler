@@ -67,6 +67,8 @@ const SAME_NOTE =
   "The customer is sent a message about the new time. Their reminders move with it.";
 const CLOCK = /^([01]\d|2[0-3]):[0-5]\d$/;
 
+/** An early clash comes before Save is pressed, so it must not say a change was not saved (D-0001-111). */
+const earlyClashTitle = "That time is no longer free.";
 export function AdjustPage() {
   const { appointmentId = "" } = useParams();
   const { client } = useSession();
@@ -579,7 +581,7 @@ function AdjustForm({
           kind="danger"
           role={null}
           focusTitle={!shown.early}
-          title="That change was not saved."
+          title={shown.early ? earlyClashTitle : "That change was not saved."}
         >
           <p>{clashText(shown.reasons, a, dealership)}</p>
           {shown.suggestions.length === 0 ? (
@@ -763,7 +765,7 @@ function AdjustForm({
       </div>
       <p role="status" className="sr-only">
         {shown?.early
-          ? `That change was not saved. ${clashText(shown.reasons, a, dealership)}`
+          ? `${earlyClashTitle} ${clashText(shown.reasons, a, dealership)}`
           : ""}
       </p>
       <ActionBar
