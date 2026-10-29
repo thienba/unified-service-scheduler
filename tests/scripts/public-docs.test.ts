@@ -127,6 +127,8 @@ describe("README reference codes", () => {
     "NFR-4",
     "AD-12",
     "scenario S3",
+    "the Keyloop assessment",
+    "keyloop-service-scheduler",
   ])("fails on %s", (text) => {
     expect(findReferenceCodes("README.md", text)).toHaveLength(1);
   });
