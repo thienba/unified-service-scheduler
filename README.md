@@ -4,7 +4,7 @@ This is my submission for the Keyloop Technical Assessment, Scenario A: the Unif
 
 The System Design Document is [`docs/system-design.md`](docs/system-design.md). The files behind the [AI Collaboration Narrative](#ai-collaboration-narrative) are in [`docs/ai-collaboration/`](docs/ai-collaboration/index.md).
 
-The hosted demo link is in the README once hosting is done. Until then, run it on your own machine with the steps below.
+The hosted demo is at [keyloop-service-scheduler-ivory.vercel.app](https://keyloop-service-scheduler-ivory.vercel.app) (see [Try the app](#try-the-app)). You can also run it on your own machine with the steps below.
 
 ## Build, run and test
 
@@ -60,6 +60,10 @@ Both are for the demo only: a `remote` build has no dev panel and no `/_demo/` c
 **Reload once after a new version.** The mock runs as a service worker, and a browser can keep the old one until the page is reloaded. After you pull or build a new version, reload the page once.
 
 ## Try the app
+
+**Live demo: [keyloop-service-scheduler-ivory.vercel.app](https://keyloop-service-scheduler-ivory.vercel.app).** It is hosted on Vercel and is the same demo build as `npm run build`: the mock API runs inside your browser. Each visitor's data lives only in their own browser (nothing is shared between visitors and nothing is sent to a server). The **Reset demo data** button on the Dev panel (or `POST /api/_demo/reset`, see above) puts your copy back to the sample data. A first visit starts the mock worker by itself and needs no reload; I checked this on a fresh browser profile in Chromium, Firefox and WebKit. Reload once after a new version has been published, as described above.
+
+The Content Security Policy is sent by the host as a response header ([`vercel.json`](vercel.json)), the same policy as in the built page plus `frame-ancestors 'none'`. I checked it by hand once on the live site on 2026-10-29: the header is on the page and on the worker script; the first page, a deep link (`/schedule`) and the worker script each answer 200; booking a time as a customer and seeing it on the staff schedule sent every request to the site's own address and raised no policy message. The same check is a test, `tests/e2e/live.spec.ts`, run with `LIVE_URL=<address> npx playwright test -c playwright.live.config.ts`.
 
 This is a demo, not real sign-in: there is no password. Pick who you are with **Viewing as** at the top of the page (on a phone, the button at the top opens the same choice). When a role has more than one user, a **Who** list picks between them. The choice is kept in your browser.
 
