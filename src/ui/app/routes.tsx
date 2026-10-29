@@ -12,6 +12,8 @@ import { BookPage } from "../features/book/BookPage";
 import { BookCustomerPage } from "../features/book/BookCustomerPage";
 import { ConfirmedPage } from "../features/book/ConfirmedPage";
 import { AppointmentPage } from "../features/appointment/AppointmentPage";
+import { MyAppointmentsPage } from "../features/my-appointments/MyAppointmentsPage";
+import { ReschedulePage } from "../features/reschedule/ReschedulePage";
 import { SchedulePage } from "../features/schedule/SchedulePage";
 import { DealershipSettingsPage } from "../features/manage/DealershipSettingsPage";
 import { ShiftsPage } from "../features/manage/ShiftsPage";
@@ -39,7 +41,9 @@ const screens: Record<string, ReactElement> = {
   "/book/confirmed/:appointmentId": <ConfirmedPage />,
   "/book/for-customer": <BookCustomerPage />,
   "/schedule": <SchedulePage />,
+  "/appointments": <MyAppointmentsPage />,
   "/appointments/:appointmentId": <AppointmentPage />,
+  "/appointments/:appointmentId/reschedule": <ReschedulePage />,
   "/manage/dealership": <DealershipSettingsPage />,
   "/manage/shifts": <ShiftsPage />,
   "/manage/outbox": <OutboxScreen />,
