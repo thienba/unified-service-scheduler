@@ -662,7 +662,9 @@ test("the built app places blocks and gaps at the right offset and width under i
   const html = await (await page.request.get("/schedule")).text();
   expect(html).not.toMatch(/style="/);
   // WebKit's own style on a native <select> is set aside (Q-0001-253); nothing else is.
-  expect(withoutWebKitSelectMessage(violations, browserName)).toEqual([]);
+  expect(withoutWebKitSelectMessage(violations, events, browserName)).toEqual(
+    [],
+  );
   expect(events.filter((v) => !isWebKitSelectStyle(v, browserName))).toEqual(
     [],
   );

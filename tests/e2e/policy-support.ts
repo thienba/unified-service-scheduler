@@ -97,12 +97,26 @@ export function isWebKitSelectStyle(
   );
 }
 
-/** The console lines left once WebKit's known `<select>` message is taken out (WebKit only). */
+/**
+ * The console lines left once WebKit's known `<select>` message is taken out (WebKit only). WebKit
+ * prints the message once for each violation event it raises, so at most as many lines are taken out
+ * as there are set-aside `<select>` events in `violations`. A further line with the same text (a style
+ * blocked without an event, for example inside a frame) stays and fails the test.
+ */
 export function withoutWebKitSelectMessage(
   lines: string[],
+  violations: PolicyViolation[],
   browserName: string,
 ): string[] {
-  return browserName === "webkit"
-    ? lines.filter((line) => !line.endsWith(webKitSelectMessage))
-    : lines;
+  if (browserName !== "webkit") return lines;
+  let setAside = violations.filter((v) =>
+    isWebKitSelectStyle(v, browserName),
+  ).length;
+  return lines.filter((line) => {
+    if (setAside > 0 && line.endsWith(webKitSelectMessage)) {
+      setAside -= 1;
+      return false;
+    }
+    return true;
+  });
 }

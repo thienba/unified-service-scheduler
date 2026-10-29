@@ -196,8 +196,8 @@ test("SEC-15.AC-3: the three role journeys on the built app send every request t
     violations.filter((v) => !isWebKitSelectStyle(v, browserName)),
   ).toEqual([]);
   expect(
-    withoutWebKitSelectMessage(consoleLines, browserName).filter((l) =>
-      /Content Security Policy|Refused to|blocked|violat/i.test(l),
+    withoutWebKitSelectMessage(consoleLines, violations, browserName).filter(
+      (l) => /Content Security Policy|Refused to|blocked|violat/i.test(l),
     ),
   ).toEqual([]);
 });
@@ -312,7 +312,7 @@ test("SEC-11.AC-3: script text stored through the staff booking form is shown as
   expect(await page.evaluate(() => "__xss" in window)).toBe(false);
   expect(dialogs).toEqual([]);
   expect(
-    withoutWebKitSelectMessage(errors, browserName).filter(
+    withoutWebKitSelectMessage(errors, violations, browserName).filter(
       (e) => !(browserName === "firefox" && e === firefoxMockWorkerMessage),
     ),
   ).toEqual([]);
