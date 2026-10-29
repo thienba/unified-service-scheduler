@@ -123,7 +123,7 @@ const searchField = (page: Page) =>
   page.getByRole("searchbox", { name: "Name, phone or number plate" });
 const resultRow = (page: Page, name: string) =>
   page
-    .getByRole("radiogroup", { name: /found$/ })
+    .getByRole("group", { name: /found$/ })
     .getByRole("radio", { name: new RegExp(`^${name}`) });
 const continueButton = (page: Page) =>
   page.getByRole("button", { name: "Continue", exact: true });
@@ -406,9 +406,15 @@ for (const width of [390, 1440]) {
         if (r.method() !== "GET" && !r.url().endsWith("/customers/search"))
           writes.push(`${r.method()} ${r.url()}`);
       });
-      await page.getByRole("button", { name: "Add a new customer" }).click();
+      // NFR-4: from the keyboard, focus lands on the first field, not on the page.
+      await page
+        .getByRole("button", { name: "Add a new customer" })
+        .press("Enter");
       await expect(page.getByRole("group", { name: "Customer" })).toBeVisible();
       await expect(page.getByRole("group", { name: "Vehicle" })).toBeVisible();
+      await expect(
+        page.getByRole("textbox", { name: "Full name (required)" }),
+      ).toBeFocused();
       await expect(page.getByText("This is a demo.")).toBeVisible();
       await expect(
         page.getByText("Spaces, brackets and + are fine."),
@@ -465,16 +471,24 @@ for (const width of [390, 1440]) {
       );
       await shot(page, "book-customer", "validation");
 
-      // Customer A's phone number: the blue note, which does not block.
+      // Customer A's phone number on an otherwise right form: the blue note alone, which does not block.
       await fillNewCustomer(page, {
         name: MARTA,
         phone: "+44 7700 900101",
         email: "",
+        registration: "XY12 ZZZ",
+        model: "Focus",
       });
       await page.getByRole("textbox", { name: "Email (optional)" }).focus();
       await expect(
         page.getByText("A customer with this phone number already exists."),
       ).toBeVisible();
+      await expect(page.getByText(/things? needs? fixing/)).toHaveCount(0);
+      await expect(
+        page
+          .locator('[id$="-message"]')
+          .filter({ hasText: /missing|look right|looks too/ }),
+      ).toHaveCount(0);
       await expect(
         page.getByText(
           "Demo Customer A, phone ending 0101, has a Demo Motors Hatch. If this is the same person, use their record so they are not saved twice. You can also go on and add a new customer.",
@@ -486,10 +500,13 @@ for (const width of [390, 1440]) {
       await shot(page, "book-customer", "duplicate-hint");
       await page
         .getByRole("button", { name: "Keep adding a new customer" })
-        .click();
+        .press("Enter");
       await expect(
         page.getByText("A customer with this phone number already exists."),
       ).toHaveCount(0);
+      await expect(
+        page.getByRole("textbox", { name: "Phone number (required)" }),
+      ).toBeFocused();
 
       // A plate on file shows the vehicle's note.
       await fillNewCustomer(page, { registration: "AB00 DMA" });
@@ -527,6 +544,11 @@ for (const width of [390, 1440]) {
       await expect(
         page.getByRole("link", { name: "Change customer" }),
       ).toBeVisible();
+      // staff.md 5.4: with no time the phone bar reads "Pick a time", with or without a service.
+      if (width < 1024)
+        await expect(
+          page.getByText("Pick a time", { exact: true }),
+        ).toBeVisible();
       await shot(page, "book", "idle");
 
       await service(page).selectOption("service-full");
@@ -1319,7 +1341,7 @@ test("NFR-7: no sideways scroll at any width; 56 px rows 8 px apart; two columns
       expect(boxes[i]!.top - boxes[i - 1]!.bottom).toBeGreaterThanOrEqual(8);
     const field = await searchField(page).boundingBox();
     const list = await page
-      .getByRole("radiogroup", { name: /found$/ })
+      .getByRole("group", { name: /found$/ })
       .boundingBox();
     if (width >= 768) {
       expect(Math.round(field!.width)).toBe(352);
@@ -1351,6 +1373,78 @@ test("NFR-7: no sideways scroll at any width; 56 px rows 8 px apart; two columns
     await page.getByRole("button", { name: "Back to search" }).click();
   }
 });
+
+for (const width of [390, 1440] as const) {
+  test(`Q-0001-247 at ${width} wide: when the tapped gap cannot be checked, no times show, Confirm stays off and nothing says Picked for you; Try again brings the technician back`, async ({
+    page,
+  }) => {
+    await start(
+      page,
+      width,
+      `/book/for-customer?start=2026-10-30T09%3A00%3A00Z&technicianId=${BIRCH}`,
+      {
+        seed: seedMarta,
+        // The day's schedule fails until the test lets it through.
+        intercept: (p) =>
+          p.addInitScript(
+            (body) => {
+              const original = window.fetch.bind(window);
+              const flags = window as unknown as {
+                letScheduleThrough?: boolean;
+              };
+              window.fetch = async (input, init) => {
+                const url =
+                  input instanceof Request ? input.url : String(input);
+                if (
+                  !flags.letScheduleThrough &&
+                  new URL(url, location.href).pathname.endsWith("/schedule")
+                )
+                  return new Response(JSON.stringify(body), {
+                    status: 500,
+                    headers: { "Content-Type": "application/json" },
+                  });
+                return original(input, init);
+              };
+            },
+            problemBody(500, "INTERNAL"),
+          ),
+      },
+    );
+    const bookings = watchBookings(page);
+    await pickMarta(page);
+    await service(page).selectOption("service-full");
+    await expect(
+      page.getByRole("heading", {
+        name: "We could not check the gap you tapped.",
+      }),
+    ).toBeVisible();
+    await expect(
+      page.getByText(
+        "Something went wrong on our side, so we cannot show the technician or their times. Nothing was changed. Try again; if it keeps happening, quote reference 4bf92f35.",
+      ),
+    ).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Pick a day" })).toHaveCount(
+      0,
+    );
+    await expect(page.getByText("Picked for you")).toHaveCount(0);
+    await expect(
+      page.getByRole("button", { name: "Pick a time to confirm" }),
+    ).toBeDisabled();
+    await shot(page, "book", "gap-error");
+
+    await page.evaluate(() => {
+      (
+        window as unknown as { letScheduleThrough?: boolean }
+      ).letScheduleThrough = true;
+    });
+    await page.getByRole("button", { name: "Try again" }).click();
+    await expect(page.getByText("From the gap you tapped.")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Pick a day" }),
+    ).toBeVisible();
+    expect(bookings).toEqual([]);
+  });
+}
 
 test("video: a staff member taps a free gap, finds a customer, picks a car, a service and a time, confirms; then adds a new customer, hits just taken and recovers", async ({
   browser,

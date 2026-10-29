@@ -1,6 +1,7 @@
 // Addresses of the staff booking flow. Only ids and a time travel in them (SEC-10.AC-5): `start` and
-// `technicianId` from a tapped gap, `dealership`, and the picked `customerId` and `vehicleId`.
-const kept = ["dealership", "start", "technicianId"] as const;
+// `technicianId` from a tapped gap, `dealership`, the chosen `service`, and the picked `customerId` and
+// `vehicleId`. The service is kept so "Change customer" and "Edit details" do not lose it.
+const kept = ["dealership", "service", "start", "technicianId"] as const;
 
 function carry(params: URLSearchParams, extra: Record<string, string>) {
   const next = new URLSearchParams();

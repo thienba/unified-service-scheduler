@@ -215,6 +215,12 @@ function Booking({ who }: { who: Who }) {
   // The technician is fixed while the gap stands; "Any technician" takes it out of the address.
   const gap: Gap | null = staff ? fromGap.gap : null;
   const technicianId = gap?.technicianId;
+  // While the tapped gap's technician is looked up, or when that look-up failed, nothing is shown or sent
+  // without them: the times wait and Confirm stays disabled (D-0001-20 B, Q-0001-245).
+  const gapLoading = staff !== null && fromGap.loading;
+  const gapFailure =
+    staff !== null && gap === null && fromGap.failure ? fromGap.failure : null;
+  const gapBlocked = gapLoading || gapFailure !== null;
 
   const dealership = dealerships.selected;
   const service = services.data?.find((s) => s.id === params.get("service"));
@@ -276,7 +282,7 @@ function Booking({ who }: { who: Who }) {
   const minutes = service?.durationMinutes ?? 0;
   const queryTransport: Transport = "wait";
   const fetchDates =
-    dealership && service
+    dealership && service && !gapBlocked
       ? dates.filter((d) => needsTimes(dealership, d, now))
       : [];
   const results = useWeekAvailability(
@@ -349,7 +355,13 @@ function Booking({ who }: { who: Who }) {
   // The first day with times is chosen when the strip first loads (design.md 8.7), or the linked day.
   const stripKey = `${dealership?.id}|${service?.id}|${week}|${technicianId}`;
   useEffect(() => {
-    if (!ready || stripLoading || stripFailure || autoKey.current === stripKey)
+    if (
+      !ready ||
+      gapBlocked ||
+      stripLoading ||
+      stripFailure ||
+      autoKey.current === stripKey
+    )
       return;
     // A gap waits for its own answer: it chooses the gap's day, or no day when the job does not fit.
     if (gap && fit.isPending) return;
@@ -425,6 +437,9 @@ function Booking({ who }: { who: Who }) {
           // The new customer is stored now: the search finds them, and the memory is done with.
           void queryClient.invalidateQueries({ queryKey: ["customer-search"] });
           void queryClient.invalidateQueries({ queryKey: ["schedule"] });
+          // The Schedule screen's cached days are dropped, not only marked old: going back must not show
+          // the tapped gap as still free while the new day loads.
+          queryClient.removeQueries({ queryKey: ["schedule-day"] });
           void navigate(`/book/confirmed/${appointment.id}`, {
             state: { newCustomer: staff.newCustomer !== null },
           });
@@ -488,7 +503,7 @@ function Booking({ who }: { who: Who }) {
   }
 
   function confirm() {
-    if (busy.current || booking.isPending) return;
+    if (busy.current || booking.isPending || gapBlocked) return;
     busy.current = true;
     setConflict(null);
     setRejected(null);
@@ -544,7 +559,7 @@ function Booking({ who }: { who: Who }) {
       fullWidth={lg}
       loading={confirming}
       loadingLabel="Confirming…"
-      disabled={!start && !confirming}
+      disabled={(!start && !confirming) || gapBlocked}
       onClick={confirm}
     >
       {start || confirming
@@ -621,6 +636,33 @@ function Booking({ who }: { who: Who }) {
                   : { label: "Change customer", to: searchAddress(params) }
               }
             />
+          )}
+
+          {gapLoading && (
+            <StateBlock
+              kind="loading"
+              compact
+              loadingLabel="Loading the gap you tapped"
+            />
+          )}
+          {gapFailure !== null && (
+            <StateBlock
+              kind="error"
+              compact
+              headingLevel={2}
+              title="We could not check the gap you tapped."
+              traceId={traceOf(gapFailure)}
+              actions={
+                <Button icon="refresh" onClick={fromGap.retry}>
+                  Try again
+                </Button>
+              }
+            >
+              {failureLine(
+                gapFailure,
+                "so we cannot show the technician or their times",
+              )}
+            </StateBlock>
           )}
 
           {forbidden && staff && (
@@ -904,7 +946,7 @@ function Booking({ who }: { who: Who }) {
             </HintBox>
           )}
 
-          {ready && !noVehicle && dealership && service && (
+          {ready && !noVehicle && !gapBlocked && dealership && service && (
             <>
               <section aria-labelledby="days-title" className="grid gap-3">
                 <h2 id="days-title" className="text-xl">
@@ -1055,7 +1097,7 @@ function Booking({ who }: { who: Who }) {
                             Any technician
                           </Button>
                         </>
-                      ) : (
+                      ) : gapBlocked ? null : (
                         "Picked for you"
                       ),
                     },
@@ -1100,11 +1142,9 @@ function Booking({ who }: { who: Who }) {
           title={
             start
               ? `${formatDay(start, zone, now)}, ${formatTime(start, zone)}`
-              : !service
-                ? "Choose a service"
-                : needNewTime
-                  ? "Pick a new time"
-                  : "Pick a time"
+              : needNewTime
+                ? "Pick a new time"
+                : "Pick a time"
           }
           status={
             start

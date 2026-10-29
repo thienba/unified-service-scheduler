@@ -1,7 +1,7 @@
 // `book-customer` (staff.md 5.3, design.md 8.22): who is the booking for. Staff and the manager find a
 // customer by name, phone or plate, or add a new one with their vehicle. What they type and pick stays in
 // screen memory (staff-memory.ts); the address holds only `start`, `technicianId` and `dealership`.
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { mockEnabled } from "../../../config";
 import { ActionBar } from "../../components/ActionBar";
@@ -36,9 +36,20 @@ import {
 } from "./staff-queries";
 import { addressFor } from "./staff-words";
 
+/**
+ * Where focus goes when the page switches between the search and the form (NFR-4, WCAG 2.4.3): the button
+ * pressed is gone, so focus is put on purpose on the Full name field, the search field or the picked row.
+ */
+type Arrive = "name" | "search" | "picked" | null;
+
 export function BookCustomerPage() {
   const [memory] = useStaffMemory();
-  return memory.mode === "form" ? <NewCustomer /> : <FindCustomer />;
+  const arrive = useRef<Arrive>(null);
+  return memory.mode === "form" ? (
+    <NewCustomer arrive={arrive} />
+  ) : (
+    <FindCustomer arrive={arrive} />
+  );
 }
 
 /** The note from a tapped free gap (state `from-gap`). */
@@ -96,7 +107,7 @@ function TaskMode() {
   return null;
 }
 
-function FindCustomer() {
+function FindCustomer({ arrive }: { arrive: RefObject<Arrive> }) {
   const [memory, update] = useStaffMemory();
   const [params] = useSearchParams();
   const navigate = useNavigate();
@@ -125,6 +136,24 @@ function FindCustomer() {
     (adding || picked.vehicles.some((v) => v.id === choice));
   const listed = found !== undefined && found.length > 0;
   const none = found !== undefined && found.length === 0;
+  // The search has answered (or will not run), so the picked row is drawn if it is there.
+  const settled =
+    typed.length < 3 ||
+    (typed === text && (search.isError || search.data !== undefined));
+
+  useEffect(() => {
+    const to = arrive.current;
+    if (to === null || to === "name" || (to === "picked" && !settled)) return;
+    arrive.current = null;
+    const row =
+      to === "picked"
+        ? document.querySelector<HTMLInputElement>(
+            'input[name="customer"]:checked',
+          )
+        : null;
+    if (row) row.focus();
+    else focusField("field-customer-search");
+  }, [arrive, settled]);
 
   function pick(customer: FoundCustomer) {
     setAddErrors(null);
@@ -199,7 +228,10 @@ function FindCustomer() {
           <Button
             variant={none ? "primary" : "secondary"}
             icon="plus"
-            onClick={() => update({ mode: "form" })}
+            onClick={() => {
+              arrive.current = "name";
+              update({ mode: "form" });
+            }}
           >
             Add a new customer
           </Button>
@@ -255,11 +287,14 @@ function FindCustomer() {
               If this is a new customer, add them with their vehicle.
             </StateBlock>
           ) : (
-            <div role="radiogroup" aria-labelledby="found-title">
-              <h2 id="found-title" className="text-xl">
-                {found.length} {found.length === 1 ? "customer" : "customers"}{" "}
-                found
-              </h2>
+            // A fieldset, not a radio group: the chosen row opens its vehicle choice and fields inside it.
+            <fieldset className="m-0 min-w-0 border-0 p-0">
+              <legend className="p-0">
+                <h2 className="text-xl">
+                  {found.length} {found.length === 1 ? "customer" : "customers"}{" "}
+                  found
+                </h2>
+              </legend>
               {found.length >= 10 && (
                 <p className="mt-1 text-sm text-text-secondary">
                   Showing the first 10. Type more of the name, phone number or
@@ -326,7 +361,7 @@ function FindCustomer() {
                   );
                 })}
               </div>
-            </div>
+            </fieldset>
           )}
           {listed && md && (
             <div className="flex flex-wrap items-center gap-3">
@@ -381,12 +416,18 @@ function Searching() {
   );
 }
 
-function NewCustomer() {
+function NewCustomer({ arrive }: { arrive: RefObject<Arrive> }) {
   const [memory, update] = useStaffMemory();
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const [errors, setErrors] = useState<Record<string, string> | null>(null);
   const now = Date.now();
+
+  useEffect(() => {
+    if (arrive.current !== "name") return;
+    arrive.current = null;
+    focusField("field-name");
+  }, [arrive]);
 
   function proceed() {
     const found = {
@@ -447,6 +488,7 @@ function NewCustomer() {
                 (v) => v.registration === memory.vehicle.registration.trim(),
               ) ??
               (customer.vehicles.length === 1 ? customer.vehicles[0] : null);
+            arrive.current = "picked";
             update({
               mode: "search",
               text: by,
@@ -466,7 +508,10 @@ function NewCustomer() {
           <Button
             variant="quiet"
             icon="left"
-            onClick={() => update({ mode: "search" })}
+            onClick={() => {
+              arrive.current = "search";
+              update({ mode: "search" });
+            }}
           >
             Back to search
           </Button>

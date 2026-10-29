@@ -1,8 +1,15 @@
 // `book-customer` against a fake API (C4; REQ-BOOK-014.AC-1, AC-3, SEC-13.AC-3, D-0001-18 A).
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "../../app/App";
-import { fakeApi, json } from "../../app/fake-api";
+import { fakeApi, json, type FakeHandler } from "../../app/fake-api";
 import { saveUser } from "../../demo/saved-user";
 import {
   customerSchema,
@@ -18,19 +25,19 @@ beforeEach(() => {
 });
 afterEach(cleanup);
 
-function open(path = "/book/for-customer") {
-  const api = fakeApi({
-    "POST /customers/search": () =>
-      json([
-        {
-          id: "c-marta",
-          name: "Marta Kowalska",
-          phone: "07700 900123",
-          email: "marta@example.com",
-          vehicles: [],
-        },
-      ]),
-  });
+const marta = {
+  id: "c-marta",
+  name: "Marta Kowalska",
+  phone: "07700 900123",
+  email: "marta@example.com",
+  vehicles: [] as unknown[],
+};
+
+function open(
+  path = "/book/for-customer",
+  search: FakeHandler = () => json([marta]),
+) {
+  const api = fakeApi({ "POST /customers/search": search });
   render(<App baseUrl={base} fetch={api.fetcher} initialEntries={[path]} />);
   return api;
 }
@@ -139,5 +146,130 @@ describe("book-customer", () => {
       (screen.getByRole("button", { name: "Continue" }) as HTMLButtonElement)
         .disabled,
     ).toBe(true);
+  });
+});
+
+describe("book-customer focus and the duplicate note (review fixes)", () => {
+  const phoneField = () =>
+    screen.getByRole("textbox", { name: "Phone number (required)" });
+  const searchBox = () =>
+    screen.getByRole("searchbox", { name: "Name, phone or number plate" });
+  /** The search finds Marta for every text and phone number except 07700 900999. */
+  const byPhone: FakeHandler = async (request) => {
+    const body = (await request.clone().json()) as { phone?: string };
+    return json(body.phone === "07700 900999" ? [] : [marta]);
+  };
+
+  it("NFR-4, WCAG 2.4.3: switching between the search and the form puts focus on the Full name field, then the search field", async () => {
+    open();
+    fireEvent.click(
+      await screen.findByRole("button", { name: "Add a new customer" }),
+    );
+    await waitFor(() =>
+      expect(document.activeElement).toBe(
+        screen.getByRole("textbox", { name: "Full name (required)" }),
+      ),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Back to search" }));
+    await waitFor(() => expect(document.activeElement).toBe(searchBox()));
+  });
+
+  it("NFR-4: Keep adding a new customer puts focus back on the phone field; Use this customer puts it on the picked row", async () => {
+    open("/book/for-customer", byPhone);
+    fireEvent.click(
+      await screen.findByRole("button", { name: "Add a new customer" }),
+    );
+    fireEvent.change(phoneField(), { target: { value: marta.phone } });
+    fireEvent.focusOut(phoneField());
+    fireEvent.click(
+      await screen.findByRole("button", {
+        name: "Keep adding a new customer",
+      }),
+    );
+    expect(document.activeElement).toBe(phoneField());
+
+    // Another number is looked up again, and its note offers the record.
+    fireEvent.change(phoneField(), { target: { value: "+44 7700 900123" } });
+    fireEvent.focusOut(phoneField());
+    fireEvent.click(
+      await screen.findByRole("button", { name: "Use this customer" }),
+    );
+    const row = await screen.findByRole("radio", { name: /^Marta Kowalska/ });
+    await waitFor(() => expect(document.activeElement).toBe(row));
+    expect((row as HTMLInputElement).checked).toBe(true);
+  });
+
+  it("D-0001-30 B: the note goes when its field changes, and an answer for an earlier value is never shown", async () => {
+    let answerLate: (response: Response) => void = () => {};
+    let calls = 0;
+    open("/book/for-customer", async (request) => {
+      calls += 1;
+      // The first look-up answers late, after the phone has been changed and looked up again.
+      if (calls === 1)
+        return new Promise<Response>((done) => {
+          answerLate = done;
+        });
+      return byPhone(request);
+    });
+    fireEvent.click(
+      await screen.findByRole("button", { name: "Add a new customer" }),
+    );
+    fireEvent.change(phoneField(), { target: { value: marta.phone } });
+    fireEvent.focusOut(phoneField());
+    fireEvent.change(phoneField(), { target: { value: "07700 900999" } });
+    fireEvent.focusOut(phoneField());
+    await waitFor(() => expect(calls).toBe(2));
+    await act(async () => answerLate(json([marta])));
+    expect(
+      screen.queryByText("A customer with this phone number already exists."),
+    ).toBeNull();
+
+    // A note on show goes as soon as the phone number is edited.
+    fireEvent.change(phoneField(), { target: { value: marta.phone } });
+    fireEvent.focusOut(phoneField());
+    expect(
+      await screen.findByText(
+        "A customer with this phone number already exists.",
+      ),
+    ).toBeTruthy();
+    fireEvent.change(phoneField(), { target: { value: "07700 90012" } });
+    expect(
+      screen.queryByText("A customer with this phone number already exists."),
+    ).toBeNull();
+  });
+
+  it("the results are a group named by their heading, not a radio group around the vehicle choice", async () => {
+    open("/book/for-customer", () =>
+      json([
+        {
+          ...marta,
+          vehicles: [
+            {
+              id: "v-focus",
+              registration: "AB12 CDE",
+              make: "Ford",
+              model: "Focus",
+            },
+          ],
+        },
+      ]),
+    );
+    fireEvent.change(
+      await screen.findByRole("searchbox", {
+        name: "Name, phone or number plate",
+      }),
+      { target: { value: "Marta" } },
+    );
+    const results = await screen.findByRole("group", {
+      name: "1 customer found",
+    });
+    fireEvent.click(
+      await screen.findByRole("radio", { name: /^Marta Kowalska/ }),
+    );
+    expect(await screen.findByRole("group", { name: "Vehicle" })).toBeTruthy();
+    expect(
+      results.contains(screen.getByRole("group", { name: "Vehicle" })),
+    ).toBe(true);
+    expect(screen.queryByRole("radiogroup", { name: /found$/ })).toBeNull();
   });
 });

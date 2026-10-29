@@ -1,6 +1,6 @@
 // The new-customer form's two groups (staff.md 5.3), the vehicle group on its own for "Add another vehicle"
 // (D-0001-61 A), the danger summary, and the duplicate hint (D-0001-30 B): a blue note that never blocks.
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Alert } from "../../components/Alert";
 import { Button } from "../../components/Button";
 import {
@@ -212,6 +212,8 @@ export function CustomerFields({
   const findDuplicates = useFindDuplicates();
   const [hint, setHint] = useState<Hint | null>(null);
   const [kept, setKept] = useState<string[]>([]);
+  // The last value looked up for each field: an answer to an earlier one is dropped.
+  const asked = useRef<Partial<Record<Hint["by"], string>>>({});
   const set = (field: keyof CustomerValues) => (value: string) =>
     onCustomer({ ...customer, [field]: value });
 
@@ -220,11 +222,13 @@ export function CustomerFields({
     const value = raw.trim();
     const looksRight =
       by === "phone" ? phoneLooksRight(value) : registrationLooksRight(value);
+    asked.current[by] = value;
     if (!looksRight || kept.includes(`${by}:${value}`)) return;
     findDuplicates(
       by === "phone" ? { phone: value } : { registration: value },
     ).then(
       (found) => {
+        if (asked.current[by] !== value) return;
         const match = found[0];
         if (match) setHint({ by, value, customer: match });
         else setHint((h) => (h?.by === by ? null : h));
@@ -234,15 +238,26 @@ export function CustomerFields({
     );
   }
 
+  // The note stands only while its field still holds the value that was looked up: an edit takes it away,
+  // and an answer to an older value is never shown.
+  const shown =
+    hint &&
+    hint.value ===
+      (hint.by === "phone" ? customer.phone : vehicle.registration).trim()
+      ? hint
+      : null;
+
   return (
     <>
-      {hint && (
+      {shown && (
         <DuplicateHint
-          hint={hint}
-          onUse={() => onUseCustomer(hint.customer, hint.value)}
+          hint={shown}
+          onUse={() => onUseCustomer(shown.customer, shown.value)}
           onKeep={() => {
-            setKept((k) => [...k, `${hint.by}:${hint.value}`]);
+            setKept((k) => [...k, `${shown.by}:${shown.value}`]);
             setHint(null);
+            // The buttons go with the note: focus goes back to the field it was about.
+            focusField(`field-${shown.by}`);
           }}
         />
       )}
