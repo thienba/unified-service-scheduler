@@ -6,10 +6,12 @@ Copied (last refreshed on 2026-10-29, after my answers D-0001-112 to D-0001-129)
 
 ## What was changed in the copies
 
-Nothing, except two things:
+Nothing, except the two things below (decision [D-0001-114](context/0001-booking/D-0001-114.md)):
 
 - Every message I send is saved word for word in the work repository's `references/` folder. Those raw chat copies are **not** published. Where a copied file said "see references/…" (the file name of a raw chat copy), the copy says "(the human's original message is kept in the private work repo)" instead.
 - One decision ([D-0000-6](context/decisions/D-0000-6.md)) named the folder on my computer where the code lives. The copy leaves the path out.
+
+Left as they are on purpose: the placeholder `.state/<id>` in the process files (it names no real folder, and the check allows only that placeholder), my messages quoted in Vietnamese in some decisions, and the GitHub organisation name.
 
 The check `npm run check:public-docs` ([`scripts/check-public-docs.mjs`](../../scripts/check-public-docs.mjs)) runs in CI on every push. It fails if a file here, or the README, holds a secret-looking string, a local path, an email address that is not an obviously made-up one, or a link into the private `references/` folder.
 
