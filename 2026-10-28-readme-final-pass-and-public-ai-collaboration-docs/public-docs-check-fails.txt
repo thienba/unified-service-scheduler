@@ -1,0 +1,10 @@
+# The original, uncopied D-0000-6 and D-0001-89 put back into a clean clone; the check must fail.
+$ npm run check:public-docs
+
+> keyloop-service-scheduler@0.0.0 check:public-docs
+> node scripts/check-public-docs.mjs
+
+docs/ai-collaboration/context/decisions/D-0000-6.md:6: holds a home-folder path
+docs/ai-collaboration/context/decisions/D-0001-89.md:14: names a raw chat copy in the private references/ folder
+2 problem(s) in the public docs.
+[exit 1]
