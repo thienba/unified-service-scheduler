@@ -15,7 +15,11 @@ import {
   createFakeLogger,
   createFakeMetrics,
 } from "../../src/application/ports/fakes";
-import { loadSeed } from "../../src/infrastructure/seed/seed-loader";
+import {
+  loadSeed,
+  resetToSeed,
+} from "../../src/infrastructure/seed/seed-loader";
+import { createTelemetry } from "../../src/infrastructure/telemetry";
 import { createMemoryRepository } from "../../src/infrastructure/storage/memory/memory-repository";
 
 /** Monday 2026-11-02, 09:00 in London (GMT). The seeded appointments are counted from here. */
@@ -59,21 +63,32 @@ export interface Reply {
   problems: string[];
 }
 
-export async function makeWorld() {
+/**
+ * A seeded in-memory world. The tests that count calls use the fakes; with `real` the API gets the real
+ * logger and metrics instead, and `output` holds every line the logger wrote to the console.
+ */
+export async function makeWorld(options: { real?: boolean } = {}) {
   const repository = createMemoryRepository();
   await loadSeed(repository, NOW);
   const clock = createFakeClock(NOW);
   const logger = createFakeLogger();
   const metrics = createFakeMetrics();
+  const output: string[] = [];
+  const telemetry = createTelemetry({
+    now: clock.now,
+    write: (_level, line) => output.push(line),
+  });
   const api = createApi({
     repository,
     clock,
     ids: createFakeIds("gen"),
-    logger,
-    metrics,
+    logger: options.real ? telemetry.logger : logger,
+    metrics: options.real ? telemetry.metrics : metrics,
+    telemetry: telemetry.reader,
+    resetData: () => resetToSeed(repository, NOW),
     newTraceId: () => "a".repeat(32),
   });
-  return { repository, clock, logger, metrics, api };
+  return { repository, clock, logger, metrics, api, telemetry, output };
 }
 export type World = Awaited<ReturnType<typeof makeWorld>>;
 
@@ -126,11 +141,11 @@ export interface Transport {
 }
 
 /** Calls the mock directly with a `Request`. */
-export function directTransport(): Transport {
+export function directTransport(options: { real?: boolean } = {}): Transport {
   return {
     name: "the mock directly",
     async start() {
-      const world = await makeWorld();
+      const world = await makeWorld(options);
       return {
         world,
         origin: "http://mock.test",
