@@ -371,6 +371,9 @@ export default defineConfig(
       "test-results",
       "node_modules",
       ".state",
+      // Made by `npm run contract` from Ajv; the contract tests check it instead (D-0000-32).
+      "src/api/contract/validators.params.js",
+      "src/api/contract/validators.body.js",
     ],
   },
   js.configs.recommended,

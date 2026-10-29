@@ -297,6 +297,82 @@ export function describeManagerContract(
       expect(result).toMatchObject({ kind: "ok", appointment: { flags: [] } });
     });
 
+    it("D-0001-48 g: an adjust that changes nothing answers ok with the appointment as it is and writes nothing", async () => {
+      const ctx = await setup();
+      const appt = await book(ctx, "14:00");
+      const before = await world(ctx.repo);
+      const writes: string[] = [];
+      const spy: UnitOfWork = {
+        read: (work) => ctx.repo.read(work),
+        write: (work) =>
+          ctx.repo.write((stores) =>
+            work({
+              ...stores,
+              appointments: {
+                ...stores.appointments,
+                update: (a) => (
+                  writes.push("update"),
+                  stores.appointments.update(a)
+                ),
+              },
+              outbox: {
+                ...stores.outbox,
+                add: (m) => (writes.push("add"), stores.outbox.add(m)),
+                cancelPending: (id, kinds) => (
+                  writes.push("cancelPending"),
+                  stores.outbox.cancelPending(id, kinds)
+                ),
+              },
+              idempotency: {
+                ...stores.idempotency,
+                put: (r) => (writes.push("put"), stores.idempotency.put(r)),
+              },
+            }),
+          ),
+      };
+      for (const request of [
+        { start: appt.start },
+        { technicianId: appt.technicianId },
+        { serviceBayId: appt.serviceBayId },
+        {
+          start: appt.start,
+          technicianId: appt.technicianId,
+          serviceBayId: appt.serviceBayId,
+        },
+      ]) {
+        expect(
+          await adjustAppointment(
+            managerActor(),
+            { ...ctx.deps, uow: spy },
+            appt.id,
+            request,
+          ),
+        ).toEqual({ kind: "ok", appointment: appt, picked: {} });
+      }
+      expect(writes).toEqual([]);
+      expect(await world(ctx.repo)).toEqual(before);
+    });
+
+    it("D-0001-48 g, Q-0001-160 a: a flagged appointment adjusted to its own slot is not a no-op; it goes the normal way and its flags are cleared", async () => {
+      const ctx = await setup();
+      const appt = await book(ctx, "14:00");
+      await ctx.repo.write(async (s) => {
+        await s.appointments.update({
+          ...appt,
+          flags: [{ kind: "outside_shift", since: 1 }],
+        });
+        return { ok: true, value: undefined };
+      });
+      const result = await adjustAdjustOnly(ctx, appt.id, {
+        start: appt.start,
+      });
+      expect(result).toMatchObject({
+        kind: "ok",
+        appointment: { flags: [], version: appt.version + 1 },
+      });
+      expect((await get(ctx.repo, appt.id))!.flags).toEqual([]);
+    });
+
     it("REQ-BOOK-005.AC-3: a customer or staff member gets forbidden and no store is read", async () => {
       const ctx = await setup();
       const appt = await book(ctx, "14:00");

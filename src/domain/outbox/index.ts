@@ -10,6 +10,12 @@ export type OutboxKind =
   | "cancellation"
   | "moved";
 
+/** The kinds of the waiting reminders, the only messages a cancel or a move cancels (D-0001-50). */
+export const REMINDER_KINDS: OutboxKind[] = [
+  "reminder_48h",
+  "reminder_morning",
+];
+
 /** What a command stores; the command adds the message id and the status. */
 export interface PlannedMessage {
   appointmentId: string;

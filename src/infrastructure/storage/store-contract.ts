@@ -418,6 +418,62 @@ export function describeStoreContract(
       ).toBeUndefined();
     });
 
+    it("D-0001-50: cancelPending with a list of kinds cancels only the pending messages of those kinds", async () => {
+      const repo = await seeded();
+      const message = (id: string, kind: string) => ({
+        id,
+        appointmentId: "appt-1",
+        kind,
+        dedupeKey: `appt-1:${kind}:1`,
+        dueAt: T0,
+        status: "pending" as const,
+      });
+      await repo.write(async (s) => {
+        await s.outbox.add([
+          message("m1", "confirmation"),
+          message("m2", "reminder_48h"),
+          message("m3", "reminder_morning"),
+          message("m4", "moved"),
+        ]);
+        await s.outbox.cancelPending("appt-1", [
+          "reminder_48h",
+          "reminder_morning",
+        ]);
+        return { ok: true, value: null };
+      });
+      const statuses = async () =>
+        (await repo.read((s) => s.outbox.list()))
+          .map((m) => `${m.id}:${m.status}`)
+          .sort();
+      expect(await statuses()).toEqual([
+        "m1:pending",
+        "m2:cancelled",
+        "m3:cancelled",
+        "m4:pending",
+      ]);
+      await repo.write(async (s) => {
+        await s.outbox.cancelPending("appt-1", []);
+        return { ok: true, value: null };
+      });
+      expect(await statuses()).toEqual([
+        "m1:pending",
+        "m2:cancelled",
+        "m3:cancelled",
+        "m4:pending",
+      ]);
+      // Without `kinds`, every pending kind is cancelled.
+      await repo.write(async (s) => {
+        await s.outbox.cancelPending("appt-1");
+        return { ok: true, value: null };
+      });
+      expect(await statuses()).toEqual([
+        "m1:cancelled",
+        "m2:cancelled",
+        "m3:cancelled",
+        "m4:cancelled",
+      ]);
+    });
+
     it("outbox add twice with one dedupeKey stores one message, and cancelPending marks only pending ones", async () => {
       const repo = await seeded();
       const message = (

@@ -127,8 +127,11 @@ export interface OutboxMessage {
 export interface OutboxStore {
   /** A message whose `dedupeKey` is already stored is skipped; a new message with a stored id fails. */
   add(messages: OutboxMessage[]): Promise<void>;
-  /** Marks the pending messages of the appointment cancelled. Sent ones stay as they are. */
-  cancelPending(appointmentId: string): Promise<void>;
+  /**
+   * Marks the pending messages of the appointment cancelled. Sent ones stay as they are. With
+   * `kinds`, only pending messages of those kinds are cancelled (D-0001-50).
+   */
+  cancelPending(appointmentId: string, kinds?: string[]): Promise<void>;
   list(filter?: {
     appointmentId?: string;
     status?: OutboxStatus;

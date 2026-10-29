@@ -203,11 +203,12 @@ function buildStores(data: Data): Stores {
           data.outbox.set(message.id, copy(message));
         }
       },
-      cancelPending: async (appointmentId) => {
+      cancelPending: async (appointmentId, kinds) => {
         for (const message of data.outbox.values()) {
           if (
             message.appointmentId === appointmentId &&
-            message.status === "pending"
+            message.status === "pending" &&
+            (kinds === undefined || kinds.includes(message.kind))
           ) {
             message.status = "cancelled";
           }

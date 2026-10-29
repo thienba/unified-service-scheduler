@@ -204,11 +204,15 @@ function buildStores(db: SchedulerDb): Stores {
           if (known === 0) await db.outbox.add(message);
         }
       },
-      cancelPending: async (appointmentId) => {
+      cancelPending: async (appointmentId, kinds) => {
         await db.outbox
           .where("appointmentId")
           .equals(appointmentId)
-          .filter((m) => m.status === "pending")
+          .filter(
+            (m) =>
+              m.status === "pending" &&
+              (kinds === undefined || kinds.includes(m.kind)),
+          )
           .modify({ status: "cancelled" });
       },
       list: (filter = {}) =>

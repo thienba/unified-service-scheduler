@@ -5,7 +5,7 @@ import type { Outcome } from "../ports";
 import { cancelled } from "../../domain/appointment/cancel";
 import { isBlocking } from "../../domain/appointment/blocking";
 import type { Appointment } from "../../domain/model";
-import { messagesForCancel } from "../../domain/outbox";
+import { REMINDER_KINDS, messagesForCancel } from "../../domain/outbox";
 import { customerMayChange } from "../../domain/policies/change-cutoff";
 import {
   logOutcome,
@@ -63,7 +63,7 @@ async function cancel(
     const done = cancelled(loaded.value, now);
     await deps.logger.step("write", async () => {
       await stores.appointments.update(done);
-      await stores.outbox.cancelPending(done.id);
+      await stores.outbox.cancelPending(done.id, REMINDER_KINDS);
       await stores.outbox.add(outboxRows(deps, messagesForCancel(done, now)));
     });
     return { ok: true, value: { appointment: done, changed: true } };

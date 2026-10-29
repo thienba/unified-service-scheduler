@@ -133,8 +133,6 @@ function ucs2length(str) {
 
 const header =
   "// Generated from openapi.yaml by scripts/generate-contract.mjs. Do not edit.\n";
-// Ajv's output is not written to the project's lint rules; it is checked by the contract tests instead.
-const codeHeader = `/* eslint-disable */\n${header}`;
 
 /** The generated files as text, from the YAML text: file name to contents. */
 export async function generate(yamlText) {
@@ -158,14 +156,14 @@ export async function generate(yamlText) {
     ),
     // Parameters arrive as text, so they are checked with coercion on; bodies are not.
     [paramsFile]:
-      codeHeader +
+      header +
       standalone(
         document,
         only((n) => !n.startsWith("body_")),
         true,
       ),
     [bodiesFile]:
-      codeHeader +
+      header +
       standalone(
         document,
         only((n) => n.startsWith("body_")),
