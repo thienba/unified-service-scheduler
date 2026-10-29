@@ -1,4 +1,5 @@
 // Each shared part in the states design.md 8 lists for it.
+import "../testing/css-escape";
 import {
   act,
   cleanup,
@@ -23,17 +24,17 @@ import {
 import { Button } from "./Button";
 import { DayStepper } from "./DayStepper";
 import { Dialog } from "./Dialog";
+import { DatePicker } from "./DatePicker";
 import {
   Checkbox,
   ChoiceCards,
-  DateField,
   EmailField,
-  SelectField,
   Switch,
   TelField,
   TextField,
-  TimeField,
 } from "./Fields";
+import { Select } from "./Select";
+import { TimeField } from "./TimeField";
 import { IconSprite, iconNames } from "./Icon";
 import { SegmentedControl } from "./SegmentedControl";
 import { FactsList, InlineNote, PageBack, PhoneLink } from "./Small";
@@ -150,11 +151,11 @@ it("fields: label, helper, required in words, error attached and the value never
       />
       <TelField label="Phone" name="phone" />
       <EmailField label="Email" name="email" />
-      <TimeField label="Start" name="start" />
-      <DateField
+      <TimeField label="Start" name="start" value="" onChange={() => {}} />
+      <DatePicker
         label="Date"
         name="date"
-        thisYear={2026}
+        today="2026-10-28"
         value="2026-10-30"
         onChange={() => {}}
       />
@@ -175,38 +176,55 @@ it("fields: label, helper, required in words, error attached and the value never
   );
   expect(screen.getByLabelText("Phone").getAttribute("type")).toBe("tel");
   expect(screen.getByLabelText("Email").getAttribute("type")).toBe("email");
-  expect(screen.getByLabelText("Start").getAttribute("step")).toBe("900");
+  // The time list holds only quarter hours (D-0001-133).
+  fireEvent.click(screen.getByRole("button", { name: /^Start/ }));
+  const times = within(screen.getByRole("listbox")).getAllByRole("option");
+  expect(times.map((o) => o.textContent)).toEqual(
+    Array.from(
+      { length: 96 },
+      (_, i) =>
+        `${String(Math.floor(i / 4)).padStart(2, "0")}:${String((i % 4) * 15).padStart(2, "0")}`,
+    ),
+  );
   expect(screen.getByText("Fri 30 Oct")).toBeTruthy();
 });
 
-it("SelectField: native select with a placeholder, an error and a disabled state", () => {
+it("Select: a button with a placeholder, a list of options, an error and a disabled state", () => {
   render(
     <>
-      <SelectField
+      <Select
         label="Service"
         placeholder="Choose a service"
+        value=""
+        onChange={() => {}}
         options={[{ value: "a", label: "Full service" }]}
       />
-      <SelectField
+      <Select
         label="Other"
         error="Other is missing."
+        value=""
+        onChange={() => {}}
         options={[]}
         disabled
       />
     </>,
   );
-  const select = screen.getByLabelText("Service") as HTMLSelectElement;
-  expect(select.value).toBe("");
-  expect([...select.options].map((o) => o.text)).toEqual([
-    "Choose a service",
-    "Full service",
-  ]);
-  expect((screen.getByLabelText("Other") as HTMLSelectElement).disabled).toBe(
-    true,
-  );
-  expect(screen.getByLabelText("Other").getAttribute("aria-invalid")).toBe(
-    "true",
-  );
+  const other = screen.getByRole("button", { name: /^Other/ });
+  expect((other as HTMLButtonElement).disabled).toBe(true);
+  expect(other.getAttribute("aria-invalid")).toBe("true");
+  expect(
+    document.getElementById(other.getAttribute("aria-describedby")!)
+      ?.textContent,
+  ).toBe("Other is missing.");
+  const select = screen.getByRole("button", { name: /^Service/ });
+  expect(select.textContent).toBe("Choose a service");
+  expect(select.getAttribute("aria-haspopup")).toBe("listbox");
+  fireEvent.click(select);
+  expect(
+    within(screen.getByRole("listbox"))
+      .getAllByRole("option")
+      .map((o) => o.textContent),
+  ).toEqual(["Full service"]);
 });
 
 const car = [

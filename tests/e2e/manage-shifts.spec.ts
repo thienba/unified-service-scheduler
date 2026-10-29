@@ -1,7 +1,13 @@
 // `shifts` in a real browser (C6, manager.md 4.4, 5.4): one technician's weekly pattern, leave and extra shifts,
 // the same warning before a save that flags bookings (D-0001-36 A), the empty and not-found states, and access.
 import { expect, test, type Page } from "@playwright/test";
-import { interceptApi } from "./support";
+import {
+  interceptApi,
+  chooseOption,
+  typeDate,
+  dateNamed,
+  selectNamed,
+} from "./support";
 import {
   LONDON,
   addDays,
@@ -38,14 +44,14 @@ async function addEntry(
   kind: "leave" | "changed",
   times?: { start: string; end: string },
 ) {
-  await page.getByLabel("First day").fill(first);
-  await page.getByLabel("What happens on these days").selectOption(kind);
+  await typeDate(dateNamed(page, "First day"), first);
+  await chooseOption(selectNamed(page, "What happens on these days"), kind);
   if (times) {
     const form = page.getByRole("group", {
       name: "Add leave or a different shift",
     });
-    await form.getByLabel("Starts", { exact: true }).fill(times.start);
-    await form.getByLabel("Ends", { exact: true }).fill(times.end);
+    await chooseOption(selectNamed(form, "Starts"), times.start);
+    await chooseOption(selectNamed(form, "Ends"), times.end);
   }
   await page.getByRole("button", { name: "Add to the list" }).click();
 }
@@ -54,12 +60,15 @@ test("the technician's weekly pattern comes from the API, with the dealership's 
   page,
 }) => {
   await openShifts(page);
-  const select = page.getByRole("combobox", { name: "Technician" });
-  await expect(select.locator("option")).toHaveText([
+  const select = selectNamed(page, "Technician");
+  await select.click();
+  await expect(page.getByRole("listbox").getByRole("option")).toHaveText([
     "Oliver Hughes · Service, Electric cars",
     "Amara Okafor · Service",
     "Tom Fletcher · Electric cars",
   ]);
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("listbox")).toHaveCount(0);
   await expect(
     page.getByText(
       "Skills: Service, Electric cars. Skills come with the demo data and are not edited here.",
@@ -70,14 +79,22 @@ test("the technician's weekly pattern comes from the API, with the dealership's 
     monday.getByText("Dealership open 08:00 to 18:00"),
   ).toBeVisible();
   await expect(monday.getByLabel("Day off")).not.toBeChecked();
-  await expect(monday.getByLabel("Starts", { exact: true })).toHaveValue(
+  await expect(selectNamed(monday, "Starts")).toHaveAttribute(
+    "data-value",
     "08:00",
   );
-  await expect(monday.getByLabel("Ends", { exact: true })).toHaveValue("16:30");
-  await expect(monday.getByLabel("Break starts (optional)")).toHaveValue(
+  await expect(selectNamed(monday, "Ends")).toHaveAttribute(
+    "data-value",
+    "16:30",
+  );
+  await expect(selectNamed(monday, "Break starts (optional)")).toHaveAttribute(
+    "data-value",
     "12:00",
   );
-  await expect(monday.getByLabel("Break ends (optional)")).toHaveValue("13:00");
+  await expect(selectNamed(monday, "Break ends (optional)")).toHaveAttribute(
+    "data-value",
+    "13:00",
+  );
   await expect(
     day(page, "Saturday").getByText("Dealership open 09:00 to 16:00"),
   ).toBeVisible();
@@ -88,12 +105,13 @@ test("the technician's weekly pattern comes from the API, with the dealership's 
 
   await page.getByRole("button", { name: "Next technician" }).click();
   await expect(page).toHaveURL(/technicianId=tech-lon-birch/);
-  await expect(select).toHaveValue("tech-lon-birch");
-  await expect(
-    day(page, "Monday").getByLabel("Starts", { exact: true }),
-  ).toHaveValue("09:00");
+  await expect(select).toHaveAttribute("data-value", "tech-lon-birch");
+  await expect(selectNamed(day(page, "Monday"), "Starts")).toHaveAttribute(
+    "data-value",
+    "09:00",
+  );
   await page.getByRole("button", { name: "Previous technician" }).click();
-  await expect(select).toHaveValue("tech-lon-ash");
+  await expect(select).toHaveAttribute("data-value", "tech-lon-ash");
 });
 
 test("a half break, a break outside the shift, an end before the start and a last day before the first each show their message; nothing is sent", async ({
@@ -101,16 +119,18 @@ test("a half break, a break outside the shift, an end before the start and a las
 }) => {
   const sent = writes(page);
   await openShifts(page);
-  await day(page, "Monday").getByLabel("Break ends (optional)").fill("");
-  await day(page, "Tuesday")
-    .getByLabel("Break starts (optional)")
-    .fill("07:00");
-  await day(page, "Wednesday")
-    .getByLabel("Ends", { exact: true })
-    .fill("07:00");
+  await chooseOption(
+    selectNamed(day(page, "Monday"), "Break ends (optional)"),
+    "",
+  );
+  await chooseOption(
+    selectNamed(day(page, "Tuesday"), "Break starts (optional)"),
+    "07:00",
+  );
+  await chooseOption(selectNamed(day(page, "Wednesday"), "Ends"), "07:00");
   const first = next(4, today(), 7);
-  await page.getByLabel("First day").fill(first);
-  await page.getByLabel("Last day (optional)").fill(addDays(first, -1));
+  await typeDate(dateNamed(page, "First day"), first);
+  await typeDate(dateNamed(page, "Last day (optional)"), addDays(first, -1));
   await save(page);
 
   await expect(
@@ -118,7 +138,7 @@ test("a half break, a break outside the shift, an end before the start and a las
   ).toBeVisible();
   // Focus lands on the first problem, Monday's break end.
   await expect(
-    day(page, "Monday").getByLabel("Break ends (optional)"),
+    selectNamed(day(page, "Monday"), "Break ends (optional)"),
   ).toBeFocused();
   await expect(
     page.getByText(
@@ -140,7 +160,7 @@ test("a half break, a break outside the shift, an end before the start and a las
       "The last day is before the first day. Choose the same day or a later one.",
     ),
   ).toBeVisible();
-  const breakEnd = day(page, "Monday").getByLabel("Break ends (optional)");
+  const breakEnd = selectNamed(day(page, "Monday"), "Break ends (optional)");
   await expect(breakEnd).toHaveAttribute("aria-invalid", "true");
   await expect(breakEnd).toHaveAttribute("aria-describedby", /.+/);
   expect(sent).toEqual([]);
@@ -154,8 +174,11 @@ test("new entries are marked until saved; a different shift shows four times and
   const form = page.getByRole("group", {
     name: "Add leave or a different shift",
   });
-  await expect(form.getByLabel("Starts", { exact: true })).toHaveCount(0);
-  await page.getByLabel("What happens on these days").selectOption("changed");
+  await expect(selectNamed(form, "Starts")).toHaveCount(0);
+  await chooseOption(
+    selectNamed(page, "What happens on these days"),
+    "changed",
+  );
   for (const label of [
     "Starts",
     "Ends",
@@ -271,10 +294,8 @@ test("switching technician with unsaved edits asks first, with Keep editing firs
   page,
 }) => {
   await openShifts(page);
-  await day(page, "Monday").getByLabel("Ends", { exact: true }).fill("16:00");
-  await page
-    .getByRole("combobox", { name: "Technician" })
-    .selectOption("tech-lon-birch");
+  await chooseOption(selectNamed(day(page, "Monday"), "Ends"), "16:00");
+  await chooseOption(selectNamed(page, "Technician"), "tech-lon-birch");
   const dialog = page.getByRole("dialog", {
     name: "Switch technician without saving?",
   });
@@ -288,15 +309,18 @@ test("switching technician with unsaved edits asks first, with Keep editing firs
     dialog.getByRole("button", { name: "Keep editing" }),
   ).toBeFocused();
   await dialog.getByRole("button", { name: "Keep editing" }).click();
-  await expect(page.getByRole("combobox", { name: "Technician" })).toHaveValue(
+  await expect(selectNamed(page, "Technician")).toHaveAttribute(
+    "data-value",
     "tech-lon-ash",
   );
-  await expect(
-    day(page, "Monday").getByLabel("Ends", { exact: true }),
-  ).toHaveValue("16:00");
+  await expect(selectNamed(day(page, "Monday"), "Ends")).toHaveAttribute(
+    "data-value",
+    "16:00",
+  );
   await page.getByRole("button", { name: "Next technician" }).click();
   await dialog.getByRole("button", { name: "Switch without saving" }).click();
-  await expect(page.getByRole("combobox", { name: "Technician" })).toHaveValue(
+  await expect(selectNamed(page, "Technician")).toHaveAttribute(
+    "data-value",
     "tech-lon-birch",
   );
 });

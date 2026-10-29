@@ -1,13 +1,8 @@
 // design.md 8.6. Label above the field, helper and error below, a 44px control, 16px text.
-// They work with React Hook Form (`{...register("name")}`) and on their own.
-import type {
-  InputHTMLAttributes,
-  ReactNode,
-  Ref,
-  SelectHTMLAttributes,
-} from "react";
+// They work with React Hook Form (`{...register("name")}`) and on their own. The drop-down, date and time
+// controls are Select, DatePicker and TimeField (8.27 to 8.30), in their own files.
+import type { InputHTMLAttributes, ReactNode, Ref } from "react";
 import { useId } from "react";
-import { formatLocalDate } from "../format/format";
 import { cx } from "./cx";
 import { Icon, type IconName } from "./Icon";
 
@@ -15,13 +10,20 @@ export function fieldId(name: string | undefined, fallback: string): string {
   return name ? `field-${name}` : fallback;
 }
 
-/** Moves focus to a field by its id, or to the first control inside a group. */
+/** The parts a person can focus: a date's segments come before its calendar button. */
+const focusable =
+  'input:not([type="hidden"]),textarea,button,[role="spinbutton"]';
+
+/**
+ * Moves focus to a field by its id, or to the first control inside a group: the button of a Select or
+ * TimeField, the first segment of a DatePicker (design.md 8.27, forms).
+ */
 export function focusField(id: string): void {
   const el = document.getElementById(id);
   if (!el) return;
-  const target = el.matches("input,select,textarea,button")
+  const target = el.matches(focusable)
     ? el
-    : el.querySelector<HTMLElement>("input,select,textarea,button");
+    : el.querySelector<HTMLElement>(focusable);
   target?.focus();
 }
 
@@ -117,91 +119,6 @@ export function EmailField(props: InputProps) {
   return (
     <TextField type="email" inputMode="email" autoComplete="email" {...props} />
   );
-}
-
-export interface Option {
-  value: string;
-  label: string;
-}
-
-type SelectProps = FieldChrome &
-  Omit<SelectHTMLAttributes<HTMLSelectElement>, "required"> & {
-    options: readonly Option[];
-    /** The first, empty option: "Choose a service". */
-    placeholder?: string;
-    /** Hide the label from sight but keep it for screen readers (the dealership picker). */
-    hideLabel?: boolean;
-    ref?: Ref<HTMLSelectElement>;
-  };
-
-export function SelectField({
-  label,
-  helper,
-  error,
-  required,
-  options,
-  placeholder,
-  hideLabel,
-  className,
-  id,
-  ...select
-}: SelectProps) {
-  const fallback = useId();
-  const key = id ?? fieldId(select.name, fallback);
-  const messageId = `${key}-message`;
-  return (
-    <div className="flex min-w-0 flex-col gap-1">
-      <label htmlFor={key} className={hideLabel ? "sr-only" : "font-medium"}>
-        {label}
-        {required ? " (required)" : ""}
-      </label>
-      <div className="relative">
-        <select
-          id={key}
-          className={cx(
-            controlBase,
-            "appearance-none truncate pe-10",
-            error && controlError,
-            className,
-          )}
-          aria-invalid={error ? true : undefined}
-          aria-describedby={error || helper ? messageId : undefined}
-          aria-required={required || undefined}
-          {...select}
-        >
-          {placeholder !== undefined && <option value="">{placeholder}</option>}
-          {options.map((o) => (
-            <option key={o.value} value={o.value}>
-              {o.label}
-            </option>
-          ))}
-        </select>
-        <Icon
-          name="down"
-          className="pointer-events-none absolute inset-e-3 top-1/2 -translate-y-1/2"
-        />
-      </div>
-      <Message id={messageId} error={error} helper={helper} />
-    </div>
-  );
-}
-
-/** A native date field. Below it, the date as the screens write it ("Fri 30 Oct"). */
-export function DateField({
-  thisYear,
-  helper,
-  ...props
-}: InputProps & { thisYear: number }) {
-  const value = typeof props.value === "string" ? props.value : "";
-  const shown = /^\d{4}-\d{2}-\d{2}$/.test(value)
-    ? formatLocalDate(value, thisYear)
-    : undefined;
-  return <TextField type="date" helper={helper ?? shown} {...props} />;
-}
-
-/** A native time field with a 15-minute step. */
-export function TimeField(props: InputProps) {
-  return <TextField type="time" step={900} {...props} />;
 }
 
 export interface Choice {

@@ -27,6 +27,8 @@ import {
   pickRole,
   problemBody,
   widths,
+  chooseOption,
+  selectNamed,
 } from "./support";
 
 // Screenshots go to the ticket's evidence folder when EVIDENCE_DIR is set (D-0000-13).
@@ -200,7 +202,8 @@ for (const width of [390, 1440]) {
         await checkState(page, "schedule-bay-day");
         return;
       }
-      await expect(page.getByLabel("Technician", { exact: true })).toHaveValue(
+      await expect(selectNamed(page, "Technician")).toHaveAttribute(
+        "data-value",
         "tech-lon-ash",
       );
       await page.getByRole("button", { name: "Next technician" }).click();
@@ -221,7 +224,10 @@ for (const width of [390, 1440]) {
         .getByRole("group", { name: "Rows" })
         .getByRole("button", { name: "Bays" })
         .click();
-      await expect(page.getByLabel("Service bay")).toHaveValue("bay-lon-1");
+      await expect(selectNamed(page, "Service bay")).toHaveAttribute(
+        "data-value",
+        "bay-lon-1",
+      );
       await checkState(page, "schedule-bay-day");
     });
 
@@ -454,20 +460,26 @@ for (const width of [390, 1440]) {
 
       await signIn(page, "Staff");
       if (wide) {
-        await page
-          .getByLabel("Who")
-          .selectOption({ label: "Demo Staff London" });
+        await chooseOption(selectNamed(page, "Who"), {
+          label: "Demo Staff London",
+        });
       } else {
         await page.getByRole("button", { name: /^Viewing as/ }).click();
-        await page
-          .getByRole("dialog", { name: "Viewing as" })
-          .getByLabel("Who")
-          .selectOption({ label: "Demo Staff London" });
+        await chooseOption(
+          selectNamed(page.getByRole("dialog", { name: "Viewing as" }), "Who"),
+          { label: "Demo Staff London" },
+        );
         await page.keyboard.press("Escape");
       }
-      await expect(
-        page.getByText(/Now viewing as Staff, Demo Staff London/),
-      ).toBeVisible();
+      // Demo Staff London is the first staff user, so choosing them again changes nothing: a themed list,
+      // unlike the native one, sends no change for the option already chosen, and so shows no toast.
+      if (wide) {
+        await expect(selectNamed(page, "Who")).toHaveText("Demo Staff London");
+      } else {
+        await expect(
+          page.getByRole("button", { name: /^Viewing as/ }),
+        ).toContainText("Staff · Demo Staff London");
+      }
       asked.length = 0;
       await page.goto("/schedule?dealership=dealership-saigon");
       await expect(

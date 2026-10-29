@@ -10,6 +10,8 @@ import {
   expectNoSidewaysScroll,
   openApp,
   pickRole,
+  chooseOption,
+  selectNamed,
 } from "./support";
 
 export { api };
@@ -55,8 +57,8 @@ export async function start(
 
 /** Picks Demo Customer B in the header's "Who" select (from 640 wide). */
 export async function switchToB(page: Page) {
-  await page.getByLabel("Who").selectOption({ label: "Demo Customer B" });
-  await expect(page.getByLabel("Who")).toHaveValue(B);
+  await chooseOption(selectNamed(page, "Who"), { label: "Demo Customer B" });
+  await expect(selectNamed(page, "Who")).toHaveAttribute("data-value", B);
 }
 
 /** Saves `<screen>-<state>-<width>.png` after the axe and sideways-scroll checks (NFR-4, NFR-7, D-0000-13). */

@@ -1,7 +1,7 @@
-// design.md 8.3. Staff and the manager: a native select when they have two dealerships, plain text when one.
+// design.md 8.3. Staff and the manager: a Select (8.28) when they have two dealerships, plain text when one.
 // A customer's header shows only the name, once they have chosen it in the booking form.
 import { Button } from "../components/Button";
-import { SelectField } from "../components/Fields";
+import { Select } from "../components/Select";
 import { Skeleton } from "../components/StateBlock";
 import { useSession } from "./session";
 import { useSelectedDealership } from "./dealership";
@@ -29,12 +29,12 @@ export function DealershipPicker() {
   if (me.role !== "customer" && options.length > 1) {
     return (
       <div className="w-full max-w-(--size-side)">
-        <SelectField
+        <Select
           label="Dealership"
           hideLabel
           value={selected.id}
           options={options.map((d) => ({ value: d.id, label: d.name }))}
-          onChange={(e) => dealership.select(e.target.value)}
+          onChange={dealership.select}
         />
       </div>
     );
