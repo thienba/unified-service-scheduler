@@ -155,7 +155,13 @@ function main() {
     ),
   );
   // README.md is left out of the company-name check until the README ticket lands; then add it here.
-  const named = [...textFiles("docs"), ...textFiles("src")].flatMap((file) =>
+  const named = [
+    ...textFiles("docs"),
+    ...textFiles("src"),
+    "index.html",
+    "package.json",
+    "vercel.json",
+  ].flatMap((file) =>
     findCompanyNameProblems(file, readFileSync(file, "utf8")),
   );
   problems.push(...named);
