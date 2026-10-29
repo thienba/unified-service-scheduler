@@ -21,6 +21,7 @@
     "check:workflows": "node scripts/check-workflows.mjs"
   },
   "dependencies": {
+    "@js-temporal/polyfill": "0.5.1",
     "react": "19.3.1",
     "react-dom": "19.3.1"
   },

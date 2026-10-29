@@ -2,6 +2,7 @@
   "comment": "Every runtime dependency in package.json must be listed here with the decision that chose it (SEC-16.AC-3). To add one, ask the human first (D-0000-17).",
   "runtimeDependencies": {
     "react": "D-0000-5",
-    "react-dom": "D-0000-5"
+    "react-dom": "D-0000-5",
+    "@js-temporal/polyfill": "D-0000-31"
   }
 }
