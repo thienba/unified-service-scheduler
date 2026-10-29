@@ -1,0 +1,560 @@
+[WebServer] [MODULE_LEVEL_DIRECTIVE] The semantics of the module level directive "use client" in "node_modules/react-router/dist/development/index.mjs" may not be preserved when bundling.
+[WebServer]     ╭─[ node_modules/react-router/dist/development/index.mjs:11:1 ]
+[WebServer]     │
+[WebServer]  11 │ "use client";
+[WebServer]     │ ──────┬──────  
+[WebServer]     │       ╰──────── module level directive may not be preserved
+[WebServer]     │ 
+[WebServer]     │ Help: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[WebServer] ────╯
+[WebServer] 
+
+[WebServer] [plugin builtin:vite-reporter] 
+[WebServer] (!) Some chunks are larger than 500 kB after minification. Consider:
+[WebServer] - Using dynamic import() to code-split the application
+[WebServer] - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+[WebServer] - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[WebServer] [MODULE_LEVEL_DIRECTIVE] The semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/IsRestoringProvider.js" may not be preserved when bundling.
+[WebServer]    ╭─[ node_modules/@tanstack/react-query/build/modern/IsRestoringProvider.js:1:1 ]
+[WebServer]    │
+[WebServer]  1 │ "use client";
+[WebServer]    │ ──────┬──────  
+[WebServer]    │       ╰──────── module level directive may not be preserved
+[WebServer]    │ 
+[WebServer]    │ Help: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[WebServer] ───╯
+[WebServer] 
+[WebServer] [MODULE_LEVEL_DIRECTIVE] The semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js" may not be preserved when bundling.
+[WebServer]    ╭─[ node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:1:1 ]
+[WebServer]    │
+[WebServer]  1 │ "use client";
+[WebServer]    │ ──────┬──────  
+[WebServer]    │       ╰──────── module level directive may not be preserved
+[WebServer]    │ 
+[WebServer]    │ Help: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[WebServer] ───╯
+[WebServer] 
+[WebServer] [MODULE_LEVEL_DIRECTIVE] The semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/QueryErrorResetBoundary.js" may not be preserved when bundling.
+[WebServer]    ╭─[ node_modules/@tanstack/react-query/build/modern/QueryErrorResetBoundary.js:1:1 ]
+[WebServer]    │
+[WebServer]  1 │ "use client";
+[WebServer]    │ ──────┬──────  
+[WebServer]    │       ╰──────── module level directive may not be preserved
+[WebServer]    │ 
+[WebServer]    │ Help: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[WebServer] ───╯
+[WebServer] 
+[WebServer] [MODULE_LEVEL_DIRECTIVE] The semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/HydrationBoundary.js" may not be preserved when bundling.
+[WebServer]    ╭─[ node_modules/@tanstack/react-query/build/modern/HydrationBoundary.js:1:1 ]
+[WebServer]    │
+[WebServer]  1 │ "use client";
+[WebServer]    │ ──────┬──────  
+[WebServer]    │       ╰──────── module level directive may not be preserved
+[WebServer]    │ 
+[WebServer]    │ Help: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[WebServer] ───╯
+[WebServer] 
+[WebServer] [MODULE_LEVEL_DIRECTIVE] The semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/useSuspenseQuery.js" may not be preserved when bundling.
+[WebServer]    ╭─[ node_modules/@tanstack/react-query/build/modern/useSuspenseQuery.js:1:1 ]
+[WebServer]    │
+[WebServer]  1 │ "use client";
+[WebServer]    │ ──────┬──────  
+[WebServer]    │       ╰──────── module level directive may not be preserved
+[WebServer]    │ 
+[WebServer]    │ Help: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[WebServer] ───╯
+[WebServer] 
+[WebServer] [MODULE_LEVEL_DIRECTIVE] The semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/useSuspenseInfiniteQuery.js" may not be preserved when bundling.
+[WebServer]    ╭─[ node_modules/@tanstack/react-query/build/modern/useSuspenseInfiniteQuery.js:1:1 ]
+[WebServer]    │
+[WebServer]  1 │ "use client";
+[WebServer]    │ ──────┬──────  
+[WebServer]    │       ╰──────── module level directive may not be preserved
+[WebServer]    │ 
+[WebServer]    │ Help: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[WebServer] ───╯
+[WebServer] 
+
+[WebServer] [MODULE_LEVEL_DIRECTIVE] The semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/useSuspenseQueries.js" may not be preserved when bundling.
+[WebServer]    ╭─[ node_modules/@tanstack/react-query/build/modern/useSuspenseQueries.js:1:1 ]
+[WebServer]    │
+[WebServer]  1 │ "use client";
+[WebServer]    │ ──────┬──────  
+[WebServer]    │       ╰──────── module level directive may not be preserved
+[WebServer]    │ 
+[WebServer]    │ Help: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[WebServer] ───╯
+[WebServer] 
+[WebServer] [MODULE_LEVEL_DIRECTIVE] The semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/useQuery.js" may not be preserved when bundling.
+[WebServer]    ╭─[ node_modules/@tanstack/react-query/build/modern/useQuery.js:1:1 ]
+[WebServer]    │
+[WebServer]  1 │ "use client";
+[WebServer]    │ ──────┬──────  
+[WebServer]    │       ╰──────── module level directive may not be preserved
+[WebServer]    │ 
+[WebServer]    │ Help: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[WebServer] ───╯
+[WebServer] 
+[WebServer] [MODULE_LEVEL_DIRECTIVE] The semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/useIsFetching.js" may not be preserved when bundling.
+[WebServer]    ╭─[ node_modules/@tanstack/react-query/build/modern/useIsFetching.js:1:1 ]
+[WebServer]    │
+[WebServer]  1 │ "use client";
+[WebServer]    │ ──────┬──────  
+[WebServer]    │       ╰──────── module level directive may not be preserved
+[WebServer]    │ 
+[WebServer]    │ Help: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[WebServer] ───╯
+[WebServer] 
+[WebServer] [MODULE_LEVEL_DIRECTIVE] The semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/useInfiniteQuery.js" may not be preserved when bundling.
+[WebServer]    ╭─[ node_modules/@tanstack/react-query/build/modern/useInfiniteQuery.js:1:1 ]
+[WebServer]    │
+[WebServer]  1 │ "use client";
+[WebServer]    │ ──────┬──────  
+[WebServer]    │       ╰──────── module level directive may not be preserved
+[WebServer]    │ 
+[WebServer]    │ Help: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[WebServer] ───╯
+[WebServer] 
+
+[WebServer] [MODULE_LEVEL_DIRECTIVE] The semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/useMutation.js" may not be preserved when bundling.
+[WebServer]    ╭─[ node_modules/@tanstack/react-query/build/modern/useMutation.js:1:1 ]
+[WebServer]    │
+[WebServer]  1 │ "use client";
+[WebServer]    │ ──────┬──────  
+[WebServer]    │       ╰──────── module level directive may not be preserved
+[WebServer]    │ 
+[WebServer]    │ Help: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[WebServer] ───╯
+[WebServer] 
+[WebServer] [MODULE_LEVEL_DIRECTIVE] The semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/useMutationState.js" may not be preserved when bundling.
+[WebServer]    ╭─[ node_modules/@tanstack/react-query/build/modern/useMutationState.js:1:1 ]
+[WebServer]    │
+[WebServer]  1 │ "use client";
+[WebServer]    │ ──────┬──────  
+[WebServer]    │       ╰──────── module level directive may not be preserved
+[WebServer]    │ 
+[WebServer]    │ Help: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[WebServer] ───╯
+[WebServer] 
+[WebServer] [MODULE_LEVEL_DIRECTIVE] The semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/useQueries.js" may not be preserved when bundling.
+[WebServer]    ╭─[ node_modules/@tanstack/react-query/build/modern/useQueries.js:1:1 ]
+[WebServer]    │
+[WebServer]  1 │ "use client";
+[WebServer]    │ ──────┬──────  
+[WebServer]    │       ╰──────── module level directive may not be preserved
+[WebServer]    │ 
+[WebServer]    │ Help: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[WebServer] ───╯
+[WebServer] 
+[WebServer] [MODULE_LEVEL_DIRECTIVE] The semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/useBaseQuery.js" may not be preserved when bundling.
+[WebServer]    ╭─[ node_modules/@tanstack/react-query/build/modern/useBaseQuery.js:1:1 ]
+[WebServer]    │
+[WebServer]  1 │ "use client";
+[WebServer]    │ ──────┬──────  
+[WebServer]    │       ╰──────── module level directive may not be preserved
+[WebServer]    │ 
+[WebServer]    │ Help: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[WebServer] ───╯
+[WebServer] 
+
+[WebServer] [MODULE_LEVEL_DIRECTIVE] The semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/errorBoundaryUtils.js" may not be preserved when bundling.
+[WebServer]    ╭─[ node_modules/@tanstack/react-query/build/modern/errorBoundaryUtils.js:1:1 ]
+[WebServer]    │
+[WebServer]  1 │ "use client";
+[WebServer]    │ ──────┬──────  
+[WebServer]    │       ╰──────── module level directive may not be preserved
+[WebServer]    │ 
+[WebServer]    │ Help: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[WebServer] ───╯
+[WebServer] 
+
+
+Running 384 tests using 5 workers
+
+[1/384] [chromium] › tests/e2e/api.spec.ts:64:1 › the service worker answers /api/me with an X-Trace-Id
+[2/384] [chromium] › tests/e2e/adjust.spec.ts:85:5 › at 390 wide › idle, changed, validation, checking, saved (another technician picked)
+[3/384] [chromium] › tests/e2e/book.spec.ts:167:5 › at 390 wide › idle, deep-link, time-chosen, then a booking and its confirmation (success, reload)
+[4/384] [chromium] › tests/e2e/courtesy.spec.ts:104:5 › at 390 wide › REQ-BOOK-010.AC-1/2: three choices, no default; a courtesy car is stored and shown on the confirmation, the appointment and the staff schedule
+[5/384] [chromium] › tests/e2e/customer-appointments.spec.ts:91:3 › my-appointments › REQ-BOOK-012.AC-1, SEC-5.AC-4: two customers with appointments on one day each see only their own, also after a reload
+[6/384] [chromium] › tests/e2e/api.spec.ts:75:1 › a booking is still there after the page is reloaded
+[7/384] [chromium] › tests/e2e/api.spec.ts:100:3 › two pages post the same booking together: one 201, one 409 with suggestions, one appointment stored
+[8/384] [chromium] › tests/e2e/customer-appointments.spec.ts:119:3 › my-appointments › a card shows the date line, time, badges, service, car, dealership and technician, with no bay; the first date is the largest
+[9/384] [chromium] › tests/e2e/api.spec.ts:100:3 › two pages post the same booking one second apart: one 201, one 409 with suggestions, one appointment stored
+[10/384] [chromium] › tests/e2e/customer-appointments.spec.ts:167:3 › my-appointments › REQ-BOOK-012.AC-4, D-0001-25 A: inside the change window a card has the sentence and the phone, and no Reschedule or Cancel
+[11/384] [chromium] › tests/e2e/customer-appointments.spec.ts:189:3 › my-appointments › Past and cancelled shows the latest 10, then Show earlier
+[12/384] [chromium] › tests/e2e/customer-appointments.spec.ts:213:3 › my-appointments › D-0001-94: ended appointments show under Past and cancelled with the Past badge, newest first, and never another customer's
+[13/384] [chromium] › tests/e2e/api.spec.ts:148:1 › the console shows JSON lines with the trace id, the telemetry answers, and reset brings the seed back
+[14/384] [chromium] › tests/e2e/customer-states.spec.ts:31:5 › at 390 wide › my-appointments: upcoming, cancel-dialog, after-cancel, no-permission
+[15/384] [chromium] › tests/e2e/customer-appointments.spec.ts:241:3 › my-appointments › with nothing upcoming the list says so; staff on /appointments get the no-permission words
+[16/384] [chromium] › tests/e2e/customer-appointments.spec.ts:264:3 › cancel › REQ-BOOK-012.AC-1: the dialog, one POST, Cancelling…, the card moves, the toast, and the time is offered to customer B
+[17/384] [chromium] › tests/e2e/book.spec.ts:312:5 › at 390 wide › confirming: a double press sends one request with one key and books once
+[18/384] [chromium] › tests/e2e/courtesy.spec.ts:158:5 › at 390 wide › no-courtesy-car: the car is booked from 09:45; at 10:00 the option is off with its reason and the API's next start; waiting still books
+[19/384] [chromium] › tests/e2e/adjust.spec.ts:207:5 › at 390 wide › clash and closest times, then a technician-only change says nobody else was picked
+[20/384] [chromium] › tests/e2e/customer-states.spec.ts:81:5 › at 390 wide › my-appointments: past-and-cancelled (all cancelled)
+[21/384] [chromium] › tests/e2e/customer-appointments.spec.ts:340:3 › cancel › the cancelled page: badge, sunken facts, no actions, the line and Book a service
+[22/384] [chromium] › tests/e2e/adjust.spec.ts:282:5 › at 390 wide › clash-empty: no other times in the next 14 days
+[23/384] [chromium] › tests/e2e/courtesy.spec.ts:197:5 › at 390 wide › courtesy-cleared: with the car chosen, someone books it for 11:00; picking 11:30 clears the choice and says so
+[24/384] [chromium] › tests/e2e/customer-appointments.spec.ts:363:3 › cancel › cancel-error: a 500 keeps the dialog open with Keep appointment and Try again
+[25/384] [chromium] › tests/e2e/customer-states.spec.ts:95:5 › at 390 wide › my-appointments: past (D-0001-94)
+[26/384] [chromium] › tests/e2e/customer-appointments.spec.ts:395:3 › cancel › a second cancel from another tab answers the same cancelled appointment, shown without an error
+[27/384] [chromium] › tests/e2e/adjust.spec.ts:303:5 › at 390 wide › already-flagged: times that fit, then a move that fits clears the flag
+[28/384] [chromium] › tests/e2e/courtesy.spec.ts:219:5 › at 390 wide › conflict-courtesy: two pages want the only car at 10:00; the second gets the apology, nothing is booked and every offered time has a car
+[29/384] [chromium] › tests/e2e/customer-states.spec.ts:110:5 › at 390 wide › my-appointments: empty
+[30/384] [chromium] › tests/e2e/customer-appointments.spec.ts:423:3 › reschedule › REQ-BOOK-012.AC-2: the own day, the info panel, Your time, the summary and the Confirm words
+[31/384] [chromium] › tests/e2e/adjust.spec.ts:334:5 › at 390 wide › cancel-dialog, cancelling, cancel-refused, then cancelled-appointment
+[32/384] [chromium] › tests/e2e/customer-appointments.spec.ts:467:3 › reschedule › D-0001-101: a time that overlaps the old one and is blocked only by it is offered, and the move succeeds
+[33/384] [chromium] › tests/e2e/customer-states.spec.ts:126:5 › at 390 wide › my-appointments: no-permission for staff
+[34/384] [chromium] › tests/e2e/customer-appointments.spec.ts:485:3 › reschedule › REQ-BOOK-012.AC-2, REQ-BOOK-009.AC-4: one POST for a double press, same id, new time, toast; the old time stays until the answer, then is offered again
+[35/384] [chromium] › tests/e2e/book.spec.ts:338:5 › at 390 wide › validation: Confirm with the car and the car choice missing sends nothing and lists both
+[36/384] [chromium] › tests/e2e/courtesy.spec.ts:304:5 › at 390 wide › courtesy-note: a courtesy car appointment is only offered times with a car, and its car choice stays the same
+[37/384] [chromium] › tests/e2e/customer-states.spec.ts:138:5 › at 390 wide › my-appointments: loading and error
+[38/384] [chromium] › tests/e2e/book.spec.ts:371:5 › at 390 wide › no-vehicle: a customer with no car sees the info Alert and no strip
+[39/384] [chromium] › tests/e2e/courtesy.spec.ts:373:5 › at 390 wide › staff: the same option in the third person, the summary says Borrows a courtesy car, and a 409 says someone else took the last one
+[40/384] [chromium] › tests/e2e/adjust.spec.ts:397:5 › at 390 wide › cancel-refused
+[41/384] [chromium] › tests/e2e/book.spec.ts:388:5 › at 390 wide › empty-day: a stale count; the day turns Fully booked and offers the closest times on other days
+[42/384] [chromium] › tests/e2e/customer-appointments.spec.ts:526:3 › reschedule › REQ-BOOK-012.AC-3: another customer takes the time first; the appointment is unchanged, the day and choices stay, the closest times are offered
+[43/384] [chromium] › tests/e2e/customer-states.spec.ts:167:5 › at 390 wide › appointment: confirmed, cancel-dialog, cancel-error, cancelling, cancelled
+[44/384] [chromium] › tests/e2e/adjust.spec.ts:429:5 › at 390 wide › loading and error
+[45/384] [chromium] › tests/e2e/customer-appointments.spec.ts:567:3 › reschedule › REQ-BOOK-009.AC-4: confirm-error says nothing changed, and Try again sends the same Idempotency-Key
+[46/384] [chromium] › tests/e2e/book.spec.ts:460:5 › at 390 wide › closed-day, day-too-soon and day-too-far: a link to a day that cannot be booked says why
+[47/384] [chromium] › tests/e2e/courtesy.spec.ts:104:5 › at 1440 wide › REQ-BOOK-010.AC-1/2: three choices, no default; a courtesy car is stored and shown on the confirmation, the appointment and the staff schedule
+[48/384] [chromium] › tests/e2e/customer-appointments.spec.ts:600:3 › reschedule › the times are locked while a confirm is on its way; after a failure, Try again sends the time shown, under a new key when it changed
+[49/384] [chromium] › tests/e2e/adjust.spec.ts:443:5 › at 390 wide › error
+[50/384] [chromium] › tests/e2e/adjust.spec.ts:464:5 › at 390 wide › no-permission for staff and a customer, not-found for another dealership
+[51/384] [chromium] › tests/e2e/book.spec.ts:529:5 › at 390 wide › conflict: two pages pick the same time; the second gets the apology and only one appointment exists
+[52/384] [chromium] › tests/e2e/adjust.spec.ts:544:5 › at 390 wide › a failed save: Try again sends the form as it is now, and an edit clears the failure
+[53/384] [chromium] › tests/e2e/customer-appointments.spec.ts:649:3 › reschedule › Q-0001-236 B: on the appointment's own day with no other time free, the grid keeps Your time and says nothing else is left
+[54/384] [chromium] › tests/e2e/courtesy.spec.ts:158:5 › at 1440 wide › no-courtesy-car: the car is booked from 09:45; at 10:00 the option is off with its reason and the API's next start; waiting still books
+[55/384] [chromium] › tests/e2e/adjust.spec.ts:625:5 › at 390 wide › a blank date or start time: Save names the field and sends nothing
+[56/384] [chromium] › tests/e2e/adjust.spec.ts:646:5 › at 390 wide › a 422 on the technician links to the Technician select; another field is listed as text
+[57/384] [chromium] › tests/e2e/customer-appointments.spec.ts:687:3 › reschedule › after a move, Back goes to where the customer came from, not to the finished reschedule screen
+[58/384] [chromium] › tests/e2e/adjust.spec.ts:680:5 › at 390 wide › an appointment that has ended: no Adjust on the schedule, and adjust says it has ended
+[59/384] [chromium] › tests/e2e/book.spec.ts:596:5 › at 390 wide › conflict-empty: no suggestions; the page says so with the phone
+[60/384] [chromium] › tests/e2e/customer-appointments.spec.ts:710:3 › reschedule › D-0001-60 A, D-0001-39 B: a reschedule link of a cancelled appointment, and a 409 ALREADY_CANCELLED on confirm, show the cancelled page with one quiet line
+[61/384] [chromium] › tests/e2e/courtesy.spec.ts:197:5 › at 1440 wide › courtesy-cleared: with the car chosen, someone books it for 11:00; picking 11:30 clears the choice and says so
+[62/384] [chromium] › tests/e2e/customer-appointments.spec.ts:739:3 › after the cutoff (D-0001-22 a) › at start minus lead time exactly, Cancel and Reschedule still work
+[63/384] [chromium] › tests/e2e/adjust.spec.ts:708:5 › at 390 wide › a cancel from the appointment page puts focus on the cancelled note
+[64/384] [chromium] › tests/e2e/customer-states.spec.ts:225:5 › at 390 wide › appointment: cancel-refused, then change-closed
+[65/384] [chromium] › tests/e2e/book.spec.ts:623:5 › at 390 wide › conflict-too-soon: the chosen time slips inside the notice time while the page is open
+[66/384] [chromium] › tests/e2e/courtesy.spec.ts:219:5 › at 1440 wide › conflict-courtesy: two pages want the only car at 10:00; the second gets the apology, nothing is booked and every offered time has a car
+[67/384] [chromium] › tests/e2e/adjust.spec.ts:727:5 › at 390 wide › appointment and appointment-flagged (manager), schedule-additions
+[68/384] [chromium] › tests/e2e/customer-appointments.spec.ts:770:3 › after the cutoff (D-0001-22 a) › one minute later the appointment page is change-closed and the reschedule route says the same, with one way back
+[69/384] [chromium] › tests/e2e/customer-appointments.spec.ts:811:3 › after the cutoff (D-0001-22 a) › cancel-refused: the cutoff passes while the dialog is open; nothing was cancelled
+[70/384] [chromium] › tests/e2e/book.spec.ts:649:5 › at 390 wide › conflict-too-far: the manager shortens the horizon; every day beyond it reads Too far ahead
+[71/384] [chromium] › tests/e2e/customer-appointments.spec.ts:841:3 › after the cutoff (D-0001-22 a) › WCAG 2.4.3: after a cancel or a refusal the opener is gone, so focus goes to the title or the card, never the page
+[72/384] [chromium] › tests/e2e/courtesy.spec.ts:304:5 › at 1440 wide › courtesy-note: a courtesy car appointment is only offered times with a car, and its car choice stays the same
+[73/384] [chromium] › tests/e2e/customer-states.spec.ts:255:5 › at 390 wide › appointment: loading, error, not-found
+[74/384] [chromium] › tests/e2e/adjust.spec.ts:85:5 › at 1440 wide › idle, changed, validation, checking, saved (another technician picked)
+[75/384] [chromium] › tests/e2e/book.spec.ts:702:5 › at 390 wide › confirm-error: a 500 keeps the choices; Try again sends the same key and books once
+[76/384] [chromium] › tests/e2e/courtesy.spec.ts:373:5 › at 1440 wide › staff: the same option in the third person, the summary says Borrows a courtesy car, and a 409 says someone else took the last one
+[77/384] [chromium] › tests/e2e/customer-appointments.spec.ts:916:3 › the message links (D-0001-22 f, D-0001-77 A, SEC-17.AC-2, SEC-11.AC-4) › the owner opens the appointment and the reschedule screen; nobody picked sees signed-out; another customer sees not-found; staff and managers see no-permission on reschedule
+[78/384] [chromium] › tests/e2e/book.spec.ts:730:5 › at 390 wide › confirm-error with no network says we could not reach the booking service
+[79/384] [chromium] › tests/e2e/customer-appointments.spec.ts:969:3 › other customers (REQ-BOOK-012.AC-5, SEC-5.AC-1, AC-2) › A sees not-found for B's appointment and its reschedule link, word for word as a random id, also after B's cutoff
+[80/384] [chromium] › tests/e2e/courtesy.spec.ts:438:1 › the day tile counts follow the car choice: with the car out from 11:00 to 12:00, the courtesy count is lower and equals the chips
+[81/384] [chromium] › tests/e2e/customer-states.spec.ts:294:5 › at 390 wide › reschedule: idle, time-chosen, conflict, then rescheduled
+[82/384] [chromium] › tests/e2e/customer-appointments.spec.ts:1003:3 › NFR-4, NFR-7 › the dialog keeps Tab inside; the sheet below 640 has the danger button on top
+[83/384] [chromium] › tests/e2e/courtesy.spec.ts:454:1 › courtesy-cleared on a week only searched with the courtesy car: the strip stays and the clicked time keeps focus (WCAG 2.4.3)
+[84/384] [chromium] › tests/e2e/book.spec.ts:748:5 › at 390 wide › loading, days-error and times-error
+[85/384] [chromium] › tests/e2e/customer-appointments.spec.ts:1029:3 › NFR-4, NFR-7 › the ActionBar shows below 768 only and never covers a focused control
+[86/384] [chromium] › tests/e2e/courtesy.spec.ts:494:1 › NFR-7: at every width the three options are rows of at least 44 px, 8 px apart, with no sideways scroll
+[87/384] [chromium] › tests/e2e/courtesy.spec.ts:516:1 › video: a customer chooses a courtesy car, sees it greyed out for a busy time, then gets the no-car-left apology
+[88/384] [chromium] › tests/e2e/demo.spec.ts:130:1 › scenario 1, customer books (REQ-BOOK-001, 002, 003, 010.AC-1): dealership, car and service, the strip and chips, a courtesy car, the confirmation, a reload and My appointments
+[89/384] [chromium] › tests/e2e/customer-appointments.spec.ts:1061:3 › NFR-4, NFR-7 › no sideways scroll at 320 to 1440; cards one column on a phone and two from 640; targets at least 44 px
+[90/384] [chromium] › tests/e2e/adjust.spec.ts:207:5 › at 1440 wide › clash and closest times, then a technician-only change says nobody else was picked
+[91/384] [chromium] › tests/e2e/adjust.spec.ts:282:5 › at 1440 wide › clash-empty: no other times in the next 14 days
+[92/384] [chromium] › tests/e2e/customer-states.spec.ts:338:5 › at 390 wide › reschedule: confirming, confirm-error, conflict-empty, empty-day
+[93/384] [chromium] › tests/e2e/customer-appointments.spec.ts:1115:1 › video: a customer cancels one appointment, reschedules another, and opens the cancel link of a message
+[94/384] [chromium] › tests/e2e/dev-panel.spec.ts:217:1 › after a booking, a 409 and an empty search the numbers equal the API's, and the 409 line carries the reference the customer saw
+[95/384] [chromium] › tests/e2e/book.spec.ts:801:5 › at 390 wide › no-permission: a booking link for another customer
+[96/384] [chromium] › tests/e2e/adjust.spec.ts:303:5 › at 1440 wide › already-flagged: times that fit, then a move that fits clears the flag
+[97/384] [chromium] › tests/e2e/dev-panel.spec.ts:324:1 › no name, phone, email or registration of the canary booking appears anywhere on the page, opened JSON included; typed text stays text
+[98/384] [chromium] › tests/e2e/book.spec.ts:817:5 › at 390 wide › book-confirmed loading, error and not-found
+[99/384] [chromium] › tests/e2e/dev-panel.spec.ts:358:1 › reset: the dialog starts on Keep my data, the reset empties what this browser made, and the seed is back
+[100/384] [chromium] › tests/e2e/adjust.spec.ts:334:5 › at 1440 wide › cancel-dialog, cancelling, cancel-refused, then cancelled-appointment
+[101/384] [chromium] › tests/e2e/dev-panel.spec.ts:463:1 › a failed reset says so inside the dialog and keeps it open
+[102/384] [chromium] › tests/e2e/dev-panel.spec.ts:486:1 › on a phone the switch shows Numbers or Logs, one at a time; from 1024 both columns show
+[103/384] [chromium] › tests/e2e/dev-panel.spec.ts:512:1 › no sideways scroll at 320, 390, 768, 1024 and 1440, with the logs open
+[104/384] [chromium] › tests/e2e/dev-panel.spec.ts:532:5 › every state at 390, with axe › metrics, logs, problems, reset-dialog, resetting and reset-done
+[105/384] [chromium] › tests/e2e/book.spec.ts:167:5 › at 1440 wide › idle, deep-link, time-chosen, then a booking and its confirmation (success, reload)
+[106/384] [chromium] › tests/e2e/adjust.spec.ts:397:5 › at 1440 wide › cancel-refused
+[107/384] [chromium] › tests/e2e/adjust.spec.ts:429:5 › at 1440 wide › loading and error
+[108/384] [chromium] › tests/e2e/customer-states.spec.ts:442:5 › at 390 wide › reschedule: change-closed, loading, error, not-found
+[109/384] [chromium] › tests/e2e/demo.spec.ts:196:1 › scenario 2, staff sees it and books (REQ-BOOK-004, 010.AC-2, 014): the new appointment on its technician's row, bays and list, a free gap, search by name, phone and plate, a new customer, just taken, a closest time
+[110/384] [chromium] › tests/e2e/adjust.spec.ts:443:5 › at 1440 wide › error
+[111/384] [chromium] › tests/e2e/book.spec.ts:312:5 › at 1440 wide › confirming: a double press sends one request with one key and books once
+[112/384] [chromium] › tests/e2e/adjust.spec.ts:464:5 › at 1440 wide › no-permission for staff and a customer, not-found for another dealership
+[113/384] [chromium] › tests/e2e/dev-panel.spec.ts:576:5 › every state at 390, with axe › empty
+[114/384] [chromium] › tests/e2e/dev-panel.spec.ts:591:5 › every state at 390, with axe › loading
+[115/384] [chromium] › tests/e2e/customer-states.spec.ts:495:5 › at 390 wide › not-found: appointment, confirmation, page
+[116/384] [chromium] › tests/e2e/adjust.spec.ts:544:5 › at 1440 wide › a failed save: Try again sends the form as it is now, and an edit clears the failure
+[117/384] [chromium] › tests/e2e/adjust.spec.ts:625:5 › at 1440 wide › a blank date or start time: Save names the field and sends nothing
+[118/384] [chromium] › tests/e2e/adjust.spec.ts:646:5 › at 1440 wide › a 422 on the technician links to the Technician select; another field is listed as text
+[119/384] [chromium] › tests/e2e/dev-panel.spec.ts:604:5 › every state at 390, with axe › error
+[120/384] [chromium] › tests/e2e/adjust.spec.ts:680:5 › at 1440 wide › an appointment that has ended: no Adjust on the schedule, and adjust says it has ended
+[121/384] [chromium] › tests/e2e/dev-panel.spec.ts:532:5 › every state at 1440, with axe › metrics, logs, problems, reset-dialog, resetting and reset-done
+[122/384] [chromium] › tests/e2e/adjust.spec.ts:708:5 › at 1440 wide › a cancel from the appointment page puts focus on the cancelled note
+[123/384] [chromium] › tests/e2e/customer-states.spec.ts:31:5 › at 1440 wide › my-appointments: upcoming, cancel-dialog, after-cancel, no-permission
+[124/384] [chromium] › tests/e2e/book.spec.ts:338:5 › at 1440 wide › validation: Confirm with the car and the car choice missing sends nothing and lists both
+[125/384] [chromium] › tests/e2e/adjust.spec.ts:727:5 › at 1440 wide › appointment and appointment-flagged (manager), schedule-additions
+[126/384] [chromium] › tests/e2e/book.spec.ts:371:5 › at 1440 wide › no-vehicle: a customer with no car sees the info Alert and no strip
+[127/384] [chromium] › tests/e2e/customer-states.spec.ts:81:5 › at 1440 wide › my-appointments: past-and-cancelled (all cancelled)
+[128/384] [chromium] › tests/e2e/book.spec.ts:388:5 › at 1440 wide › empty-day: a stale count; the day turns Fully booked and offers the closest times on other days
+[129/384] [chromium] › tests/e2e/adjust.spec.ts:809:1 › D-0001-102: Times that fit offers a time that only the booking's own slot blocks
+[130/384] [chromium] › tests/e2e/adjust.spec.ts:825:1 › TOO_SOON and BEYOND_HORIZON read in words with the dealership's numbers (D-0001-45 A)
+[131/384] [chromium] › tests/e2e/customer-states.spec.ts:95:5 › at 1440 wide › my-appointments: past (D-0001-94)
+[132/384] [chromium] › tests/e2e/book.spec.ts:460:5 › at 1440 wide › closed-day, day-too-soon and day-too-far: a link to a day that cannot be booked says why
+[133/384] [chromium] › tests/e2e/adjust.spec.ts:854:1 › adjust: no sideways scroll at 320, 390, 768, 1024 and 1440 wide (NFR-7)
+[134/384] [chromium] › tests/e2e/dev-panel.spec.ts:576:5 › every state at 1440, with axe › empty
+[135/384] [chromium] › tests/e2e/customer-states.spec.ts:110:5 › at 1440 wide › my-appointments: empty
+[136/384] [chromium] › tests/e2e/early-warning.spec.ts:174:1 › D-0001-107, REQ-BOOK-009.AC-2: book: page B books the time page A chose; page A shows the apology at its next check, before Confirm, focus kept
+[137/384] [chromium] › tests/e2e/dev-panel.spec.ts:591:5 › every state at 1440, with axe › loading
+[138/384] [chromium] › tests/e2e/customer-states.spec.ts:126:5 › at 1440 wide › my-appointments: no-permission for staff
+[139/384] [chromium] › tests/e2e/book.spec.ts:529:5 › at 1440 wide › conflict: two pages pick the same time; the second gets the apology and only one appointment exists
+[140/384] [chromium] › tests/e2e/dev-panel.spec.ts:604:5 › every state at 1440, with axe › error
+[141/384] [chromium] › tests/e2e/customer-states.spec.ts:138:5 › at 1440 wide › my-appointments: loading and error
+[142/384] [chromium] › tests/e2e/early-warning.spec.ts:214:1 › D-0001-107: staff book: page B books the time staff chose for a customer; the staff page shows Someone else's apology at its next check
+[143/384] [chromium] › tests/e2e/dev-panel.spec.ts:632:1 › D-0001-84: a booking and a lost race made on the real booking screen, then the real schedule, are in the panel
+[144/384] [chromium] › tests/e2e/early-warning.spec.ts:237:1 › D-0001-107, REQ-BOOK-012.AC-3: reschedule: page B books the new time page A chose; page A shows the apology at its next check and the appointment has not changed
+[145/384] [chromium] › tests/e2e/book.spec.ts:596:5 › at 1440 wide › conflict-empty: no suggestions; the page says so with the phone
+[146/384] [chromium] › tests/e2e/dev-panel.spec.ts:721:1 › every role can open /dev, and the footer link is there in mock mode
+[147/384] [chromium] › tests/e2e/customer-states.spec.ts:167:5 › at 1440 wide › appointment: confirmed, cancel-dialog, cancel-error, cancelling, cancelled
+[148/384] [chromium] › tests/e2e/dev-panel.spec.ts:732:1 › video: a booking and a just-taken answer in two pages, the line found by its reference, then a reset
+[149/384] [chromium] › tests/e2e/early-warning.spec.ts:284:1 › D-0001-107: adjust: page B books the start the manager typed; the clash state shows at the next check, before Save, focus kept in the field
+[150/384] [chromium] › tests/e2e/book.spec.ts:623:5 › at 1440 wide › conflict-too-soon: the chosen time slips inside the notice time while the page is open
+[151/384] [chromium] › tests/e2e/early-warning.spec.ts:324:1 › D-0001-107: a failed check shows nothing new and does not block Confirm, which still runs its own check
+[152/384] [chromium] › tests/e2e/early-warning.spec.ts:363:1 › early warning video: page A has a time chosen, page B books it, page A shows the apology without pressing Confirm
+[153/384] [chromium] › tests/e2e/book.spec.ts:649:5 › at 1440 wide › conflict-too-far: the manager shortens the horizon; every day beyond it reads Too far ahead
+[154/384] [chromium] › tests/e2e/book.spec.ts:702:5 › at 1440 wide › confirm-error: a 500 keeps the choices; Try again sends the same key and books once
+[155/384] [chromium] › tests/e2e/demo.spec.ts:324:1 › scenario 3, customer changes it (REQ-BOOK-012, 013): reschedule and cancel through the links in the messages; past the cutoff the same links say it can no longer be changed online
+[156/384] [chromium] › tests/e2e/book.spec.ts:730:5 › at 1440 wide › confirm-error with no network says we could not reach the booking service
+[157/384] [chromium] › tests/e2e/customer-states.spec.ts:225:5 › at 1440 wide › appointment: cancel-refused, then change-closed
+[158/384] [chromium] › tests/e2e/book.spec.ts:748:5 › at 1440 wide › loading, days-error and times-error
+[159/384] [chromium] › tests/e2e/customer-states.spec.ts:255:5 › at 1440 wide › appointment: loading, error, not-found
+[160/384] [chromium] › tests/e2e/book.spec.ts:801:5 › at 1440 wide › no-permission: a booking link for another customer
+[161/384] [chromium] › tests/e2e/book.spec.ts:817:5 › at 1440 wide › book-confirmed loading, error and not-found
+[162/384] [chromium] › tests/e2e/customer-states.spec.ts:294:5 › at 1440 wide › reschedule: idle, time-chosen, conflict, then rescheduled
+[163/384] [chromium] › tests/e2e/flagged.spec.ts:93:5 › at 390 wide › list, cancel-dialog, cancelling, after-cancel
+[164/384] [chromium] › tests/e2e/leave-back.spec.ts:34:5 › at 390 wide, Back on settings leaves at once when nothing changed, and asks first when something did
+[165/384] [chromium] › tests/e2e/book.spec.ts:871:1 › SEC-12.AC-1: a link with a script as the dealership opens with both fields empty and shows none of it
+[166/384] [chromium] › tests/e2e/book.spec.ts:895:1 › a staff user without a customer chosen sees the shared no-permission block
+[167/384] [chromium] › tests/e2e/book.spec.ts:909:1 › NFR-7: no sideways scroll at any width, 44 px targets, the strip scrolls in its own row, one Confirm
+[168/384] [chromium] › tests/e2e/demo.spec.ts:422:1 › scenario 4, manager (REQ-BOOK-005, 007, 008, 011, 013): move to a free time, a clash with closest times, a shorter weekday that flags one booking, Review flagged and Move, leave that the customer's strip shows, and the outbox
+[169/384] [chromium] › tests/e2e/customer-states.spec.ts:338:5 › at 1440 wide › reschedule: confirming, confirm-error, conflict-empty, empty-day
+[170/384] [chromium] › tests/e2e/book.spec.ts:996:1 › NFR-4: the whole booking can be done with the keyboard, the error links move focus, and focus is never behind the ActionBar
+[171/384] [chromium] › tests/e2e/book.spec.ts:1057:1 › video: a customer books end to end, then a second page gets the just-taken apology
+[172/384] [chromium] › tests/e2e/manage-flow.spec.ts:8:1 › a manager shortens Saturday, saves with flags, opens Flagged, then marks a technician on leave
+[173/384] [chromium] › tests/e2e/flagged.spec.ts:209:5 › at 390 wide › cancel-refused
+[174/384] [chromium] › tests/e2e/flagged.spec.ts:241:5 › at 390 wide › empty, and the last cancel leads to it
+[175/384] [chromium] › tests/e2e/leave-back.spec.ts:34:5 › at 390 wide, Back on shifts leaves at once when nothing changed, and asks first when something did
+[176/384] [chromium] › tests/e2e/flagged.spec.ts:269:5 › at 390 wide › loading
+[177/384] [chromium] › tests/e2e/flagged.spec.ts:282:5 › at 390 wide › error
+[178/384] [chromium] › tests/e2e/flagged.spec.ts:302:5 › at 390 wide › no-permission for staff, no-permission-dealership for another dealership
+[179/384] [chromium] › tests/e2e/customer-states.spec.ts:442:5 › at 1440 wide › reschedule: change-closed, loading, error, not-found
+[180/384] [chromium] › tests/e2e/leave-back.spec.ts:34:5 › at 1440 wide, Back on settings leaves at once when nothing changed, and asks first when something did
+[181/384] [chromium] › tests/e2e/flagged.spec.ts:93:5 › at 1440 wide › list, cancel-dialog, cancelling, after-cancel
+[182/384] [chromium] › tests/e2e/customer-states.spec.ts:495:5 › at 1440 wide › not-found: appointment, confirmation, page
+[183/384] [chromium] › tests/e2e/leave-back.spec.ts:34:5 › at 1440 wide, Back on shifts leaves at once when nothing changed, and asks first when something did
+[184/384] [chromium] › tests/e2e/flagged.spec.ts:209:5 › at 1440 wide › cancel-refused
+[185/384] [chromium] › tests/e2e/manage-settings.spec.ts:40:1 › the form shows the dealership's hours, dates and rules from the API, and never says override
+[186/384] [chromium] › tests/e2e/manage-settings.spec.ts:77:1 › ticking Closed empties and disables the day; the Save row and the phone bar follow the changes
+[187/384] [chromium] › tests/e2e/manage-shifts.spec.ts:53:1 › the technician's weekly pattern comes from the API, with the dealership's hours beside each day
+[188/384] [chromium] › tests/e2e/manage-settings.spec.ts:97:1 › six wrong values each show their own message, the summary links to each, and nothing is sent
+[189/384] [chromium] › tests/e2e/manage-shifts.spec.ts:99:1 › a half break, a break outside the shift, an end before the start and a last day before the first each show their message; nothing is sent
+[190/384] [chromium] › tests/e2e/manage-settings.spec.ts:165:1 › Add this date only adds to the list, marked new, and sends nothing until Save
+[191/384] [chromium] › tests/e2e/flagged.spec.ts:241:5 › at 1440 wide › empty, and the last cancel leads to it
+[192/384] [chromium] › tests/e2e/manage-settings.spec.ts:195:1 › saved dates change what availability lists: longer, shorter, closed, and the weekly hours with no entry
+[193/384] [chromium] › tests/e2e/manage-shifts.spec.ts:149:1 › new entries are marked until saved; a different shift shows four times and leave hides them
+[194/384] [chromium] › tests/e2e/manage-shifts.spec.ts:179:1 › leave on a date takes the technician out of availability; an extra shift on a day off puts them in
+[195/384] [chromium] › tests/e2e/manage-settings.spec.ts:259:1 › two dealerships each show and save their own hours; a change at one leaves the other alone
+[196/384] [chromium] › tests/e2e/flagged.spec.ts:269:5 › at 1440 wide › loading
+[197/384] [chromium] › tests/e2e/manage-shifts.spec.ts:217:1 › marking a technician on leave on a day with a booking warns first, then flags it without deleting it
+[198/384] [chromium] › tests/e2e/manage-settings.spec.ts:288:1 › new booking rules apply to the next search and leave every booking as it was
+[199/384] [chromium] › tests/e2e/manage-settings.spec.ts:335:1 › with nothing touched, Save previews first, then saves at once with Settings saved and the toast
+[200/384] [chromium] › tests/e2e/manage-shifts.spec.ts:270:1 › switching technician with unsaved edits asks first, with Keep editing first
+[201/384] [chromium] › tests/e2e/manage-states.spec.ts:50:5 › at 390 wide › settings: idle, dirty, validation, checking, confirm-flags, saving, saved-with-flags
+[202/384] [chromium] › tests/e2e/manage-shifts.spec.ts:304:1 › a dealership with no technicians shows No technicians yet with the dev panel link
+[203/384] [chromium] › tests/e2e/flagged.spec.ts:282:5 › at 1440 wide › error
+[204/384] [chromium] › tests/e2e/manage-shifts.spec.ts:317:1 › a technician of another dealership is not found, with Show all technicians
+[205/384] [chromium] › tests/e2e/manage-shifts.spec.ts:333:3 › a Customer opening shifts sees no-permission, no fields and sends no PUT
+[206/384] [chromium] › tests/e2e/manage-shifts.spec.ts:333:3 › a Staff opening shifts sees no-permission, no fields and sends no PUT
+[207/384] [chromium] › tests/e2e/outbox.spec.ts:183:3 › every outbox state, reached by real use, at 390 wide
+[208/384] [chromium] › tests/e2e/manage-settings.spec.ts:363:1 › shortening Saturday warns before saving: two bookings listed, Go back saves nothing, Save and flag flags them
+[209/384] [chromium] › tests/e2e/flagged.spec.ts:302:5 › at 1440 wide › no-permission for staff, no-permission-dealership for another dealership
+[210/384] [chromium] › tests/e2e/manage-settings.spec.ts:458:1 › the warning lists five bookings and says how many more
+[211/384] [chromium] › tests/e2e/manage-settings.spec.ts:498:3 › a save that fails with a 500 keeps the edits and offers Try again
+[212/384] [chromium] › tests/e2e/manage-settings.spec.ts:498:3 › a save that fails with no network keeps the edits and offers Try again
+[213/384] [chromium] › tests/e2e/flagged.spec.ts:334:1 › flagged: no sideways scroll at 320 to 1440 wide, Move and Cancel wrap under the text (NFR-7)
+[214/384] [chromium] › tests/e2e/demo.spec.ts:609:1 › scenario 5, manager books for a customer (D-0001-53, D-0001-54 B, REQ-BOOK-014): a free gap on the schedule, an existing customer, the booking on the schedule and in the outbox; the Book for a customer button opens the same screen
+[215/384] [chromium] › tests/e2e/manage-settings.spec.ts:520:1 › leaving with unsaved changes asks first, with Keep editing first
+[216/384] [chromium] › tests/e2e/flagged.spec.ts:357:1 › Move opens adjust with the times that fit listed
+[217/384] [chromium] › tests/e2e/flagged.spec.ts:374:1 › stored text is shown as text on the flagged list, adjust and appointment pages (SEC-11.AC-2)
+[218/384] [chromium] › tests/e2e/manage-settings.spec.ts:549:1 › loading shows a skeleton and a failed load shows the error with Try again
+[219/384] [chromium] › tests/e2e/manage-settings.spec.ts:571:3 › a Customer sees no-permission, no fields and sends no PUT
+[220/384] [chromium] › tests/e2e/flagged.spec.ts:406:1 › video: open a flagged booking, move it, hit a clash, pick a closest time, then cancel another
+[221/384] [chromium] › tests/e2e/manage-settings.spec.ts:571:3 › a Staff sees no-permission, no fields and sends no PUT
+[222/384] [chromium] › tests/e2e/manage-settings.spec.ts:595:1 › a manager who opens another dealership sees no-permission-dealership and none of its data
+[223/384] [chromium] › tests/e2e/policy-support.spec.ts:20:1 › the WebKit <select> message is taken out at most once per set-aside <select> event
+[224/384] [chromium] › tests/e2e/policy-support.spec.ts:43:1 › in Firefox and Chromium nothing is taken out
+[225/384] [chromium] › tests/e2e/policy-support.spec.ts:51:1 › a page with two native selects under the policy leaves no policy message once the known WebKit one is set aside
+[226/384] [chromium] › tests/e2e/race.spec.ts:241:1 › REQ-BOOK-009.AC-1, AC-2, S1: both press Confirm together; one is booked, one gets the apology, one appointment is stored; the loser then books a closest time on other resources
+[227/384] [chromium] › tests/e2e/race.spec.ts:263:1 › REQ-BOOK-009 (5 runs): the race on a fresh reset of the demo data five times has exactly one winner every time
+[228/384] [chromium] › tests/e2e/outbox.spec.ts:183:3 › every outbox state, reached by real use, at 1440 wide
+[229/384] [chromium] › tests/e2e/manage-states.spec.ts:105:5 › at 390 wide › settings: saved, leave-dialog, save-error
+[230/384] [chromium] › tests/e2e/race.spec.ts:278:1 › REQ-BOOK-009.AC-5: at a start where two mechanics and two bays are free, both confirmations go through on different technicians and bays
+[231/384] [chromium] › tests/e2e/manage-states.spec.ts:123:5 › at 390 wide › settings: save-error
+[232/384] [chromium] › tests/e2e/race.spec.ts:315:1 › REQ-BOOK-009.AC-3: the second page confirms the same time one second after the first; it gets the same apology and no second appointment exists
+[233/384] [chromium] › tests/e2e/manage-states.spec.ts:138:5 › at 390 wide › settings: loading
+[234/384] [chromium] › tests/e2e/manage-states.spec.ts:150:5 › at 390 wide › settings: error
+[235/384] [chromium] › tests/e2e/manage-states.spec.ts:165:5 › at 390 wide › settings and shifts: no-permission, no-permission-dealership, not-found, empty
+[236/384] [chromium] › tests/e2e/race.spec.ts:330:1 › REQ-BOOK-009.AC-4: a double press on Confirm sends one booking request (the page ignores the second press while the first is out) and leaves one appointment
+[237/384] [chromium] › tests/e2e/race.spec.ts:345:1 › REQ-BOOK-009.AC-4, S1: the first confirm is stored but its answer is lost (a 500); Try again with the same Idempotency-Key gets the same appointment back, replayed, and one appointment is stored
+[238/384] [chromium] › tests/e2e/race.spec.ts:418:3 › race video 1440 wide per side: both on the booking page, both confirm together, one booked and one apology
+[239/384] [chromium] › tests/e2e/demo.spec.ts:681:1 › scenario 6, roles (REQ-BOOK-005.AC-3, 008.AC-3, 014.AC-5, 012.AC-5): each forbidden page shows no-permission or not-found with none of the other side's data, and no write succeeds
+[240/384] [chromium] › tests/e2e/manage-states.spec.ts:196:5 › at 390 wide › shifts: empty
+[241/384] [chromium] › tests/e2e/outbox.spec.ts:370:1 › after a booking: a confirmation and two reminders, each with links on the app's own origin and nothing else
+[242/384] [chromium] › tests/e2e/manage-states.spec.ts:205:5 › at 390 wide › shifts: idle, dirty, validation, checking, confirm-flags, saving, saved-with-flags
+[243/384] [chromium] › tests/e2e/outbox.spec.ts:441:1 › a confirm sent twice with the same Idempotency-Key leaves one confirmation and one set of reminders
+[244/384] [chromium] › tests/e2e/outbox.spec.ts:476:1 › a move cancels the old reminders, lists the new ones and a Moved message; a cancel keeps the confirmation's state
+[245/384] [chromium] › tests/e2e/outbox.spec.ts:559:3 › after two moves the old times are exact, in the order the messages were made, at 390 wide (D-0001-79)
+[246/384] [chromium] › tests/e2e/outbox.spec.ts:559:3 › after two moves the old times are exact, in the order the messages were made, at 1440 wide (D-0001-79)
+[247/384] [chromium] › tests/e2e/schedule.spec.ts:77:5 › at 390 wide › the day: timeline (desktop) or list (phone), selected, selected-flagged, list, list-bays, bays
+[248/384] [chromium] › tests/e2e/outbox.spec.ts:614:1 › message times are London time across the clock change (2026-10-24T10:00Z shows 11:00)
+[249/384] [chromium] › tests/e2e/outbox.spec.ts:650:3 › a first name with HTML in it is shown as text, and no script runs (SEC-11.AC-2): <img
+[250/384] [chromium] › tests/e2e/outbox.spec.ts:650:3 › a first name with HTML in it is shown as text, and no script runs (SEC-11.AC-2): <img/src=x/onerror=window.__xss=1>
+[251/384] [chromium] › tests/e2e/outbox.spec.ts:683:1 › a customer or staff member sees no-permission and the outbox is never asked for; another dealership's outbox is a 403
+[252/384] [chromium] › tests/e2e/outbox.spec.ts:711:1 › 60 messages: no sideways scroll, one list, each appointment's messages in time order
+[253/384] [chromium] › tests/e2e/outbox.spec.ts:770:1 › on desktop a row opens the message in the pane, says so to a screen reader, and closes when pressed again
+[254/384] [chromium] › tests/e2e/schedule.spec.ts:188:5 › at 390 wide › one technician's day and one bay's day (technician, bay-day)
+[255/384] [chromium] › tests/e2e/outbox.spec.ts:792:1 › a filter chosen for the whole outbox does not carry over to one appointment's messages
+[256/384] [chromium] › tests/e2e/demo.spec.ts:758:1 › scenario 7a, time zones (REQ-BOOK-013.AC-2, S4): a browser in Saigon sees London wall times on the booking page, the schedule and the outbox, with the London note on the schedule and the outbox
+[257/384] [chromium] › tests/e2e/outbox.spec.ts:814:1 › phone and desktop: no sideways scroll at every width, one list below 1024, two panes from 1024
+[258/384] [chromium] › tests/e2e/manage-states.spec.ts:260:5 › at 390 wide › shifts: saved, leave-dialog
+[259/384] [chromium] › tests/e2e/outbox.spec.ts:837:1 › on a phone the message opens in a sheet that holds focus and gives it back to the row; the text is at most 65ch
+[260/384] [chromium] › tests/e2e/schedule.spec.ts:228:5 › at 390 wide › empty-day, closed-day, past-day, and a closed day that still holds bookings
+[261/384] [chromium] › tests/e2e/race.spec.ts:418:3 › race video 390 wide per side: both on the booking page, both confirm together, one booked and one apology
+[262/384] [chromium] › tests/e2e/outbox.spec.ts:877:1 › the main flow: a manager reads the messages of a booking, then sees them marked Cancelled after a reschedule and a cancel
+[263/384] [chromium] › tests/e2e/manage-states.spec.ts:282:5 › at 390 wide › shifts: save-error
+[264/384] [chromium] › tests/e2e/manage-states.spec.ts:296:5 › at 390 wide › shifts: loading
+[265/384] [chromium] › tests/e2e/manage-states.spec.ts:305:5 › at 390 wide › shifts: error
+[266/384] [chromium] › tests/e2e/manage-states.spec.ts:50:5 › at 1440 wide › settings: idle, dirty, validation, checking, confirm-flags, saving, saved-with-flags
+[267/384] [chromium] › tests/e2e/schedule.spec.ts:308:5 › at 390 wide › loading and error
+[268/384] [chromium] › tests/e2e/demo.spec.ts:808:1 › scenario 7b, time zones (S4): a browser in London sees Saigon wall times with the Saigon note on the Saigon schedule
+[269/384] [chromium] › tests/e2e/schedule.spec.ts:341:5 › at 390 wide › the appointment page: confirmed, flagged, cancelled, not-found, loading, error
+[270/384] [chromium] › tests/e2e/demo.spec.ts:848:1 › scenario 7c, the clock change (S4): in a London browser, a 10:00 booking sits at 10:00 on Sat 24 Oct (summer time) and, with the clock on Sun 25 Oct 2026, on Tue 27 Oct (winter time), and the 48-hour reminder shows the right London hour
+[271/384] [chromium] › tests/e2e/shell.spec.ts:17:1 › with nobody picked, / says so and the header says Not signed in
+[272/384] [chromium] › tests/e2e/shell.spec.ts:33:1 › picking each role sends X-Demo-User, lands on the home, and shows the toast
+[273/384] [chromium] › tests/e2e/manage-states.spec.ts:105:5 › at 1440 wide › settings: saved, leave-dialog, save-error
+[274/384] [chromium] › tests/e2e/shell.spec.ts:65:1 › a role that may not open a route sees no-permission in place, and Switch role moves focus to the header control
+[275/384] [chromium] › tests/e2e/schedule.spec.ts:437:5 › at 390 wide › no-permission: a customer on /schedule, and London staff asking for Saigon
+[276/384] [chromium] › tests/e2e/shell.spec.ts:113:1 › an unknown route shows not-found with the role's home
+[277/384] [chromium] › tests/e2e/shell.spec.ts:128:3 › at 390 wide: a staff member works at one dealership: no dealership choice, and another dealership is refused (D-0001-89)
+[278/384] [chromium] › tests/e2e/manage-states.spec.ts:123:5 › at 1440 wide › settings: save-error
+[279/384] [chromium] › tests/e2e/smoke.spec.ts:3:1 › the page opens and says nobody is signed in
+[280/384] [chromium] › tests/e2e/manage-states.spec.ts:138:5 › at 1440 wide › settings: loading
+[281/384] [chromium] › tests/e2e/staff-book.spec.ts:183:5 › at 390 wide › book-customer: idle, too-short, results, picked, no-results; Continue opens the staff book page with the pick
+[282/384] [chromium] › tests/e2e/shell.spec.ts:128:3 › at 1440 wide: a staff member works at one dealership: no dealership choice, and another dealership is refused (D-0001-89)
+[283/384] [chromium] › tests/e2e/manage-states.spec.ts:150:5 › at 1440 wide › settings: error
+[284/384] [chromium] › tests/e2e/demo.spec.ts:916:1 › scenario 8, dev panel (NFR-6): after the race the panel shows the confirmed booking and the 409 with its reason, the 409's reference finds the same line, and Reset demo data returns the schedule to the seed
+[285/384] [chromium] › tests/e2e/shell.spec.ts:152:1 › remote proof: page.route does not see calls the service worker answers (D-0001-58)
+[286/384] [chromium] › tests/e2e/schedule.spec.ts:77:5 › at 1440 wide › the day: timeline (desktop) or list (phone), selected, selected-flagged, list, list-bays, bays
+[287/384] [chromium] › tests/e2e/manage-states.spec.ts:165:5 › at 1440 wide › settings and shifts: no-permission, no-permission-dealership, not-found, empty
+[288/384] [chromium] › tests/e2e/shell.spec.ts:175:1 › a 500 from the API shows the error words with a reference and a Copy button; no network says the same without a reference
+[289/384] [chromium] › tests/e2e/shell.spec.ts:205:1 › a slow answer shows the skeleton only after 200 ms
+[290/384] [chromium] › tests/e2e/shell.spec.ts:214:1 › the first Tab stop is the skip link, and a page has one h1 and the landmarks
+[291/384] [chromium] › tests/e2e/shell.spec.ts:230:3 › no sideways scroll and 44px targets at 320 wide
+[292/384] [chromium] › tests/e2e/shell.spec.ts:230:3 › no sideways scroll and 44px targets at 390 wide
+[293/384] [chromium] › tests/e2e/manage-states.spec.ts:196:5 › at 1440 wide › shifts: empty
+[294/384] [chromium] › tests/e2e/shell.spec.ts:230:3 › no sideways scroll and 44px targets at 768 wide
+[295/384] [chromium] › tests/e2e/manage-states.spec.ts:205:5 › at 1440 wide › shifts: idle, dirty, validation, checking, confirm-flags, saving, saved-with-flags
+[296/384] [chromium] › tests/e2e/shell.spec.ts:230:3 › no sideways scroll and 44px targets at 1024 wide
+[297/384] [chromium] › tests/e2e/shell.spec.ts:230:3 › no sideways scroll and 44px targets at 1440 wide
+[298/384] [chromium] › tests/e2e/shell.spec.ts:264:3 › axe finds nothing on the shell, the guard states and the component sheet at 390 wide
+[299/384] [chromium] › tests/e2e/staff-book.spec.ts:293:5 › at 390 wide › book-customer: searching, search-error and results-capped
+[300/384] [chromium] › tests/e2e/schedule.spec.ts:188:5 › at 1440 wide › one technician's day and one bay's day (technician, bay-day)
+[301/384] [chromium] › tests/e2e/schedule.spec.ts:228:5 › at 1440 wide › empty-day, closed-day, past-day, and a closed day that still holds bookings
+[302/384] [chromium] › tests/e2e/shell.spec.ts:264:3 › axe finds nothing on the shell, the guard states and the component sheet at 1440 wide
+[303/384] [chromium] › tests/e2e/staff-book.spec.ts:327:5 › at 390 wide › book-customer: search-error shows the reference and Try again
+[304/384] [chromium] › tests/e2e/staff-book.spec.ts:351:5 › at 390 wide › book-customer: no-vehicle, and Add another vehicle opens the vehicle group (not in the approved prototype)
+[305/384] [chromium] › tests/e2e/demo.spec.ts:1024:1 › the customer booking page in a Saigon browser says its times are London time (design.md section 9)
+[306/384] [chromium] › tests/e2e/time-zone-note.spec.ts:155:3 › book: a browser in Saigon says once that the times are London time, and shows London times; no sideways scroll from 320 to 1440, and axe is clean at 390 and 1440
+[307/384] [chromium] › tests/e2e/schedule.spec.ts:308:5 › at 1440 wide › loading and error
+[308/384] [chromium] › tests/e2e/manage-states.spec.ts:260:5 › at 1440 wide › shifts: saved, leave-dialog
+[309/384] [chromium] › tests/e2e/shell.spec.ts:292:3 › on a phone the role button shows the whole name at 360 wide, and the sheet names the current user
+[310/384] [chromium] › tests/e2e/staff-book.spec.ts:405:5 › at 390 wide › new-customer, validation and duplicate-hint; nothing is stored until a booking is confirmed
+[311/384] [chromium] › tests/e2e/schedule.spec.ts:341:5 › at 1440 wide › the appointment page: confirmed, flagged, cancelled, not-found, loading, error
+[312/384] [chromium] › tests/e2e/time-zone-note.spec.ts:174:3 › book: a browser in London shows no time-zone note
+[313/384] [chromium] › tests/e2e/manage-states.spec.ts:282:5 › at 1440 wide › shifts: save-error
+[314/384] [chromium] › tests/e2e/time-zone-note.spec.ts:155:3 › book-confirmed: a browser in Saigon says once that the times are London time, and shows London times; no sideways scroll from 320 to 1440, and axe is clean at 390 and 1440
+[315/384] [chromium] › tests/e2e/shell.spec.ts:292:3 › on a phone the role button shows the whole name at 390 wide, and the sheet names the current user
+[316/384] [chromium] › tests/e2e/manage-states.spec.ts:296:5 › at 1440 wide › shifts: loading
+[317/384] [chromium] › tests/e2e/manage-states.spec.ts:305:5 › at 1440 wide › shifts: error
+[318/384] [chromium] › tests/e2e/whole-app.spec.ts:48:1 › SEC-15.AC-3: the three role journeys on the built app send every request to the app's own origin, with no blocked resource or policy message
+[319/384] [chromium] › tests/e2e/manage-states.spec.ts:322:1 › at every width: no sideways scroll; rows stack on a phone, two per line from 640, one line per weekday from 1024; the form is at most 60rem
+[320/384] [chromium] › tests/e2e/time-zone-note.spec.ts:174:3 › book-confirmed: a browser in London shows no time-zone note
+[321/384] [chromium] › tests/e2e/time-zone-note.spec.ts:155:3 › my-appointments: a browser in Saigon says once that the times are London time, and shows London times; no sideways scroll from 320 to 1440, and axe is clean at 390 and 1440
+[322/384] [chromium] › tests/e2e/staff-book.spec.ts:528:5 › at 390 wide › staff book: idle, time-chosen, validation, confirming and the staff confirmation
+[323/384] [chromium] › tests/e2e/whole-app.spec.ts:205:1 › SEC-11.AC-3: script text stored through the staff booking form is shown as text on the schedule, the search, the appointment page and the outbox; no dialog, no console error, no window.__xss
+[324/384] [chromium] › tests/e2e/time-zone-note.spec.ts:174:3 › my-appointments: a browser in London shows no time-zone note
+[325/384] [chromium] › tests/e2e/time-zone-note.spec.ts:155:3 › appointment: a browser in Saigon says once that the times are London time, and shows London times; no sideways scroll from 320 to 1440, and axe is clean at 390 and 1440
+[326/384] [chromium] › tests/e2e/schedule.spec.ts:437:5 › at 1440 wide › no-permission: a customer on /schedule, and London staff asking for Saigon
+[327/384] [chromium] › tests/e2e/time-zone-note.spec.ts:174:3 › appointment: a browser in London shows no time-zone note
+[328/384] [chromium] › tests/e2e/time-zone-note.spec.ts:155:3 › reschedule: a browser in Saigon says once that the times are London time, and shows London times; no sideways scroll from 320 to 1440, and axe is clean at 390 and 1440
+[329/384] [chromium] › tests/e2e/whole-app.spec.ts:364:1 › SEC-13.AC-2: after staff load the schedule and a search with results, switching to the customer role leaves no staff name, phone or plate in the page, and the cache holds nothing from before the switch
+[330/384] [chromium] › tests/e2e/schedule.spec.ts:517:1 › a new booking shows on opening and on reloading the day (REQ-BOOK-004.AC-2)
+[331/384] [chromium] › tests/e2e/whole-app.spec.ts:457:1 › NFR-4: the route list of the router has an address for every route
+[332/384] [chromium] › tests/e2e/whole-app.spec.ts:464:1 › NFR-4: every route written straight into the router (not through routeRules) is in the sweep
+[333/384] [chromium] › tests/e2e/whole-app.spec.ts:485:3 › NFR-4, NFR-7: every route a customer can open has 0 axe violations at 390 and 1440 and no sideways scroll at 320 to 1440
+[334/384] [chromium] › tests/e2e/schedule.spec.ts:542:1 › the timeline: shading, break, leave, Now line, gaps, names and Tab order
+[335/384] [chromium] › tests/e2e/staff-book.spec.ts:626:5 › at 390 wide › a new customer is booked: stored with the vehicle once, found by name, phone and plate
+[336/384] [chromium] › tests/e2e/schedule.spec.ts:590:1 › a date that is not a real date opens today, like no date
+[337/384] [chromium] › tests/e2e/time-zone-note.spec.ts:174:3 › reschedule: a browser in London shows no time-zone note
+[338/384] [chromium] › tests/e2e/time-zone-note.spec.ts:155:3 › book-staff: a browser in Saigon says once that the times are London time, and shows London times; no sideways scroll from 320 to 1440, and axe is clean at 390 and 1440
+[339/384] [chromium] › tests/e2e/schedule.spec.ts:603:1 › the manager's gaps link to the booking too, and the manager has the top Book button (D-0001-54 B)
+[340/384] [chromium] › tests/e2e/staff-book.spec.ts:694:5 › at 390 wide › from a tapped gap: from-gap, from-gap-fits, gap-too-short, No times, and Any technician drops the technician
+[341/384] [chromium] › tests/e2e/schedule.spec.ts:623:1 › the built app places blocks and gaps at the right offset and width under its CSP (SEC-15.AC-1)
+[342/384] [chromium] › tests/e2e/schedule.spec.ts:673:1 › the time-zone note shows only when the viewer's zone differs (design.md 8.3)
+[343/384] [chromium] › tests/e2e/schedule.spec.ts:692:1 › stored text is shown as text on the schedule and the appointment page (SEC-11.AC-2)
+[344/384] [chromium] › tests/e2e/time-zone-note.spec.ts:174:3 › book-staff: a browser in London shows no time-zone note
+[345/384] [chromium] › tests/e2e/schedule.spec.ts:801:3 › a 60-appointment day at 320 wide: no sideways page scroll, 44px targets, the box scrolls on its own
+[346/384] [chromium] › tests/e2e/time-zone-note.spec.ts:155:3 › book-for-customer: a browser in Saigon says once that the times are London time, and shows London times; no sideways scroll from 320 to 1440, and axe is clean at 390 and 1440
+[347/384] [chromium] › tests/e2e/schedule.spec.ts:801:3 › a 60-appointment day at 390 wide: no sideways page scroll, 44px targets, the box scrolls on its own
+[348/384] [chromium] › tests/e2e/schedule.spec.ts:801:3 › a 60-appointment day at 768 wide: no sideways page scroll, 44px targets, the box scrolls on its own
+[349/384] [chromium] › tests/e2e/schedule.spec.ts:801:3 › a 60-appointment day at 1024 wide: no sideways page scroll, 44px targets, the box scrolls on its own
+[350/384] [chromium] › tests/e2e/time-zone-note.spec.ts:174:3 › book-for-customer: a browser in London shows no time-zone note
+[351/384] [chromium] › tests/e2e/time-zone-note.spec.ts:155:3 › adjust: a browser in Saigon says once that the times are London time, and shows London times; no sideways scroll from 320 to 1440, and axe is clean at 390 and 1440
+[352/384] [chromium] › tests/e2e/staff-book.spec.ts:805:5 › at 390 wide › conflict and conflict-new-customer: everything is kept; after a new time exactly one customer, vehicle and appointment exist
+[353/384] [chromium] › tests/e2e/schedule.spec.ts:801:3 › a 60-appointment day at 1440 wide: no sideways page scroll, 44px targets, the box scrolls on its own
+[354/384] [chromium] › tests/e2e/schedule.spec.ts:846:1 › video of the main flow: open the day, Technicians and Bays, List, select a block, open the appointment
+[355/384] [chromium] › tests/e2e/time-zone-note.spec.ts:174:3 › adjust: a browser in London shows no time-zone note
+[356/384] [chromium] › tests/e2e/time-zone-note.spec.ts:185:1 › my appointments at dealerships in two zones: no page note, and each card in another zone than the browser's says its own (Q-0001-252)
+[357/384] [chromium] › tests/e2e/staff-book.spec.ts:897:5 › at 390 wide › conflict-empty: a fixed technician with no other time says so and offers any technician
+[358/384] [chromium] › tests/e2e/staff-book.spec.ts:964:5 › at 390 wide › loading, empty-day, error (Try again sends the same key) and forbidden
+[359/384] [chromium] › tests/e2e/whole-app.spec.ts:485:3 › NFR-4, NFR-7: every route a staff can open has 0 axe violations at 390 and 1440 and no sideways scroll at 320 to 1440
+[360/384] [chromium] › tests/e2e/staff-book.spec.ts:1062:5 › at 390 wide › no-permission: a customer on /book/for-customer and on a staff /book link; the API refuses them
+[361/384] [chromium] › tests/e2e/staff-book.spec.ts:183:5 › at 1440 wide › book-customer: idle, too-short, results, picked, no-results; Continue opens the staff book page with the pick
+[362/384] [chromium] › tests/e2e/staff-book.spec.ts:293:5 › at 1440 wide › book-customer: searching, search-error and results-capped
+[363/384] [chromium] › tests/e2e/whole-app.spec.ts:485:3 › NFR-4, NFR-7: every route a manager can open has 0 axe violations at 390 and 1440 and no sideways scroll at 320 to 1440
+[364/384] [chromium] › tests/e2e/staff-book.spec.ts:327:5 › at 1440 wide › book-customer: search-error shows the reference and Try again
+[365/384] [chromium] › tests/e2e/staff-book.spec.ts:351:5 › at 1440 wide › book-customer: no-vehicle, and Add another vehicle opens the vehicle group (not in the approved prototype)
+[366/384] [chromium] › tests/e2e/staff-book.spec.ts:405:5 › at 1440 wide › new-customer, validation and duplicate-hint; nothing is stored until a booking is confirmed
+[367/384] [chromium] › tests/e2e/staff-book.spec.ts:528:5 › at 1440 wide › staff book: idle, time-chosen, validation, confirming and the staff confirmation
+[368/384] [chromium] › tests/e2e/staff-book.spec.ts:626:5 › at 1440 wide › a new customer is booked: stored with the vehicle once, found by name, phone and plate
+[369/384] [chromium] › tests/e2e/staff-book.spec.ts:694:5 › at 1440 wide › from a tapped gap: from-gap, from-gap-fits, gap-too-short, No times, and Any technician drops the technician
+[370/384] [chromium] › tests/e2e/staff-book.spec.ts:805:5 › at 1440 wide › conflict and conflict-new-customer: everything is kept; after a new time exactly one customer, vehicle and appointment exist
+[371/384] [chromium] › tests/e2e/whole-app.spec.ts:513:1 › SEC-14: a VITE_API_MODE=remote preview has no role switcher, no dev panel link and no X-Demo-User header in any request
+[372/384] [chromium] › tests/e2e/staff-book.spec.ts:897:5 › at 1440 wide › conflict-empty: a fixed technician with no other time says so and offers any technician
+[373/384] [chromium] › tests/e2e/staff-book.spec.ts:964:5 › at 1440 wide › loading, empty-day, error (Try again sends the same key) and forbidden
+[374/384] [chromium] › tests/e2e/staff-book.spec.ts:1062:5 › at 1440 wide › no-permission: a customer on /book/for-customer and on a staff /book link; the API refuses them
+[375/384] [chromium] › tests/e2e/staff-book.spec.ts:1108:1 › the manager books for a customer from the Schedule button with the same screens; Back to schedule is theirs; another dealership is 403
+[376/384] [chromium] › tests/e2e/staff-book.spec.ts:1167:1 › the manager can open the book-customer screen at 390 wide with the button full width under the title
+[377/384] [chromium] › tests/e2e/staff-book.spec.ts:1183:1 › D-0001-29 B: Add another vehicle books the new car for the picked customer; no second customer; the car is found next time
+[378/384] [chromium] › tests/e2e/staff-book.spec.ts:1234:1 › SEC-10: the search text and phone numbers never appear in the address or in any request address
+[379/384] [chromium] › tests/e2e/staff-book.spec.ts:1270:1 › SEC-13.AC-2: the search text, the pick and the new customer's details are gone after the role is switched
+[380/384] [chromium] › tests/e2e/staff-book.spec.ts:1288:1 › SEC-11.AC-2: a stored customer whose words are script is shown as text in the results and the panel
+[381/384] [chromium] › tests/e2e/staff-book.spec.ts:1326:1 › NFR-7: no sideways scroll at any width; 56 px rows 8 px apart; two columns from 768; form groups side by side; phone bar and no tab bar
+[382/384] [chromium] › tests/e2e/staff-book.spec.ts:1383:3 › Q-0001-247 at 390 wide: when the tapped gap cannot be checked, no times show, Confirm stays off and nothing says Picked for you; Try again brings the technician back
+[383/384] [chromium] › tests/e2e/staff-book.spec.ts:1383:3 › Q-0001-247 at 1440 wide: when the tapped gap cannot be checked, no times show, Confirm stays off and nothing says Picked for you; Try again brings the technician back
+[384/384] [chromium] › tests/e2e/staff-book.spec.ts:1454:1 › video: a staff member taps a free gap, finds a customer, picks a car, a service and a time, confirms; then adds a new customer, hits just taken and recovers
+  4 skipped
+  380 passed (4.1m)
+exit 0
