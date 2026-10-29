@@ -5,6 +5,11 @@
 import { mkdirSync } from "node:fs";
 import { expect, test, type Page } from "@playwright/test";
 import {
+  isWebKitSelectStyle,
+  recordPolicyViolations,
+  withoutWebKitSelectMessage,
+} from "./policy-support";
+import {
   LONDON,
   TODAY,
   api,
@@ -617,7 +622,10 @@ test("the manager's gaps link to the booking too, and the manager has the top Bo
 
 test("the built app places blocks and gaps at the right offset and width under its CSP (SEC-15.AC-1)", async ({
   page,
+  context,
+  browserName,
 }) => {
+  const events = await recordPolicyViolations(context);
   const violations: string[] = [];
   page.on("console", (m) => {
     if (/Content Security Policy|Refused to/.test(m.text()))
@@ -653,7 +661,13 @@ test("the built app places blocks and gaps at the right offset and width under i
   // No inline style text in the served HTML.
   const html = await (await page.request.get("/schedule")).text();
   expect(html).not.toMatch(/style="/);
-  expect(violations).toEqual([]);
+  // WebKit's own style on a native <select> is set aside (Q-0001-253); nothing else is.
+  expect(withoutWebKitSelectMessage(violations, events, browserName)).toEqual(
+    [],
+  );
+  expect(events.filter((v) => !isWebKitSelectStyle(v, browserName))).toEqual(
+    [],
+  );
 });
 
 test("the time-zone note shows only when the viewer's zone differs (design.md 8.3)", async ({
