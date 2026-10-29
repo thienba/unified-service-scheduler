@@ -9,6 +9,7 @@ import { useToast } from "../../components/Toast";
 import { ApiProblem, type Dealership } from "../../data/api-problem";
 import { formatDuration } from "../../format/format";
 import { useDealerships } from "../../session/dealership";
+import { ZoneTimesNote } from "../../session/TimesNote";
 import { AppointmentCard } from "./AppointmentCard";
 import { CancelDialog } from "./CancelDialog";
 import {
@@ -42,6 +43,10 @@ export function MyAppointmentsPage() {
     .filter((a) => customerStatus(a, now) !== "confirmed")
     .sort((x, y) => y.start.localeCompare(x.start));
   const empty = !loading && !failure && all.length === 0;
+  // One zone on the page: one note under the title. Appointments at dealerships in more than one zone: each
+  // card says its own zone instead (Q-0001-252).
+  const zones = [...new Set(all.map((a) => a.timeZone))];
+  const oneZone = zones.length === 1 ? zones[0] : undefined;
   const dealershipOf = (a: Appointment) =>
     dealerships.data?.find((d) => d.id === a.dealershipId);
 
@@ -56,9 +61,12 @@ export function MyAppointmentsPage() {
   return (
     <div className="grid gap-8">
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
-        <h1 ref={title} tabIndex={-1} className="text-2xl lg:text-3xl">
-          My appointments
-        </h1>
+        <div className="grid gap-1">
+          <h1 ref={title} tabIndex={-1} className="text-2xl lg:text-3xl">
+            My appointments
+          </h1>
+          {oneZone && <ZoneTimesNote timeZone={oneZone} />}
+        </div>
         {!loading && !failure && !empty && (
           <Button
             variant="primary"
@@ -125,6 +133,7 @@ export function MyAppointmentsPage() {
                       dealership={dealershipOf(a)}
                       now={now}
                       first={i === 0}
+                      ownZone={oneZone === undefined}
                       onCancel={setCancelling}
                     />
                   </li>
@@ -144,6 +153,7 @@ export function MyAppointmentsPage() {
                       appointment={a}
                       dealership={dealershipOf(a)}
                       now={now}
+                      ownZone={oneZone === undefined}
                       onCancel={setCancelling}
                     />
                   </li>

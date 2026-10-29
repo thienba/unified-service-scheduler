@@ -12,7 +12,7 @@ import { Icon } from "../../components/Icon";
 import { PhoneLink, Plate } from "../../components/Small";
 import { cx } from "../../components/cx";
 import type { Dealership } from "../../data/api-problem";
-import { formatTimeRange } from "../../format/format";
+import { formatTimeRange, viewerTimeZone, zoneNote } from "../../format/format";
 import {
   customerStatus,
   dateLine,
@@ -25,6 +25,7 @@ export function AppointmentCard({
   dealership,
   now,
   first = false,
+  ownZone = false,
   onCancel,
 }: {
   appointment: Appointment;
@@ -32,9 +33,12 @@ export function AppointmentCard({
   now: number;
   /** The next appointment: its date is the largest on the page. */
   first?: boolean;
+  /** The page shows appointments in more than one zone: the card says its own, "(London time)" (Q-0001-252). */
+  ownZone?: boolean;
   onCancel: (appointment: Appointment) => void;
 }) {
   const zone = a.timeZone;
+  const zoneWords = zoneNote(zone, viewerTimeZone());
   const status = customerStatus(a, now);
   const open = dealership !== undefined && mayChangeOnline(a, dealership, now);
   const tooClose = status === "confirmed" && !open;
@@ -64,6 +68,7 @@ export function AppointmentCard({
           </span>
           <span className="num block font-sans text-base font-medium">
             {formatTimeRange(a.start, a.end, zone)}
+            {ownZone && zoneWords && ` ${zoneWords}`}
           </span>
         </Link>
       </h3>

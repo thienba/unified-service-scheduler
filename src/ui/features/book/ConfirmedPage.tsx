@@ -16,6 +16,7 @@ import {
   localDateIn,
 } from "../../format/format";
 import { useDealerships } from "../../session/dealership";
+import { ZoneTimesNote } from "../../session/TimesNote";
 import { instantAt } from "./days";
 import { useAppointment, type Appointment, type Transport } from "./queries";
 
@@ -162,6 +163,7 @@ function Booked({
         <p className="num m-0 text-lg font-semibold">
           {day}, {formatTimeRange(start, appointment.end, zone)}
         </p>
+        <ZoneTimesNote timeZone={zone} />
       </section>
 
       <section aria-labelledby="facts-title" className="grid gap-3">

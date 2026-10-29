@@ -45,6 +45,7 @@ import {
 } from "../../format/format";
 import { useSelectedDealership } from "../../session/dealership";
 import { useSession } from "../../session/session";
+import { TimesNote } from "../../session/TimesNote";
 import {
   closestOpenDays,
   dayNote,
@@ -697,6 +698,7 @@ function Booking({ who }: { who: Who }) {
                 {lede}
               </p>
             )}
+            <TimesNote className="mt-2" />
           </div>
 
           {staff && (

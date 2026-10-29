@@ -36,6 +36,7 @@ import { FormSummary, type FormProblem } from "../../forms/FormSummary";
 import { zodResolver } from "../../forms/resolver";
 import { useDealerships } from "../../session/dealership";
 import { useSession } from "../../session/session";
+import { ZoneTimesNote } from "../../session/TimesNote";
 import { instantAt } from "../book/days";
 import { isCancelled } from "../appointment/AppointmentReadSide";
 import { vehicleText } from "../schedule/schedule-model";
@@ -226,6 +227,7 @@ function Head({ appointment: a }: { appointment: Appointment }) {
         Back to schedule
       </PageBack>
       <h1 className="text-2xl lg:text-3xl">Adjust appointment</h1>
+      <ZoneTimesNote timeZone={a.timeZone} />
       <p className="text-lg wrap-anywhere">
         {a.display.serviceTypeName} for{" "}
         <span dir="auto">{a.display.customerName}</span> · {vehicleText(a)}{" "}
