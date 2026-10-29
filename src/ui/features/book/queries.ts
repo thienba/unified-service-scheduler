@@ -38,14 +38,25 @@ export const availabilityKey = (
   serviceTypeId: string,
   date: string,
   transport: Transport,
-) => ["availability", dealershipId, serviceTypeId, date, transport] as const;
+  technicianId?: string,
+) =>
+  [
+    "availability",
+    dealershipId,
+    serviceTypeId,
+    date,
+    transport,
+    technicianId ?? null,
+  ] as const;
 
-/** The free start times of each date: one call per date (customer.md, "for the architect"). */
+/** The free start times of each date: one call per date (customer.md, "for the architect"). With a
+ * technician, only that technician's times (staff from a free gap, D-0001-31 A). */
 export function useWeekAvailability(
   dealershipId: string | undefined,
   serviceTypeId: string | undefined,
   dates: readonly string[],
   transport: Transport,
+  technicianId?: string,
 ) {
   const { client } = useSession();
   return useQueries({
@@ -55,13 +66,19 @@ export function useWeekAvailability(
         serviceTypeId ?? "",
         date,
         transport,
+        technicianId,
       ),
       queryFn: () =>
         call(
           client.GET("/dealerships/{dealershipId}/availability", {
             params: {
               path: { dealershipId: dealershipId! },
-              query: { serviceTypeId: serviceTypeId!, date, transport },
+              query: {
+                serviceTypeId: serviceTypeId!,
+                date,
+                transport,
+                ...(technicianId ? { technicianId } : {}),
+              },
             },
           }),
         ),

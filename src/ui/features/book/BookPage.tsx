@@ -2,6 +2,9 @@
 // service live in the address (`/book?dealership&service`, a dealer's website links here); the car, the
 // time and the car choice live in the form. Everything read from the address is looked up in what the API
 // returned and never shown as typed (SEC-12).
+// The same screen is the staff version (staff.md 5.4) when staff or the manager book for a customer: the
+// "Booking for" panel takes the car's place, the words are the staff's, and a tapped free gap fixes the
+// technician (D-0001-20 B, D-0001-31 A). One strip, one chip grid, one summary for both.
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
@@ -17,7 +20,8 @@ import { Button } from "../../components/Button";
 import { DayStrip } from "../../components/DayStrip";
 import { focusField, SelectField, type Choice } from "../../components/Fields";
 import { query, useMediaQuery } from "../../components/hooks";
-import { PhoneLink, Plate } from "../../components/Small";
+import { ForCustomerPanel } from "../../components/ForCustomer";
+import { PageBack, PhoneLink, Plate } from "../../components/Small";
 import { Skeleton, StateBlock } from "../../components/StateBlock";
 import {
   HintBox,
@@ -60,6 +64,10 @@ import {
   type StripDay,
   type TimeSlot,
 } from "./days";
+import { phoneEnding, useStaffMemory } from "./staff-memory";
+import { useGapFromAddress, type Gap } from "./staff-queries";
+import { useStaffWho, whoBody, type StaffWho } from "./staff-who";
+import { searchAddress } from "./staff-words";
 import {
   availabilityKey,
   useServiceTypes,
@@ -73,20 +81,30 @@ import {
 const carMissing = "Car is missing. Choose which car is coming in.";
 const choiceMissing = "Choose what you will do with the car.";
 
-const schema = z.object({
-  vehicleId: z.string().min(1, carMissing),
-  start: z.string().min(1, "Pick a start time."),
-  transport: z
-    .string()
-    .refine((v) => ["wait", "drop_off"].includes(v), choiceMissing),
-});
-type BookForm = z.infer<typeof schema>;
+const schemaFor = (staff: boolean) =>
+  z.object({
+    vehicleId: z.string().min(1, carMissing),
+    start: z.string().min(1, "Pick a start time."),
+    transport: z
+      .string()
+      .refine(
+        (v) => ["wait", "drop_off"].includes(v),
+        staff
+          ? "Choose what the customer will do with the car."
+          : choiceMissing,
+      ),
+  });
+type BookForm = z.infer<ReturnType<typeof schemaFor>>;
 
-/** What the summary Alert says for each field (customer.md section 4, "Validation"). */
+/** What the summary Alert says for each field (customer.md section 4, "Validation"; staff.md 5.4). */
 const summaryWords: Record<string, string> = {
   vehicleId: "Car: choose which car is coming in.",
   transport: "What you will do with the car: choose one.",
   start: "Time: pick a start time.",
+};
+const staffSummaryWords: Record<string, string> = {
+  ...summaryWords,
+  transport: "Car choice: choose what the customer will do with the car.",
 };
 
 /** One list of car choices: the courtesy-car ticket adds the third (D-0000-9). */
@@ -94,6 +112,14 @@ const transportChoices: Choice[] = [
   { value: "wait", label: "Wait on site", icon: "hourglass" },
   { value: "drop_off", label: "Drop it off", icon: "login" },
 ];
+/** The same choices in the staff's third person (design.md 8.9). */
+const staffTransportChoices: Choice[] = [
+  { value: "wait", label: "Waits on site", icon: "hourglass" },
+  { value: "drop_off", label: "Drops the car off", icon: "login" },
+];
+
+/** Who the booking is for: the customer themselves, or the customer staff chose. */
+type Who = { kind: "customer"; customerId: string | null } | StaffWho;
 
 const START = "start";
 const SUGGESTED = "suggested-start";
@@ -116,24 +142,37 @@ const isDate = (value: string | null): value is string =>
   !Number.isNaN(Date.parse(`${value}T00:00:00Z`));
 
 const lowerFirst = (s: string) => s.charAt(0).toLowerCase() + s.slice(1);
+/** "a full service", "an oil and filter change". */
+const aService = (name: string) =>
+  `${/^[aeiou]/i.test(name) ? "an" : "a"} ${lowerFirst(name)}`;
+const upperFirst = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export function BookPage() {
   const { me } = useSession();
   const [params] = useSearchParams();
   if (me === null) return null;
   if (me.role !== "customer") {
-    // The staff version of this page is its own screen (staff.md, `book`); until a customer is chosen
-    // there is nothing to book here.
-    return (
-      <NoPermission
-        denied={mayBookForCustomer(me.role) ? "book-for-customer" : "schedule"}
-        role={me.role}
-      />
-    );
+    if (mayBookForCustomer(me.role)) return <StaffBook role={me.role} />;
+    return <NoPermission denied="schedule" role={me.role} />;
   }
+  // A staff booking link (a fixed technician) is not for customers (REQ-BOOK-014.AC-5).
+  if (params.has("technicianId"))
+    return <NoPermission denied="book-for-customer" role={me.role} />;
   const asked = params.get("customerId");
   if (asked !== null && asked !== me.customerId) return <ForOtherCustomer />;
-  return <CustomerBooking customerId={me.customerId} />;
+  return <Booking who={{ kind: "customer", customerId: me.customerId }} />;
+}
+
+/** The staff version: only once a customer and a vehicle are chosen, in the address or in screen memory. */
+function StaffBook({ role }: { role: "staff" | "manager" | "customer" }) {
+  const answer = useStaffWho();
+  if (answer.state === "loading")
+    return <StateBlock kind="loading" loadingLabel="Loading the customer" />;
+  if (answer.state === "failed")
+    return <LoadFailure error={answer.error} retry={answer.retry} />;
+  if (answer.state === "none")
+    return <NoPermission denied="book-for-customer" role={role} />;
+  return <Booking who={answer.who} />;
 }
 
 /** SEC-6.AC-1: a booking link for another customer. */
@@ -160,8 +199,11 @@ function ForOtherCustomer() {
   );
 }
 
-function CustomerBooking({ customerId }: { customerId: string | null }) {
+function Booking({ who }: { who: Who }) {
+  const staff = who.kind === "staff" ? who : null;
+  const customerId = who.kind === "customer" ? who.customerId : null;
   const { client } = useSession();
+  const [, , forgetStaffMemory] = useStaffMemory();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const lg = useMediaQuery(query.lg);
@@ -169,6 +211,10 @@ function CustomerBooking({ customerId }: { customerId: string | null }) {
   const dealerships = useSelectedDealership();
   const services = useServiceTypes();
   const vehicles = useVehicles(customerId);
+  const fromGap = useGapFromAddress(staff ? dealerships.selected : undefined);
+  // The technician is fixed while the gap stands; "Any technician" takes it out of the address.
+  const gap: Gap | null = staff ? fromGap.gap : null;
+  const technicianId = gap?.technicianId;
 
   const dealership = dealerships.selected;
   const service = services.data?.find((s) => s.id === params.get("service"));
@@ -185,8 +231,13 @@ function CustomerBooking({ customerId }: { customerId: string | null }) {
     firstParams.current.service === service?.id;
 
   const form = useForm<BookForm>({
-    resolver: zodResolver(schema),
-    defaultValues: { vehicleId: "", start: "", transport: "" },
+    resolver: zodResolver(schemaFor(staff !== null)),
+    // Staff chose the vehicle on the search page (a new vehicle has no id until it is saved).
+    defaultValues: {
+      vehicleId: staff ? (staff.vehicleId ?? "new") : "",
+      start: "",
+      transport: "",
+    },
     shouldFocusError: false,
   });
   const { register, setValue, setError, handleSubmit } = form;
@@ -204,6 +255,7 @@ function CustomerBooking({ customerId }: { customerId: string | null }) {
   const [conflict, setConflict] = useState<Conflict | null>(null);
   const [failure, setFailure] = useState<ApiProblem | null>(null);
   const [forbidden, setForbidden] = useState(false);
+  const [rejected, setRejected] = useState<string[] | null>(null);
   const [message, setMessage] = useState(0);
   const autoKey = useRef<string | null>(null);
   const pending = useRef<Pending | null>(null);
@@ -232,6 +284,7 @@ function CustomerBooking({ customerId }: { customerId: string | null }) {
     service?.id,
     fetchDates,
     queryTransport,
+    technicianId,
   );
   const byDate = new Map(fetchDates.map((d, i) => [d, results[i]!]));
   const stripLoading = fetchDates.some((d) => byDate.get(d)!.isPending);
@@ -255,14 +308,54 @@ function CustomerBooking({ customerId }: { customerId: string | null }) {
       ? linkDay
       : undefined;
 
+  // From a tapped gap: does the chosen service fit at the gap's start with its technician (D-0001-20 B)?
+  const fit = useQuery({
+    queryKey: [
+      "gap-fit",
+      dealership?.id,
+      service?.id,
+      gap?.start,
+      technicianId,
+    ],
+    queryFn: () =>
+      call(
+        client.POST("/availability-checks", {
+          body: {
+            dealershipId: dealership!.id,
+            serviceTypeId: service!.id,
+            start: gap!.start,
+            transport: queryTransport,
+            technicianId: gap!.technicianId,
+          },
+        }),
+      ),
+    enabled: Boolean(gap && dealership && service),
+  });
+  const fitKey = `${service?.id}|${gap?.start}|${technicianId}`;
+  const fitDone = useRef<string | null>(null);
+  const gapShort =
+    gap && fit.data && !fit.data.available ? fit.data.suggestions : null;
+  useEffect(() => {
+    if (!gap || !fit.data || !today || fitDone.current === fitKey) return;
+    fitDone.current = fitKey;
+    if (!fit.data.available) return;
+    // It fits: the gap's day and start are chosen (state `from-gap-fits`).
+    const date = localDateIn(gap.start, zone);
+    setWeekStart(weekStartFor(today, date));
+    setDay(date);
+    setValue("start", gap.start);
+  });
+
   // The first day with times is chosen when the strip first loads (design.md 8.7), or the linked day.
-  const stripKey = `${dealership?.id}|${service?.id}|${week}`;
+  const stripKey = `${dealership?.id}|${service?.id}|${week}|${technicianId}`;
   useEffect(() => {
     if (!ready || stripLoading || stripFailure || autoKey.current === stripKey)
       return;
+    // A gap waits for its own answer: it chooses the gap's day, or no day when the job does not fit.
+    if (gap && fit.isPending) return;
     autoKey.current = stripKey;
     if (day && dates.includes(day)) return;
-    if (notice) return;
+    if (notice || gapShort || (gap && fit.data?.available)) return;
     const linked = linkDay?.kind === "open" ? linkDay : undefined;
     const first = linked ?? days.find((d) => d.kind === "open");
     setDay(first?.date ?? null);
@@ -295,6 +388,7 @@ function CustomerBooking({ customerId }: { customerId: string | null }) {
           service.id,
           date,
           queryTransport,
+          technicianId,
         ),
       });
     }
@@ -327,6 +421,16 @@ function CustomerBooking({ customerId }: { customerId: string | null }) {
         pending.current = null;
         queryClient.setQueryData(["appointment", appointment.id], appointment);
         void queryClient.invalidateQueries({ queryKey: ["availability"] });
+        if (staff) {
+          // The new customer is stored now: the search finds them, and the memory is done with.
+          void queryClient.invalidateQueries({ queryKey: ["customer-search"] });
+          void queryClient.invalidateQueries({ queryKey: ["schedule"] });
+          void navigate(`/book/confirmed/${appointment.id}`, {
+            state: { newCustomer: staff.newCustomer !== null },
+          });
+          forgetStaffMemory();
+          return;
+        }
         void navigate(`/book/confirmed/${appointment.id}`);
       },
       onError: (error) => {
@@ -361,6 +465,15 @@ function CustomerBooking({ customerId }: { customerId: string | null }) {
         }
         if (problem.status === 422 && problem.problem?.errors?.length) {
           pending.current = null;
+          const details = problem.problem.errors.filter((e) =>
+            /^new(Customer|Vehicle)\./.test(e.field),
+          );
+          if (staff && details.length > 0) {
+            // The customer's or the vehicle's details were refused: they are fixed on the search page.
+            setRejected(details.map((e) => e.message));
+            setMessage((n) => n + 1);
+            return;
+          }
           for (const e of problem.problem.errors) {
             setError(e.field as keyof BookForm, { message: e.message });
           }
@@ -378,15 +491,25 @@ function CustomerBooking({ customerId }: { customerId: string | null }) {
     if (busy.current || booking.isPending) return;
     busy.current = true;
     setConflict(null);
+    setRejected(null);
     void handleSubmit(
       (values) => {
-        const body: BookingRequest = {
-          dealershipId: dealership!.id,
-          serviceTypeId: service!.id,
-          vehicleId: values.vehicleId,
-          start: values.start,
-          transport: values.transport as Transport,
-        };
+        const body: BookingRequest = staff
+          ? {
+              dealershipId: dealership!.id,
+              serviceTypeId: service!.id,
+              ...whoBody(staff),
+              start: values.start,
+              transport: values.transport as Transport,
+              ...(technicianId ? { technicianId } : {}),
+            }
+          : {
+              dealershipId: dealership!.id,
+              serviceTypeId: service!.id,
+              vehicleId: values.vehicleId,
+              start: values.start,
+              transport: values.transport as Transport,
+            };
         const same =
           pending.current &&
           JSON.stringify(pending.current.body) === JSON.stringify(body);
@@ -400,18 +523,20 @@ function CustomerBooking({ customerId }: { customerId: string | null }) {
     )();
   }
 
-  if (forbidden) return <ForOtherCustomer />;
+  if (forbidden && !staff) return <ForOtherCustomer />;
 
   const noVehicle =
-    customerId === null ||
-    (vehicles.data !== undefined && vehicles.data.length === 0);
+    !staff &&
+    (customerId === null ||
+      (vehicles.data !== undefined && vehicles.data.length === 0));
   const vehicle = vehicles.data?.find((v) => v.id === vehicleId);
   const loadFailure = services.error ?? vehicles.error;
   const confirming = booking.isPending;
   const needNewTime = conflict !== null && !start;
-  const problems = (Object.keys(summaryWords) as (keyof BookForm)[])
+  const words = staff ? staffSummaryWords : summaryWords;
+  const problems = (Object.keys(words) as (keyof BookForm)[])
     .filter((name) => errors[name])
-    .map((name) => ({ name, words: summaryWords[name]! }));
+    .map((name) => ({ name, words: words[name]! }));
 
   const confirmButton = (
     <Button
@@ -424,9 +549,11 @@ function CustomerBooking({ customerId }: { customerId: string | null }) {
     >
       {start || confirming
         ? "Confirm booking"
-        : needNewTime
-          ? "Pick a new time to confirm"
-          : "Pick a time to confirm"}
+        : staff && !service
+          ? "Choose a service to confirm"
+          : needNewTime
+            ? "Pick a new time to confirm"
+            : "Pick a time to confirm"}
     </Button>
   );
 
@@ -435,23 +562,99 @@ function CustomerBooking({ customerId }: { customerId: string | null }) {
       ? `${formatDay(start, zone, now)}, ${formatTimeRange(start, addMinutes(start, minutes), zone)}`
       : undefined;
 
-  const title = service
-    ? `Choose a time for your ${lowerFirst(service.name)}`
-    : "Book a service";
+  // With a fixed technician and no other time near the taken one (state `conflict-empty`).
+  const noneWithTechnician =
+    gap !== null && conflict !== null && conflict.suggestions.length === 0;
+  const title = staff
+    ? !service
+      ? "Choose a service and a time"
+      : gapShort || noneWithTechnician
+        ? "Choose a time"
+        : `Choose a time for ${aService(service.name)}`
+    : service
+      ? `Choose a time for your ${lowerFirst(service.name)}`
+      : "Book a service";
   const lede = service
     ? `Your ${lowerFirst(service.name)} takes about ${formatDuration(service.durationMinutes)}. Pick a day, then the time you want to arrive.`
     : "Tell us which car and which service. Then pick a day and a time.";
+
+  function anyTechnician() {
+    setParams((previous) => {
+      const next = new URLSearchParams(previous);
+      next.delete("technicianId");
+      return next;
+    });
+  }
+  const staffVehicle = staff
+    ? `${staff.vehicle.make} ${staff.vehicle.model}, ${staff.vehicle.registration}`
+    : "";
+  const ownNames = dealerships.options.map((d) => d.name).join(" and ");
 
   return (
     <>
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:gap-8">
         <div className="grid min-w-0 flex-1 content-start gap-6">
           <div>
+            {staff && (
+              <div className="mb-2">
+                <PageBack to={searchAddress(params)}>Back to customer</PageBack>
+              </div>
+            )}
             <h1 tabIndex={-1} className="text-2xl lg:text-3xl">
               {title}
             </h1>
-            <p className="mt-2 max-w-(--measure) text-text-secondary">{lede}</p>
+            {!staff && (
+              <p className="mt-2 max-w-(--measure) text-text-secondary">
+                {lede}
+              </p>
+            )}
           </div>
+
+          {staff && (
+            <ForCustomerPanel
+              name={staff.name}
+              line={`${phoneEnding(staff.phone)} · ${staffVehicle}`}
+              isNew={staff.newCustomer !== null}
+              action={
+                staff.newCustomer
+                  ? { label: "Edit details", to: searchAddress(params) }
+                  : { label: "Change customer", to: searchAddress(params) }
+              }
+            />
+          )}
+
+          {forbidden && staff && (
+            <Alert
+              key={`x${message}`}
+              kind="danger"
+              role={null}
+              focusTitle
+              title="You cannot book at that dealership."
+              actions={<Button to="/schedule">Back to schedule</Button>}
+            >
+              <p>
+                Your account is linked to {ownNames} only. Nothing was booked.
+                Go back to the schedule and carry on from there.
+              </p>
+            </Alert>
+          )}
+
+          {rejected && (
+            <Alert
+              key={`r${message}`}
+              kind="danger"
+              role={null}
+              focusTitle
+              title={`${rejected.length === 1 ? "1 thing needs" : `${rejected.length} things need`} fixing before we can book this.`}
+              actions={<Button to={searchAddress(params)}>Edit details</Button>}
+            >
+              <ul className="m-0 list-disc ps-5">
+                {rejected.map((line) => (
+                  <li key={line}>{line}</li>
+                ))}
+              </ul>
+            </Alert>
+          )}
 
           {problems.length > 0 && (
             <Alert
@@ -492,7 +695,47 @@ function CustomerBooking({ customerId }: { customerId: string | null }) {
               thisYear={thisYear}
               value={start}
               onChoose={chooseTime}
+              staff={
+                staff
+                  ? {
+                      technicianName: gap?.technicianName ?? null,
+                      newCustomerName: staff.newCustomer ? staff.name : null,
+                      onAnyTechnician: anyTechnician,
+                      onPickDay: focusDayStrip,
+                    }
+                  : undefined
+              }
             />
+          )}
+
+          {gap && !conflict && !gapShort && service === undefined && (
+            <GapAlert gap={gap} zone={zone} onAnyTechnician={anyTechnician}>
+              {gap.end
+                ? `You tapped a free gap, ${formatTimeRange(gap.start, gap.end, zone)}. We keep this time and this technician while you choose the service, then check that the job fits.`
+                : `You tapped a free gap from ${formatTime(gap.start, zone)}. We keep this time and this technician while you choose the service, then check that the job fits.`}
+            </GapAlert>
+          )}
+          {gap && !conflict && !gapShort && service !== undefined && (
+            <GapAlert gap={gap} zone={zone} onAnyTechnician={anyTechnician}>
+              {`We only show times with ${gap.technicianName}. Choose another technician by pressing Any technician.`}
+            </GapAlert>
+          )}
+          {gap && gapShort && service && (
+            <Alert
+              key={`s${fitKey}`}
+              kind="warning"
+              role={null}
+              focusTitle
+              title={`${upperFirst(aService(service.name))} does not fit at ${formatTime(gap.start, zone)} with ${gap.technicianName}.`}
+              actions={<Button onClick={anyTechnician}>Any technician</Button>}
+            >
+              <p>
+                {gap.end
+                  ? `${gap.technicianName} is free for ${formatDuration(Math.round((Date.parse(gap.end) - Date.parse(gap.start)) / 60_000))} from ${formatTime(gap.start, zone)}, and ${aService(service.name)} takes about ${formatDuration(service.durationMinutes)}. `
+                  : ""}
+                Pick another service, one of the times below, or any technician.
+              </p>
+            </Alert>
           )}
 
           {failure && (
@@ -520,13 +763,19 @@ function CustomerBooking({ customerId }: { customerId: string | null }) {
               }
             >
               <p>
-                {failure.status === 0
-                  ? "Nothing was booked. Check your connection and try again. Your choices are still here."
-                  : `Nothing was booked. Your choices are still here. ${
-                      failure.traceId
+                {staff
+                  ? `Nothing was booked. ${
+                      failure.status !== 0 && failure.traceId
                         ? `Try again; if it keeps happening, quote reference ${failure.traceId.slice(0, 8)}.`
                         : "Try again."
-                    }`}
+                    } We use the same request, so it cannot book twice.`
+                  : failure.status === 0
+                    ? "Nothing was booked. Check your connection and try again. Your choices are still here."
+                    : `Nothing was booked. Your choices are still here. ${
+                        failure.traceId
+                          ? `Try again; if it keeps happening, quote reference ${failure.traceId.slice(0, 8)}.`
+                          : "Try again."
+                      }`}
               </p>
             </Alert>
           )}
@@ -542,7 +791,7 @@ function CustomerBooking({ customerId }: { customerId: string | null }) {
             />
           )}
 
-          {fromWebsite && (
+          {fromWebsite && !staff && (
             <p className="text-sm text-text-secondary">
               The dealership and the service were filled in from the dealer's
               website. Change them if you need to.
@@ -553,23 +802,25 @@ function CustomerBooking({ customerId }: { customerId: string | null }) {
             aria-label="What are we booking?"
             className="grid gap-4 sm:grid-cols-2"
           >
-            <div className="sm:col-span-2">
-              <SelectField
-                label="Dealership"
-                required
-                name="dealershipId"
-                placeholder="Choose a dealership"
-                value={dealership?.id ?? ""}
-                options={dealerships.options.map((d) => ({
-                  value: d.id,
-                  label: d.name,
-                }))}
-                onChange={(e) => {
-                  resetChoice();
-                  dealerships.select(e.target.value);
-                }}
-              />
-            </div>
+            {!staff && (
+              <div className="sm:col-span-2">
+                <SelectField
+                  label="Dealership"
+                  required
+                  name="dealershipId"
+                  placeholder="Choose a dealership"
+                  value={dealership?.id ?? ""}
+                  options={dealerships.options.map((d) => ({
+                    value: d.id,
+                    label: d.name,
+                  }))}
+                  onChange={(e) => {
+                    resetChoice();
+                    dealerships.select(e.target.value);
+                  }}
+                />
+              </div>
+            )}
             {noVehicle ? (
               <div className="grid gap-1 sm:col-span-2">
                 <span className="font-medium">Car (required)</span>
@@ -584,37 +835,43 @@ function CustomerBooking({ customerId }: { customerId: string | null }) {
               </div>
             ) : (
               <>
-                <SelectField
-                  label="Car"
-                  required
-                  placeholder="Choose a car"
-                  options={(vehicles.data ?? []).map((v) => ({
-                    value: v.id,
-                    label: `${v.make} ${v.model}, ${v.registration}`,
-                  }))}
-                  error={errors.vehicleId?.message}
-                  {...register("vehicleId")}
-                />
-                <SelectField
-                  label="Service"
-                  required
-                  name="serviceTypeId"
-                  placeholder="Choose a service"
-                  value={service?.id ?? ""}
-                  options={(services.data ?? []).map((s) => ({
-                    value: s.id,
-                    label: `${s.name}, about ${formatDuration(s.durationMinutes)}`,
-                  }))}
-                  onChange={(e) => {
-                    resetChoice();
-                    setParams((previous) => {
-                      const next = new URLSearchParams(previous);
-                      next.set("service", e.target.value);
-                      next.delete("date");
-                      return next;
-                    });
-                  }}
-                />
+                {!staff && (
+                  <SelectField
+                    label="Car"
+                    required
+                    placeholder="Choose a car"
+                    options={(vehicles.data ?? []).map((v) => ({
+                      value: v.id,
+                      label: `${v.make} ${v.model}, ${v.registration}`,
+                    }))}
+                    error={errors.vehicleId?.message}
+                    {...register("vehicleId")}
+                  />
+                )}
+                <div className={staff ? "sm:col-span-2" : undefined}>
+                  <SelectField
+                    label="Service"
+                    required
+                    name="serviceTypeId"
+                    placeholder="Choose a service"
+                    value={service?.id ?? ""}
+                    options={(services.data ?? []).map((s) => ({
+                      value: s.id,
+                      label: staff
+                        ? `${s.name} (about ${formatDuration(s.durationMinutes)})`
+                        : `${s.name}, about ${formatDuration(s.durationMinutes)}`,
+                    }))}
+                    onChange={(e) => {
+                      resetChoice();
+                      setParams((previous) => {
+                        const next = new URLSearchParams(previous);
+                        next.set("service", e.target.value);
+                        next.delete("date");
+                        return next;
+                      });
+                    }}
+                  />
+                </div>
               </>
             )}
           </section>
@@ -629,7 +886,18 @@ function CustomerBooking({ customerId }: { customerId: string | null }) {
             />
           )}
 
-          {(!ready || noVehicle) && (
+          {staff && !service && (
+            <StateBlock
+              kind="info"
+              compact
+              headingLevel={2}
+              title="Choose a service to see times."
+            >
+              The times depend on how long the job takes and who can do it.
+            </StateBlock>
+          )}
+
+          {!staff && (!ready || noVehicle) && (
             <HintBox>
               Pick a dealership, a car and a service above. Then we show which
               days have room.
@@ -675,7 +943,8 @@ function CustomerBooking({ customerId }: { customerId: string | null }) {
                     days={days.map((d) => ({
                       date: d.date,
                       kind: d.kind,
-                      note: dayNote(d),
+                      // With a fixed technician a day with none reads "No times" (design.md 8.7, P7).
+                      note: gap && d.kind === "full" ? "No times" : dayNote(d),
                       fill: d.fill,
                     }))}
                     value={selected?.kind === "open" ? day : null}
@@ -707,21 +976,39 @@ function CustomerBooking({ customerId }: { customerId: string | null }) {
                       ? `${formatTimesCount(selected.count)} on ${dayWords(day)}`
                       : ""}
                   </p>
-                  <Times
-                    day={day}
-                    selected={selected}
-                    query={selectedQuery}
-                    conflict={conflict}
-                    dealership={dealership}
-                    serviceTypeId={service.id}
-                    transport={queryTransport}
-                    zone={zone}
-                    now={now}
-                    thisYear={thisYear}
-                    value={start}
-                    onChoose={chooseTime}
-                    label={timeLabel}
-                  />
+                  {gap && gapShort && !day ? (
+                    <SuggestionGroup
+                      title={`Closest times with ${gap.technicianName}`}
+                      items={gapShort.map((s) => ({
+                        start: s.start,
+                        end: s.end,
+                        day: formatDay(s.start, zone, now),
+                      }))}
+                      value={start || null}
+                      onChange={chooseTime}
+                      name={SUGGESTED}
+                      label={timeLabel}
+                    />
+                  ) : (
+                    <Times
+                      technicianId={technicianId}
+                      staff={staff !== null}
+                      serviceName={service.name}
+                      day={day}
+                      selected={selected}
+                      query={selectedQuery}
+                      conflict={conflict}
+                      dealership={dealership}
+                      serviceTypeId={service.id}
+                      transport={queryTransport}
+                      zone={zone}
+                      now={now}
+                      thisYear={thisYear}
+                      value={start}
+                      onChoose={chooseTime}
+                      label={timeLabel}
+                    />
+                  )}
                 </section>
               )}
             </>
@@ -730,26 +1017,70 @@ function CustomerBooking({ customerId }: { customerId: string | null }) {
 
         <div className="min-w-0 lg:sticky lg:top-4 lg:w-(--size-side) lg:shrink-0">
           <BookingSummary
-            rows={[
-              { term: "Dealership", value: dealership?.name ?? null },
-              {
-                term: "Car",
-                value: vehicle ? (
-                  <>
-                    {vehicle.make} {vehicle.model},{" "}
-                    <Plate>{vehicle.registration}</Plate>
-                  </>
-                ) : null,
-              },
-              {
-                term: "Service",
-                value: service
-                  ? `${service.name}, about ${formatDuration(service.durationMinutes)}`
-                  : null,
-              },
-              { term: "Time", value: chosenTime ?? null },
-            ]}
-            transportChoices={transportChoices}
+            variant={staff ? "staff" : "customer"}
+            customerName={staff?.name}
+            rows={
+              staff
+                ? [
+                    { term: "Dealership", value: dealership?.name ?? null },
+                    {
+                      term: "Vehicle",
+                      value: (
+                        <>
+                          {staff.vehicle.make} {staff.vehicle.model},{" "}
+                          <Plate>{staff.vehicle.registration}</Plate>
+                        </>
+                      ),
+                    },
+                    {
+                      term: "Service",
+                      value: service
+                        ? `${service.name}, about ${formatDuration(service.durationMinutes)}`
+                        : null,
+                    },
+                    { term: "Time", value: chosenTime ?? null },
+                    {
+                      term: "Technician",
+                      value: gap ? (
+                        <>
+                          {gap.technicianName}
+                          <span className="block text-sm font-normal text-text-secondary">
+                            From the gap you tapped.
+                          </span>
+                          <Button
+                            variant="quiet"
+                            className="-ms-5"
+                            onClick={anyTechnician}
+                          >
+                            Any technician
+                          </Button>
+                        </>
+                      ) : (
+                        "Picked for you"
+                      ),
+                    },
+                  ]
+                : [
+                    { term: "Dealership", value: dealership?.name ?? null },
+                    {
+                      term: "Car",
+                      value: vehicle ? (
+                        <>
+                          {vehicle.make} {vehicle.model},{" "}
+                          <Plate>{vehicle.registration}</Plate>
+                        </>
+                      ) : null,
+                    },
+                    {
+                      term: "Service",
+                      value: service
+                        ? `${service.name}, about ${formatDuration(service.durationMinutes)}`
+                        : null,
+                    },
+                    { term: "Time", value: chosenTime ?? null },
+                  ]
+            }
+            transportChoices={staff ? staffTransportChoices : transportChoices}
             transport={transport}
             onTransportChange={(value) =>
               setValue("transport", value, {
@@ -764,9 +1095,64 @@ function CustomerBooking({ customerId }: { customerId: string | null }) {
       <p role="status" className="sr-only">
         {confirming ? "Confirming your booking" : ""}
       </p>
-      <ActionBar title={chosenTime} actions={lg ? undefined : confirmButton} />
+      {staff ? (
+        <ActionBar
+          title={
+            start
+              ? `${formatDay(start, zone, now)}, ${formatTime(start, zone)}`
+              : !service
+                ? "Choose a service"
+                : needNewTime
+                  ? "Pick a new time"
+                  : "Pick a time"
+          }
+          status={
+            start
+              ? `Ends ${formatTime(addMinutes(start, minutes), zone)}`
+              : undefined
+          }
+          actions={lg ? undefined : confirmButton}
+        />
+      ) : (
+        <ActionBar
+          title={chosenTime}
+          actions={lg ? undefined : confirmButton}
+        />
+      )}
     </>
   );
+}
+
+/** The blue note of a tapped free gap, with "Any technician" (states `from-gap`, `from-gap-fits`). */
+function GapAlert({
+  gap,
+  zone,
+  onAnyTechnician,
+  children,
+}: {
+  gap: Gap;
+  zone: string;
+  onAnyTechnician: () => void;
+  children: string;
+}) {
+  return (
+    <Alert
+      kind="info"
+      title={`Booking ${gap.technicianName} on ${formatDay(gap.start, zone, Date.now())}, from ${formatTime(gap.start, zone)}.`}
+      actions={<Button onClick={onAnyTechnician}>Any technician</Button>}
+    >
+      <p>{children}</p>
+    </Alert>
+  );
+}
+
+/** "Pick another day": focus goes to the day strip, on the chosen day or the first that can be chosen. */
+function focusDayStrip() {
+  const days = document.querySelectorAll<HTMLInputElement>(
+    'input[name="day"]:not(:disabled)',
+  );
+  const chosen = [...days].find((d) => d.checked) ?? days[0];
+  chosen?.focus();
 }
 
 function addMinutes(instant: string, n: number): string {
@@ -835,6 +1221,9 @@ function StripSkeleton() {
 
 /** The start times of the chosen day, or what stands in for them. */
 function Times({
+  technicianId,
+  staff,
+  serviceName,
   day,
   selected,
   query: dayQuery,
@@ -869,6 +1258,9 @@ function Times({
   value: string;
   onChoose: (start: string) => void;
   label: (instant: string) => string;
+  technicianId: string | undefined;
+  staff: boolean;
+  serviceName: string;
 }) {
   if (!day || !selected) {
     return <HintBox>Pick a day above to see the start times.</HintBox>;
@@ -930,6 +1322,9 @@ function Times({
   if (times.length === 0) {
     return (
       <EmptyDay
+        technicianId={technicianId}
+        staff={staff}
+        serviceName={serviceName}
         day={day}
         dealership={dealership}
         serviceTypeId={serviceTypeId}
@@ -966,6 +1361,9 @@ function Times({
 
 /** `empty-day`: the count was out of date. The closest times on other days, from one availability check. */
 function EmptyDay({
+  technicianId,
+  staff,
+  serviceName,
   day,
   dealership,
   serviceTypeId,
@@ -987,11 +1385,21 @@ function EmptyDay({
   value: string;
   onChoose: (start: string) => void;
   label: (instant: string) => string;
+  technicianId: string | undefined;
+  staff: boolean;
+  serviceName: string;
 }) {
   const { client } = useSession();
   const opening = hoursOn(dealership, day)?.open ?? "08:00";
   const nearest = useQuery({
-    queryKey: ["closest", dealership.id, serviceTypeId, day, transport],
+    queryKey: [
+      "closest",
+      dealership.id,
+      serviceTypeId,
+      day,
+      transport,
+      technicianId,
+    ],
     queryFn: () =>
       call(
         client.POST("/availability-checks", {
@@ -1000,6 +1408,7 @@ function EmptyDay({
             serviceTypeId,
             start: instantAt(day, opening, zone),
             transport,
+            ...(technicianId ? { technicianId } : {}),
           },
         }),
       ),
@@ -1013,6 +1422,29 @@ function EmptyDay({
           day: formatDay(s.start, zone, now),
         }))
       : [];
+  if (staff) {
+    return (
+      <StateBlock
+        kind="info"
+        compact
+        headingLevel={3}
+        title={`No times left on ${formatLocalDate(day, thisYear)} for ${aService(serviceName)}.`}
+      >
+        <p className="mb-3">
+          Try one of the closest times, or pick another day.
+        </p>
+        <SuggestionGroup
+          title="Closest times"
+          titleLevel={4}
+          items={items}
+          value={value || null}
+          onChange={onChoose}
+          name={SUGGESTED}
+          label={label}
+        />
+      </StateBlock>
+    );
+  }
   return (
     <StateBlock
       kind="info"
@@ -1044,6 +1476,7 @@ function ConflictAlert({
   thisYear,
   value,
   onChoose,
+  staff,
 }: {
   conflict: Conflict;
   dealership: Dealership;
@@ -1051,6 +1484,15 @@ function ConflictAlert({
   thisYear: number;
   value: string;
   onChoose: (start: string) => void;
+  /** The staff's words (staff.md 5.4): "Someone else", a fixed technician, a new customer not saved yet. */
+  staff?:
+    | {
+        technicianName: string | null;
+        newCustomerName: string | null;
+        onAnyTechnician: () => void;
+        onPickDay: () => void;
+      }
+    | undefined;
 }) {
   const zone = dealership.timeZone;
   const at = `${formatTime(conflict.start, zone)} on ${formatDay(conflict.start, zone, now)}`;
@@ -1070,8 +1512,12 @@ function ConflictAlert({
     zone,
   );
   const lead = formatDuration(dealership.policies.leadTimeMinutes);
-  const kept =
-    "Nothing was booked for you. We kept your car, service and choice, so you only need a new";
+  const kept = staff
+    ? "Nothing was booked. We kept the vehicle, the service and the car choice, so you only need a new"
+    : "Nothing was booked for you. We kept your car, service and choice, so you only need a new";
+  const notSaved = staff?.newCustomerName
+    ? ` ${staff.newCustomerName} is not saved yet. We kept the details you entered. They are saved when you confirm a time.`
+    : "";
   const title =
     conflict.kind === "too-soon"
       ? `Sorry, ${at} is too soon to book.`
@@ -1083,12 +1529,37 @@ function ConflictAlert({
       ? `Bookings need at least ${lead}' notice, and that time is now less than ${lead} away. ${kept} time.`
       : conflict.kind === "too-far"
         ? `Bookings now open up to ${dealership.policies.horizonDays} days ahead, which is ${formatLocalDate(lastDay(dealership, now), thisYear)}. ${kept} day.`
-        : `Another customer confirmed that time a moment before you. ${kept} time.`;
+        : staff
+          ? `Someone else confirmed that time a moment before you did. ${kept} time.`
+          : `Another customer confirmed that time a moment before you. ${kept} time.`;
   return (
     // Focus moves to the heading, which announces it; a live role as well would read it twice.
     <Alert kind="warning" role={null} focusTitle title={title}>
-      <p>{body}</p>
-      {conflict.suggestions.length === 0 ? (
+      <p>
+        {body}
+        {notSaved}
+      </p>
+      {conflict.suggestions.length === 0 && staff?.technicianName ? (
+        <>
+          <p>
+            There are no other times with {staff.technicianName} in the next 14
+            days. Try any technician, or pick another day.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={staff.onAnyTechnician}>Try any technician</Button>
+            <Button variant="quiet" onClick={staff.onPickDay}>
+              Pick another day
+            </Button>
+          </div>
+        </>
+      ) : conflict.suggestions.length === 0 && staff ? (
+        <>
+          <h3 className="mt-2 text-base">
+            There are no other times in the next 14 days.
+          </h3>
+          <p>Try another day, or call {dealership.name}.</p>
+        </>
+      ) : conflict.suggestions.length === 0 ? (
         <>
           <h3 className="mt-2 text-base">
             There are no other times in the next 14 days.

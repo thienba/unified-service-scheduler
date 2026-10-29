@@ -11,6 +11,7 @@ export interface SummaryRow {
 
 export function BookingSummary({
   variant = "customer",
+  customerName,
   rows,
   transportChoices,
   transport,
@@ -19,8 +20,10 @@ export function BookingSummary({
   transportRef,
   confirm,
 }: {
-  /** Only `customer` so far: the staff-booking and reschedule screens add their variant and its approved words. */
-  variant?: "customer";
+  /** `staff`: "Booking for {name}" and the car choice in the third person (design.md 8.9, B2 P6). */
+  variant?: "customer" | "staff";
+  /** For `staff`: whose booking it is. */
+  customerName?: string | undefined;
   rows: readonly SummaryRow[];
   /** One list: the courtesy car is added to it by its own ticket. */
   transportChoices: readonly Choice[];
@@ -35,6 +38,10 @@ export function BookingSummary({
     customer: {
       title: "Your booking",
       legend: "What will you do with the car?",
+    },
+    staff: {
+      title: `Booking for ${customerName ?? ""}`,
+      legend: "What will the customer do with the car?",
     },
   }[variant];
   const { title, legend } = words;
