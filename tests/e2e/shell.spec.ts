@@ -101,7 +101,7 @@ test("a role that may not open a route sees no-permission in place, and Switch r
   ).toBeVisible();
   await expect(
     page.getByText(
-      "Only the garage manager can see the flagged bookings. Switch role, or go to your schedule.",
+      "Only the garage manager can review flagged bookings. Switch role, or go to your schedule.",
     ),
   ).toBeVisible();
   await expect(

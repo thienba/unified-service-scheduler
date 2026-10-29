@@ -16,6 +16,8 @@ import { DealershipSettingsPage } from "../features/manage/DealershipSettingsPag
 import { ShiftsPage } from "../features/manage/ShiftsPage";
 import { OutboxScreen } from "../features/outbox/OutboxScreen";
 import { DevPanel } from "../features/dev/DevPanel";
+import { AdjustPage } from "../features/adjust/AdjustPage";
+import { FlaggedPage } from "../features/flagged/FlaggedPage";
 import {
   devPanelPath,
   homeFor,
@@ -38,6 +40,8 @@ const screens: Record<string, ReactElement> = {
   "/book/confirmed/:appointmentId": <ConfirmedPage />,
   "/schedule": <SchedulePage />,
   "/appointments/:appointmentId": <AppointmentPage />,
+  "/appointments/:appointmentId/adjust": <AdjustPage />,
+  "/manage/flagged": <FlaggedPage />,
   "/manage/dealership": <DealershipSettingsPage />,
   "/manage/shifts": <ShiftsPage />,
   "/manage/outbox": <OutboxScreen />,
