@@ -19,6 +19,7 @@ describe("AD-3: every query takes an Actor first", () => {
       "getAppointment",
       "getDealership",
       "getSchedule",
+      "getScheduleDay",
       "listDealerships",
       "listMyAppointments",
       "listOutbox",

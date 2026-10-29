@@ -13,6 +13,8 @@ export interface AppointmentDisplay {
   technicianName?: string;
   serviceBayName?: string;
   customerName?: string;
+  /** The courtesy car's name, when the appointment has one (REQ-BOOK-010.AC-2). */
+  courtesyCarName?: string;
 }
 
 export interface AppointmentView {
@@ -37,6 +39,16 @@ async function build(
     }
     return technicians.get(dealershipId)!;
   };
+  // One read of a dealership's cars and bays, not one per appointment: a busy day has many.
+  const once = <T>(load: (dealershipId: string) => Promise<T>) => {
+    const seen = new Map<string, Promise<T>>();
+    return (dealershipId: string) => {
+      if (!seen.has(dealershipId)) seen.set(dealershipId, load(dealershipId));
+      return seen.get(dealershipId)!;
+    };
+  };
+  const carList = once((id) => stores.scheduling.listCourtesyCars(id));
+  const bayList = once((id) => stores.scheduling.listServiceBays(id));
   const views: AppointmentView[] = [];
   for (const appointment of appointments) {
     const serviceType = await stores.scheduling.getServiceType(
@@ -57,10 +69,14 @@ async function build(
         model: vehicle.model,
       },
     };
-    if (actor.role !== "customer") {
-      const bays = await stores.scheduling.listServiceBays(
-        appointment.dealershipId,
+    if (appointment.courtesyCarId !== null) {
+      const car = (await carList(appointment.dealershipId)).find(
+        (c) => c.id === appointment.courtesyCarId,
       );
+      if (car) display.courtesyCarName = car.name;
+    }
+    if (actor.role !== "customer") {
+      const bays = await bayList(appointment.dealershipId);
       display.customerName = customer!.name;
       if (technician) display.technicianName = technician.name;
       const bay = bays.find((b) => b.id === appointment.serviceBayId);

@@ -11,9 +11,12 @@ export {
 export {
   getAppointment,
   getSchedule,
+  getScheduleDay,
   listMyAppointments,
   type AppointmentResult,
   type AppointmentsResult,
+  type ScheduleDayResult,
+  type ScheduleTechnicianView,
   type ScheduleRequest,
 } from "./appointments";
 export {

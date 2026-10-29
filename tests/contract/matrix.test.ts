@@ -117,6 +117,12 @@ export const matrix: Record<string, Row> = {
     path: `/dealerships/${LON}/service-bays`,
     expect: only(londonStaff, 403),
   },
+  getScheduleDay: {
+    method: "GET",
+    path: `/dealerships/${LON}/schedule`,
+    query: { date: SEEDED_A.date },
+    expect: only(londonStaff, 403),
+  },
   searchAvailability: {
     method: "GET",
     path: `/dealerships/${LON}/availability`,

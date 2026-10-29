@@ -8,6 +8,7 @@ import type { Actor } from "../../src/application/actor";
 import {
   checkAvailability,
   getSchedule,
+  getScheduleDay,
   listMyAppointments,
   listOutbox,
   listTechnicians,
@@ -42,6 +43,58 @@ const fails = (kind: string, field?: string) =>
     kind,
     ...(field ? { errors: [expect.objectContaining({ field })] } : {}),
   });
+
+describe("getScheduleDay (D-0001-21 A)", () => {
+  const t = (hhmm: string) => Date.parse(`2026-11-05T${hhmm}:00Z`);
+
+  it("gives each technician's shift, break and free windows, the bays and the day's appointments", async () => {
+    const day = await getScheduleDay(as(users.staffLondon), deps, {
+      dealershipId: LON,
+      date: "2026-11-05",
+    });
+    if (day.kind !== "ok") throw new Error(day.kind);
+    expect(day.opening).toEqual({ start: t("08:00"), end: t("18:00") });
+    expect(day.nextOpenDate).toBe("2026-11-06");
+    expect(day.bays.map((b) => b.name)).toEqual(["Bay 1", "Bay 2"]);
+    expect(day.appointments.map((v) => v.appointment.id)).toEqual([
+      "appointment-customer-a",
+    ]);
+    const ash = day.technicians.find(
+      (x) => x.technician.id === "tech-lon-ash",
+    )!;
+    expect(ash.shift).toEqual({ start: t("08:00"), end: t("16:30") });
+    expect(ash.break).toEqual({ start: t("12:00"), end: t("13:00") });
+    // The job is 10:00 to 11:00; 15 minutes of rest stay empty on each side.
+    expect(ash.free).toEqual([
+      { start: t("08:00"), end: t("09:45") },
+      { start: t("11:15"), end: t("12:00") },
+      { start: t("13:00"), end: t("16:30") },
+    ]);
+  });
+
+  it("refuses other dealerships and customers, checks the date, and does not know a missing dealership", async () => {
+    const q = { dealershipId: LON, date: "2026-11-05" };
+    expect(await getScheduleDay(as(users.staffSaigon), deps, q)).toEqual({
+      kind: "forbidden",
+    });
+    expect(await getScheduleDay(as(users.customerA), deps, q)).toEqual({
+      kind: "forbidden",
+    });
+    expect(
+      await getScheduleDay(as(users.staffLondon), deps, {
+        dealershipId: LON,
+        date: "2026-02-30",
+      }),
+    ).toEqual(fails("validation_failed", "date"));
+    const ghost = { ...as(users.staffLondon), dealershipIds: ["nowhere"] };
+    expect(
+      await getScheduleDay(ghost, deps, {
+        dealershipId: "nowhere",
+        date: q.date,
+      }),
+    ).toEqual({ kind: "not_found" });
+  });
+});
 
 describe("getSchedule", () => {
   it("refuses a customer's flagged list, and asks for the dealership and the date", async () => {

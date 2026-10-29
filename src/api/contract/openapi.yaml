@@ -235,6 +235,36 @@ paths:
         "422": { $ref: "#/components/responses/ValidationFailed" }
         "500": { $ref: "#/components/responses/Internal" }
 
+  /dealerships/{dealershipId}/schedule:
+    get:
+      operationId: getScheduleDay
+      tags: [appointments]
+      summary: One day of the staff schedule
+      description: |
+        Staff and managers of the dealership. The appointments of one local date, the active bays, and
+        each active technician with their shift, break and leave that day and the free windows a booking
+        could start in (30 minutes or longer, worked out by the domain, D-0001-21 A).
+      parameters:
+        - $ref: "#/components/parameters/Traceparent"
+        - $ref: "#/components/parameters/DealershipId"
+        - name: date
+          in: query
+          required: true
+          schema: { $ref: "#/components/schemas/LocalDate" }
+      responses:
+        "200":
+          description: The day.
+          headers:
+            X-Trace-Id: { $ref: "#/components/headers/TraceId" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ScheduleDay" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+        "500": { $ref: "#/components/responses/Internal" }
+
   /dealerships/{dealershipId}/availability:
     get:
       operationId: searchAvailability
@@ -1148,6 +1178,9 @@ components:
         technicianName: { type: string }
         serviceBayName: { type: string }
         customerName: { type: string }
+        courtesyCarName:
+          type: string
+          description: The courtesy car's name, when the appointment has one.
     PickedResources:
       type: object
       description: The technician or bay the booking rule picked because the old one was busy.
@@ -1209,6 +1242,67 @@ components:
         picked:
           description: Only on a manager's move (`PATCH /appointments/{appointmentId}`).
           $ref: "#/components/schemas/PickedResources"
+    ScheduleTechnician:
+      type: object
+      additionalProperties: false
+      required: [id, name, skills, onLeave, shift, break, free]
+      properties:
+        id: { $ref: "#/components/schemas/Id" }
+        name: { type: string }
+        skills:
+          type: array
+          items: { type: string }
+        onLeave: { type: boolean }
+        shift:
+          description: The shift that day, or null when the technician does not work that day.
+          oneOf:
+            - $ref: "#/components/schemas/TimeSlot"
+            - type: "null"
+        break:
+          description: The shift's break, when it has one.
+          oneOf:
+            - $ref: "#/components/schemas/TimeSlot"
+            - type: "null"
+        free:
+          type: array
+          description: Free windows of 30 minutes or longer, earliest first. None in the past.
+          items: { $ref: "#/components/schemas/TimeSlot" }
+    ScheduleDay:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          date,
+          timeZone,
+          opening,
+          nextOpenDate,
+          technicians,
+          serviceBays,
+          appointments,
+        ]
+      properties:
+        date: { $ref: "#/components/schemas/LocalDate" }
+        timeZone: { $ref: "#/components/schemas/TimeZone" }
+        opening:
+          description: The opening hours that day, or null when the dealership is closed.
+          oneOf:
+            - $ref: "#/components/schemas/TimeSlot"
+            - type: "null"
+        nextOpenDate:
+          description: The next date the dealership is open, within a month.
+          oneOf:
+            - $ref: "#/components/schemas/LocalDate"
+            - type: "null"
+        technicians:
+          type: array
+          items: { $ref: "#/components/schemas/ScheduleTechnician" }
+        serviceBays:
+          type: array
+          items: { $ref: "#/components/schemas/ServiceBay" }
+        appointments:
+          type: array
+          description: The appointments that start that day, not cancelled, in start order.
+          items: { $ref: "#/components/schemas/Appointment" }
     FlaggedResult:
       type: object
       additionalProperties: false

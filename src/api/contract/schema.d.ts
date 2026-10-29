@@ -163,6 +163,28 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/dealerships/{dealershipId}/schedule": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * One day of the staff schedule
+     * @description Staff and managers of the dealership. The appointments of one local date, the active bays, and
+     *     each active technician with their shift, break and leave that day and the free windows a booking
+     *     could start in (30 minutes or longer, worked out by the domain, D-0001-21 A).
+     */
+    get: operations["getScheduleDay"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/dealerships/{dealershipId}/availability": {
     parameters: {
       query?: never;
@@ -661,6 +683,8 @@ export interface components {
       technicianName?: string;
       serviceBayName?: string;
       customerName?: string;
+      /** @description The courtesy car's name, when the appointment has one. */
+      courtesyCarName?: string;
     };
     /** @description The technician or bay the booking rule picked because the old one was busy. */
     PickedResources: {
@@ -690,6 +714,30 @@ export interface components {
       display: components["schemas"]["AppointmentDisplay"];
       /** @description Only on a manager's move (`PATCH /appointments/{appointmentId}`). */
       picked?: components["schemas"]["PickedResources"];
+    };
+    ScheduleTechnician: {
+      id: components["schemas"]["Id"];
+      name: string;
+      skills: string[];
+      onLeave: boolean;
+      /** @description The shift that day, or null when the technician does not work that day. */
+      shift: components["schemas"]["TimeSlot"] | null;
+      /** @description The shift's break, when it has one. */
+      break: components["schemas"]["TimeSlot"] | null;
+      /** @description Free windows of 30 minutes or longer, earliest first. None in the past. */
+      free: components["schemas"]["TimeSlot"][];
+    };
+    ScheduleDay: {
+      date: components["schemas"]["LocalDate"];
+      timeZone: components["schemas"]["TimeZone"];
+      /** @description The opening hours that day, or null when the dealership is closed. */
+      opening: components["schemas"]["TimeSlot"] | null;
+      /** @description The next date the dealership is open, within a month. */
+      nextOpenDate: components["schemas"]["LocalDate"] | null;
+      technicians: components["schemas"]["ScheduleTechnician"][];
+      serviceBays: components["schemas"]["ServiceBay"][];
+      /** @description The appointments that start that day, not cancelled, in start order. */
+      appointments: components["schemas"]["Appointment"][];
     };
     FlaggedResult: {
       /** @description The appointments that are flagged after the change. */
@@ -1192,6 +1240,39 @@ export interface operations {
       };
       401: components["responses"]["Unauthorized"];
       403: components["responses"]["Forbidden"];
+      422: components["responses"]["ValidationFailed"];
+      500: components["responses"]["Internal"];
+    };
+  };
+  getScheduleDay: {
+    parameters: {
+      query: {
+        date: components["schemas"]["LocalDate"];
+      };
+      header?: {
+        /** @description W3C trace context, `00-<32 hex>-<16 hex>-<2 hex>`. A value that does not match is ignored and a new trace id is made. */
+        traceparent?: components["parameters"]["Traceparent"];
+      };
+      path: {
+        dealershipId: components["parameters"]["DealershipId"];
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description The day. */
+      200: {
+        headers: {
+          "X-Trace-Id": components["headers"]["TraceId"];
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ScheduleDay"];
+        };
+      };
+      401: components["responses"]["Unauthorized"];
+      403: components["responses"]["Forbidden"];
+      404: components["responses"]["NotFound"];
       422: components["responses"]["ValidationFailed"];
       500: components["responses"]["Internal"];
     };
