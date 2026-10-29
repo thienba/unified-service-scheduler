@@ -101,6 +101,37 @@ export function findPublicDocProblems(file, text, exists) {
   return problems;
 }
 
+/** Reference codes and the company name: decision, question, requirement, security, non-functional, architecture and step ids. */
+const referenceCodePatterns = [
+  /\b(?:D|Q)-\d{4}-\d+\b/,
+  /\bREQ-[A-Z]+-\d+/,
+  /\bSEC-\d+/,
+  /\bNFR-\d+/,
+  /\bAD-\d+/,
+  /\bS\d\b/,
+  /keyloop/i,
+];
+
+/**
+ * The README is written for a first-time reader, so its text holds no reference codes.
+ * @param {string} file path of the file, relative to the repository root
+ * @param {string} text the file's text
+ * @returns {string[]} one line each, as `file:line: problem`
+ */
+export function findReferenceCodes(file, text) {
+  const problems = [];
+  text.split("\n").forEach((line, index) => {
+    for (const re of referenceCodePatterns) {
+      const match = re.exec(line);
+      if (match)
+        problems.push(
+          `${file}:${index + 1}: holds a reference code: ${match[0]}`,
+        );
+    }
+  });
+  return problems;
+}
+
 /**
  * D-0000-40: the public project does not carry the company's name, in any case.
  * @param {string} file path of the file, relative to the repository root
@@ -154,10 +185,13 @@ function main() {
       exists,
     ),
   );
-  // README.md is left out of the company-name check until the README ticket lands; then add it here.
+  problems.push(
+    ...findReferenceCodes("README.md", readFileSync("README.md", "utf8")),
+  );
   const named = [
     ...textFiles("docs"),
     ...textFiles("src"),
+    "README.md",
     "index.html",
     "package.json",
     "vercel.json",
@@ -171,7 +205,7 @@ function main() {
     process.exit(1);
   }
   console.log(
-    `Public docs are clean: ${files.length} files checked for secrets, local paths, real email addresses, links into references/ and the company name (in docs/ and src/).`,
+    `Public docs are clean: ${files.length} files checked for secrets, local paths, real email addresses and links into references/; the README, docs/, src/ and the page files for the company name; and the README for reference codes.`,
   );
 }
 
