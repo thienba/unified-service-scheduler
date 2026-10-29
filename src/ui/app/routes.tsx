@@ -9,6 +9,7 @@ import { useSelectedDealership } from "../session/dealership";
 import { useSession } from "../session/session";
 import { ComponentSheet } from "../pages/ComponentSheet";
 import { BookPage } from "../features/book/BookPage";
+import { BookCustomerPage } from "../features/book/BookCustomerPage";
 import { ConfirmedPage } from "../features/book/ConfirmedPage";
 import { AppointmentPage } from "../features/appointment/AppointmentPage";
 import { SchedulePage } from "../features/schedule/SchedulePage";
@@ -36,6 +37,7 @@ import {
 const screens: Record<string, ReactElement> = {
   "/book": <BookPage />,
   "/book/confirmed/:appointmentId": <ConfirmedPage />,
+  "/book/for-customer": <BookCustomerPage />,
   "/schedule": <SchedulePage />,
   "/appointments/:appointmentId": <AppointmentPage />,
   "/manage/dealership": <DealershipSettingsPage />,

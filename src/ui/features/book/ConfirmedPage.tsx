@@ -1,6 +1,8 @@
 // `book-confirmed` (customer.md section 5, design.md 6): it worked, what was booked, what happens next.
 // The appointment is read from the API, so a reload shows the same one (REQ-BOOK-003.AC-2).
 import { Link, useParams } from "react-router";
+import { useSession } from "../../session/session";
+import { StaffBooked } from "./StaffBooked";
 import { Button } from "../../components/Button";
 import { Icon } from "../../components/Icon";
 import { FactsList, PhoneLink, Plate } from "../../components/Small";
@@ -29,6 +31,7 @@ export function ConfirmedPage() {
   const { appointmentId = "" } = useParams();
   const appointment = useAppointment(appointmentId);
   const dealerships = useDealerships();
+  const { me } = useSession();
 
   if (appointment.isError) {
     const problem =
@@ -99,6 +102,9 @@ export function ConfirmedPage() {
       </div>
     );
   }
+  // Staff and the manager see the staff version (staff.md 5.4, state `confirmed`).
+  if (me && me.role !== "customer")
+    return <StaffBooked appointment={data} dealership={dealership} />;
   return <Booked appointment={data} dealership={dealership} />;
 }
 
