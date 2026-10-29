@@ -1,0 +1,27 @@
+
+> keyloop-service-scheduler@0.0.0 test:tz
+> TZ=UTC vitest run --project node && TZ=Pacific/Kiritimati vitest run --project node
+
+
+ RUN  v5.0.5 /Users/bason/Documents/thienba/keyloop-service-scheduler-vtc/.state/2026-10-28-system-design-document-final-pass
+
+searchDay (one day): 6.5 ms (budget 50 ms)
+suggest (14 days): 7.5 ms (budget 200 ms)
+
+ Test Files  40 passed (40)
+      Tests  1112 passed (1112)
+   Start at  10:28:26
+   Duration  2.27s (tests 60%, import 20%, transform 19%, worker 1%)
+
+
+ RUN  v5.0.5 /Users/bason/Documents/thienba/keyloop-service-scheduler-vtc/.state/2026-10-28-system-design-document-final-pass
+
+searchDay (one day): 11.6 ms (budget 50 ms)
+suggest (14 days): 5.5 ms (budget 200 ms)
+
+ Test Files  40 passed (40)
+      Tests  1112 passed (1112)
+   Start at  00:28:29
+   Duration  2.12s (tests 68%, import 25%, transform 6%, worker 1%)
+
+exit 0
