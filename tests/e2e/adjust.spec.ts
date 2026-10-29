@@ -257,10 +257,11 @@ for (const width of [390, 1440] as const) {
       expect(await getAppointment(page, id)).toEqual(before);
       await shot(page, "adjust-clash");
 
-      // A chip fills the form and saves nothing.
+      // A chip fills the form and saves nothing. (The early check of the filled time, D-0001-107, only reads.)
       const writes: string[] = [];
       page.on("request", (r) => {
-        if (r.method() !== "GET") writes.push(r.url());
+        if (r.method() !== "GET" && !r.url().endsWith("/availability-checks"))
+          writes.push(r.url());
       });
       await chips.first().click();
       await expect(chips.first()).toHaveAttribute("aria-pressed", "true");
@@ -831,16 +832,22 @@ test("TOO_SOON and BEYOND_HORIZON read in words with the dealership's numbers (D
   await fill(page, "2026-10-28", "09:00");
   await save(page).click();
   await expect(
-    page.getByText(
-      /Bookings need at least 2 hours notice.*\. The appointment is still at 09:15/,
-    ),
+    page
+      .getByText(
+        /Bookings need at least 2 hours notice.*\. The appointment is still at 09:15/,
+      )
+      // The page's live region also says it when the early check (D-0001-107) found it first.
+      .first(),
   ).toBeVisible();
   await fill(page, "2026-12-15", "09:00");
   await save(page).click();
   await expect(
-    page.getByText(
-      /Bookings open up to 30 days ahead.*\. The appointment is still at 09:15/,
-    ),
+    page
+      .getByText(
+        /Bookings open up to 30 days ahead.*\. The appointment is still at 09:15/,
+      )
+      // The page's live region also says it when the early check (D-0001-107) found it first.
+      .first(),
   ).toBeVisible();
 });
 

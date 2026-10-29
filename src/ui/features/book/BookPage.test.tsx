@@ -858,3 +858,250 @@ describe("book-confirmed", () => {
     );
   });
 });
+
+// Warn early (D-0001-107 C): the chosen time is checked again before Confirm, with the existing availability check.
+describe("book: warn early when the chosen time is taken", () => {
+  type Check = { start: string; transport: string };
+  const free = (body: Check) =>
+    json({
+      available: true,
+      technicianId: "t-1",
+      serviceBayId: "b-1",
+      courtesyCarId: body.transport === "courtesy_car" ? "car-1" : null,
+    });
+  const taken = (reasons: string[]) =>
+    json({
+      available: false,
+      reasons,
+      suggestions: ["10:15", "10:30", "10:45", "11:00", "11:15", "11:30"].map(
+        (t) => ({
+          start: at("2026-10-30", t),
+          end: new Date(Date.parse(at("2026-10-30", t)) + 3 * 3_600_000)
+            .toISOString()
+            .replace(".000Z", "Z"),
+        }),
+      ),
+    });
+  /** Answers each check with `answer`, and keeps the checks asked with the chosen car choice (`wait`). */
+  function checks(
+    answer: (body: Check, n: number) => Response | Promise<Response>,
+  ) {
+    const asked: Check[] = [];
+    const handler = async (request: Request) => {
+      const body = (await request.clone().json()) as Check;
+      if (body.transport !== "courtesy_car") asked.push(body);
+      return answer(body, asked.length);
+    };
+    return { asked, handler };
+  }
+  // The checks' 30 seconds are fake; waiting for an answer uses the real (unfaked) setTimeout.
+  const settle = async () => {
+    await act(async () => {
+      for (let i = 0; i < 20; i += 1)
+        await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+  };
+  const tick = async (ms: number) => {
+    await act(async () => {
+      vi.advanceTimersByTime(ms);
+      await Promise.resolve();
+    });
+  };
+  const setVisibility = (state: "visible" | "hidden") => {
+    Object.defineProperty(document, "visibilityState", {
+      value: state,
+      configurable: true,
+    });
+    act(() => {
+      document.dispatchEvent(new Event("visibilitychange"));
+    });
+  };
+  async function chooseAll(car = "Wait on site") {
+    await chooseCar();
+    fireEvent.click(await screen.findByRole("radio", { name: /^Fri 30 Oct/ }));
+    await chooseTime("10:00 to 13:00");
+    const choice = radio(car);
+    fireEvent.click(choice);
+    choice.focus();
+    return choice;
+  }
+
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ["Date", "setInterval", "clearInterval"] });
+    vi.setSystemTime(NOW);
+  });
+  afterEach(() => {
+    setVisibility("visible");
+  });
+
+  it("D-0001-107: choosing a time sends one check; it repeats every 30 seconds while the tab is visible, stops while hidden, runs once on return, and stops when the page is left", async () => {
+    const check = checks((body) => free(body));
+    const view = render(
+      <App
+        baseUrl={base}
+        fetch={
+          bookingApi({ "POST /availability-checks": check.handler }).fetcher
+        }
+        initialEntries={[deepLink]}
+      />,
+    );
+    await chooseAll();
+    await settle();
+    expect(check.asked).toHaveLength(1);
+    expect(check.asked[0]).toMatchObject({
+      dealershipId: "d-leeds",
+      serviceTypeId: "s-full",
+      start: at("2026-10-30", "10:00"),
+      transport: "wait",
+    });
+    await tick(29_000);
+    expect(check.asked).toHaveLength(1);
+    await tick(1_000);
+    await settle();
+    expect(check.asked).toHaveLength(2);
+    await tick(30_000);
+    await settle();
+    expect(check.asked).toHaveLength(3);
+    setVisibility("hidden");
+    await tick(90_000);
+    expect(check.asked).toHaveLength(3);
+    setVisibility("visible");
+    await settle();
+    expect(check.asked).toHaveLength(4);
+    await tick(30_000);
+    await settle();
+    expect(check.asked).toHaveLength(5);
+    view.unmount();
+    await tick(90_000);
+    expect(check.asked).toHaveLength(5);
+  });
+
+  it("D-0001-107, REQ-BOOK-009.AC-2: a taken time shows the conflict apology before Confirm, keeps focus where it was, says it in a polite live region, and stops checking once the time is cleared", async () => {
+    const check = checks((body, n) =>
+      n === 1 ? free(body) : taken(["TECHNICIAN_BUSY"]),
+    );
+    const api = open(
+      deepLink,
+      bookingApi({ "POST /availability-checks": check.handler }),
+    );
+    const choice = await chooseAll();
+    await settle();
+    expect(check.asked).toHaveLength(1);
+    await tick(30_000);
+    const heading = await screen.findByRole("heading", {
+      name: "Sorry, 10:00 on Fri 30 Oct was just taken.",
+    });
+    expect(document.activeElement).toBe(choice);
+    expect(heading.getAttribute("tabindex")).toBeNull();
+    const live = screen
+      .getAllByRole("status")
+      .find(
+        (s) => s.textContent === "Sorry, 10:00 on Fri 30 Oct was just taken.",
+      );
+    expect(live).toBeTruthy();
+    expect(live!.getAttribute("aria-live") ?? "polite").toBe("polite");
+    expect(
+      screen.getAllByRole("button", { name: "Pick a new time to confirm" }),
+    ).toHaveLength(1);
+    expect(
+      within(
+        screen.getByRole("radiogroup", { name: "Closest to your time" }),
+      ).getAllByRole("radio").length,
+    ).toBeLessThanOrEqual(5);
+    expect(
+      (screen.getByRole("combobox", { name: /^Car/ }) as HTMLSelectElement)
+        .value,
+    ).toBe("v-focus");
+    expect(radio("Wait on site").checked).toBe(true);
+    expect(screen.getByText("Just taken")).toBeTruthy();
+    expect(posts(api)).toHaveLength(0);
+    await tick(90_000);
+    expect(check.asked).toHaveLength(2);
+  });
+
+  it("D-0001-107, D-0001-104 5: when only the courtesy car went, the page shows conflict-courtesy, not the general apology", async () => {
+    const check = checks((body) => free(body));
+    let carGone = false;
+    const handler = async (request: Request) => {
+      const body = (await request.clone().json()) as Check;
+      if (body.transport === "courtesy_car" && carGone)
+        return taken(["COURTESY_CAR_BUSY"]);
+      return check.handler(request);
+    };
+    open(deepLink, bookingApi({ "POST /availability-checks": handler }));
+    const choice = await chooseAll("Borrow a courtesy car");
+    await waitFor(() =>
+      expect(radio("Borrow a courtesy car").checked).toBe(true),
+    );
+    carGone = true;
+    await tick(30_000);
+    await screen.findByRole("heading", {
+      name: "Sorry, no courtesy car is free from 10:00 to 13:00 any more.",
+    });
+    expect(screen.queryByText(/was just taken/)).toBeNull();
+    // The focused courtesy option went grey: focus moves to the car choice that can still be chosen.
+    expect(choice.disabled).toBe(true);
+    expect(document.activeElement).toBe(radio("Wait on site"));
+    expect(
+      within(
+        screen.getByRole("radiogroup", {
+          name: "Closest times with a courtesy car",
+        }),
+      ).getAllByRole("radio"),
+    ).toHaveLength(5);
+    expect(radio("10:00 to 13:00").checked).toBe(true);
+    expect(
+      radio(/^Borrow a courtesy car\s*Not available at this time$/).checked,
+    ).toBe(false);
+  });
+
+  it("D-0001-107, WCAG 2.4.3: when the chosen chip itself had focus and is struck through, focus goes to another time of the same group, not to the page", async () => {
+    const check = checks((body, n) =>
+      n === 1 ? free(body) : taken(["TECHNICIAN_BUSY"]),
+    );
+    open(deepLink, bookingApi({ "POST /availability-checks": check.handler }));
+    await chooseAll();
+    radio("10:00 to 13:00").focus();
+    await settle();
+    await tick(30_000);
+    await screen.findByRole("heading", {
+      name: "Sorry, 10:00 on Fri 30 Oct was just taken.",
+    });
+    expect(radio("10:00, just taken").disabled).toBe(true);
+    const now = document.activeElement as HTMLInputElement;
+    expect(now.type).toBe("radio");
+    expect(now.name).toBe("start");
+    expect(now.disabled).toBe(false);
+  });
+
+  it("D-0001-107: a failed check and a slow check show nothing new, and Confirm still books with its own check", async () => {
+    const check = checks((body, n) =>
+      n === 1
+        ? problem(500, "INTERNAL")
+        : new Promise<Response>(() => {
+            // Never answers: a slow check.
+          }),
+    );
+    const api = open(
+      deepLink,
+      bookingApi({
+        "POST /availability-checks": check.handler,
+        "POST /appointments": () => problem(500, "INTERNAL"),
+      }),
+    );
+    await chooseAll();
+    await settle();
+    expect(check.asked).toHaveLength(1);
+    await tick(30_000);
+    await settle();
+    expect(check.asked).toHaveLength(2);
+    // A slow check is not piled on.
+    await tick(30_000);
+    expect(check.asked).toHaveLength(2);
+    expect(screen.queryByText(/was just taken/)).toBeNull();
+    expect(screen.queryByText("Something went wrong on our side.")).toBeNull();
+    expect(confirmButton()).toHaveProperty("disabled", false);
+    fireEvent.click(confirmButton());
+    await waitFor(() => expect(posts(api)).toHaveLength(1));
+  });
+});

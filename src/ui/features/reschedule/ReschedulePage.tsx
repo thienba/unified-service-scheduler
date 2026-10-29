@@ -54,6 +54,7 @@ import {
   type StripDay,
   type TimeSlot,
 } from "../book/days";
+import { useEarlyCheck, useFocusKept } from "../book/early-check";
 import { availabilityKey, useWeekAvailability } from "../book/queries";
 import { CustomerNotFound } from "../appointment/CustomerAppointmentPage";
 import type { CustomerAppointmentState } from "../appointment/CustomerAppointmentPage";
@@ -218,6 +219,8 @@ interface Conflict {
   start: string;
   end: string;
   suggestions: TimeSlot[];
+  /** Found by the early check before Confirm (D-0001-107 C): focus stays put and a polite live region speaks. */
+  early: boolean;
 }
 
 interface Press {
@@ -329,6 +332,40 @@ function Rescheduling({
     }
   }
 
+  /** The new time is not free any more: from a 409 at Confirm, or from the early check before it. */
+  function showConflict(at: string, suggestions: TimeSlot[], early: boolean) {
+    setConflict({
+      start: at,
+      end: addMinutes(at, minutes),
+      // Up to five closest times (REQ-BOOK-009.AC-2); the API sends five at most today.
+      suggestions: suggestions.slice(0, 5),
+      early,
+    });
+    setStart("");
+    setMessage((n) => n + 1);
+    void queryClient.invalidateQueries({ queryKey: ["availability"] });
+  }
+
+  const keepFocus = useFocusKept("times-title");
+  // Warn early (D-0001-107 C): the chosen time is checked again now and every 30 seconds while it stays chosen.
+  useEarlyCheck(
+    start
+      ? {
+          dealershipId: dealership.id,
+          serviceTypeId: a.serviceTypeId,
+          start,
+          transport: a.transport,
+          appointmentId: a.id,
+        }
+      : null,
+    (answer, asked) => {
+      // While Confirm is on its way its own answer decides (it may be our own move that took the time).
+      if (answer.available || busy.current) return;
+      keepFocus();
+      showConflict(asked.start, answer.suggestions, true);
+    },
+  );
+
   function send(press: Press) {
     busy.current = true;
     setFailure(null);
@@ -351,14 +388,7 @@ function Rescheduling({
           error instanceof ApiProblem ? error : new ApiProblem(0, null, null);
         if (problem.code === "SLOT_UNAVAILABLE") {
           pending.current = null;
-          setConflict({
-            start: press.start,
-            end: addMinutes(press.start, minutes),
-            suggestions: problem.problem?.suggestions ?? [],
-          });
-          setStart("");
-          setMessage((n) => n + 1);
-          void queryClient.invalidateQueries({ queryKey: ["availability"] });
+          showConflict(press.start, problem.problem?.suggestions ?? [], false);
           return;
         }
         if (problem.code === "CHANGE_WINDOW_CLOSED") {
@@ -608,7 +638,11 @@ function Rescheduling({
         </div>
       </div>
       <p role="status" className="sr-only">
-        {confirming ? "Moving your appointment" : ""}
+        {confirming
+          ? "Moving your appointment"
+          : conflict?.early
+            ? conflictTitle(conflict, zone, now)
+            : ""}
       </p>
       <ActionBar title={chosenTime} actions={lg ? undefined : confirmButton} />
     </>
@@ -849,6 +883,11 @@ function EmptyDay({
   );
 }
 
+/** The apology's title, also said by the live region when the early check finds the time gone. */
+function conflictTitle(conflict: Conflict, zone: string, now: number): string {
+  return `Sorry, ${formatTime(conflict.start, zone)} on ${formatDay(conflict.start, zone, now)} was just taken.`;
+}
+
 /** REQ-BOOK-012.AC-3: the time was taken first; the appointment has not changed. */
 function ConflictAlert({
   conflict,
@@ -886,12 +925,13 @@ function ConflictAlert({
     zone,
   );
   return (
-    // Focus moves to the heading, which announces it; a live role as well would read it twice.
+    // After Confirm, focus moves to the heading, which announces it; a live role as well would read it twice.
+    // Found early, focus stays where the customer is and the page's polite live region says the title.
     <Alert
       kind="warning"
       role={null}
-      focusTitle
-      title={`Sorry, ${formatTime(conflict.start, zone)} on ${formatDay(conflict.start, zone, now)} was just taken.`}
+      focusTitle={!conflict.early}
+      title={conflictTitle(conflict, zone, now)}
     >
       <p>
         Another customer confirmed that time a moment before you. Your
