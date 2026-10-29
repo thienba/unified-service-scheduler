@@ -42,7 +42,7 @@ function api(
 async function open(page: Page) {
   await page.goto("/");
   await expect(
-    page.getByRole("heading", { name: "Keyloop Service Scheduler" }),
+    page.getByRole("heading", { name: "You are not signed in." }),
   ).toBeVisible();
 }
 
@@ -90,7 +90,7 @@ test("a booking is still there after the page is reloaded", async ({
 
   await page.reload();
   await expect(
-    page.getByRole("heading", { name: "Keyloop Service Scheduler" }),
+    page.getByRole("heading", { name: "You are not signed in." }),
   ).toBeVisible();
   const after = await api(page, "/appointments", { user: "user-customer-a" });
   expect(after.body.map((a: { id: string }) => a.id)).toContain(booked.body.id);
