@@ -78,7 +78,7 @@ export interface CustomerStore {
   insert(customer: Customer, vehicle: Vehicle): Promise<void>;
   /** Adds a vehicle to a stored customer. Fails when the vehicle id is already stored. */
   insertVehicle(vehicle: Vehicle): Promise<void>;
-  /** Customers with this exact phone, or with a vehicle with this exact registration. */
+  /** Customers with this phone (digits only), or with a vehicle with this registration (letters and numbers, in capitals). */
   findDuplicates(
     phone: string,
     registration: string,

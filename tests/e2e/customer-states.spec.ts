@@ -78,7 +78,7 @@ for (const width of [390, 1440]) {
       await shot(page, "my-appointments", "after-cancel");
     });
 
-    test("my-appointments: past-and-cancelled, empty, and no-permission for staff", async ({
+    test("my-appointments: past-and-cancelled (all cancelled)", async ({
       page,
     }) => {
       await start(page, width, "/appointments");
@@ -90,10 +90,30 @@ for (const width of [390, 1440]) {
         ),
       ).toBeVisible();
       await shot(page, "my-appointments", "past-and-cancelled");
+    });
 
-      // A month later the cancelled one has gone by, and the API sends nothing (Q-0001-235).
+    test("my-appointments: past (D-0001-94)", async ({ page }) => {
+      await start(page, width, "/appointments");
+      // A month later the seeded appointment has ended: it shows under Past and cancelled with the Past badge.
       await page.clock.setFixedTime(at("2026-12-01T10:00:00Z"));
       await page.reload();
+      const cards = page
+        .getByRole("region", { name: "Past and cancelled" })
+        .getByRole("article");
+      await expect(cards).toHaveCount(1);
+      await expect(
+        cards.first().getByText("Past", { exact: true }),
+      ).toBeVisible();
+      await shot(page, "my-appointments", "past");
+    });
+
+    test("my-appointments: empty", async ({ page }) => {
+      await interceptApi(page, {
+        path: "/api/appointments",
+        status: 200,
+        body: [],
+      });
+      await start(page, width, "/appointments");
       await expect(
         page.getByRole("heading", { name: "You have no appointments yet" }),
       ).toBeVisible();

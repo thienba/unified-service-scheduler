@@ -267,6 +267,8 @@ function Rescheduling({
     a.serviceTypeId,
     fetchDates,
     a.transport,
+    undefined,
+    a.id,
   );
   const byDate = new Map(fetchDates.map((d, i) => [d, results[i]!]));
   const stripLoading = fetchDates.some((d) => byDate.get(d)!.isPending);
@@ -310,6 +312,8 @@ function Rescheduling({
           a.serviceTypeId,
           date,
           a.transport,
+          undefined,
+          a.id,
         ),
       });
     }
@@ -782,7 +786,14 @@ function EmptyDay({
   const zone = a.timeZone;
   const opening = hoursOn(dealership, day)?.open ?? "08:00";
   const nearest = useQuery({
-    queryKey: ["closest", dealership.id, a.serviceTypeId, day, a.transport],
+    queryKey: [
+      "closest",
+      dealership.id,
+      a.serviceTypeId,
+      day,
+      a.transport,
+      a.id,
+    ],
     queryFn: () =>
       call(
         client.POST("/availability-checks", {
@@ -791,6 +802,7 @@ function EmptyDay({
             serviceTypeId: a.serviceTypeId,
             start: instantAt(day, opening, zone),
             transport: a.transport,
+            appointmentId: a.id,
           },
         }),
       ),

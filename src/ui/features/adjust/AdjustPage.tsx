@@ -352,6 +352,7 @@ function AdjustForm({
             serviceTypeId: a.serviceTypeId,
             start: a.start,
             transport: a.transport,
+            appointmentId: a.id,
           },
         }),
       ),

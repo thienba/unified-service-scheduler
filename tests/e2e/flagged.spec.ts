@@ -115,13 +115,13 @@ for (const width of [390, 1440] as const) {
       await expect(first).toContainText(
         "Oil and filter change, Peugeot 208 PG28 GHI",
       );
-      await expect(first).toContainText("Jonas Weber · Demo Tech Birch, Bay");
+      await expect(first).toContainText("Jonas Weber · Amara Okafor, Bay");
       await expect(
         first.getByText("Outside the technician’s shift"),
       ).toBeVisible();
       await expect(first.getByText("Drop-off")).toBeVisible();
       await expect(
-        first.getByText("Ends after Demo's shift, 13:00."),
+        first.getByText("Ends after Amara's shift, 13:00."),
       ).toBeVisible();
       await expect(first.getByText("Flagged on Wed 28 Oct.")).toBeVisible();
       // Both reasons: two badges and two sentences.
@@ -134,10 +134,10 @@ for (const width of [390, 1440] as const) {
         aisha.getByText("Ends after closing time, 14:00."),
       ).toBeVisible();
       await expect(
-        aisha.getByText("Ends after Demo's shift, 14:30."),
+        aisha.getByText("Ends after Amara's shift, 14:30."),
       ).toBeVisible();
       await expect(
-        rows(page).nth(3).getByText("Demo is not working this day."),
+        rows(page).nth(3).getByText("Oliver is not working this day."),
       ).toBeVisible();
       // Names start with the visible word and name the booking; no primary fill on this screen.
       await expect(

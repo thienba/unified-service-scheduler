@@ -277,6 +277,7 @@ export const handlers: Record<
       date: string;
       transport: Schemas["Transport"];
       technicianId?: string;
+      appointmentId?: string;
     };
     const result = await searchAvailability(c.actor, c.deps, {
       dealershipId: c.path.dealershipId as string,
@@ -321,6 +322,7 @@ export const handlers: Record<
       date?: string;
       flagged?: boolean;
       includeCancelled?: boolean;
+      includePast?: boolean;
     };
     // A customer who gives no date gets their own appointments from now on.
     const result =

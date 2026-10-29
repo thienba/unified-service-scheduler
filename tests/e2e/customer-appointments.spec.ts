@@ -208,6 +208,34 @@ test.describe("my-appointments", () => {
     await expect(button(page, "Show earlier")).toHaveCount(0);
   });
 
+  test("D-0001-94: ended appointments show under Past and cancelled with the Past badge, newest first, and never another customer's", async ({
+    page,
+  }) => {
+    await start(page, 1440, "/appointments");
+    await bookAs(page, A, FRI_10);
+    // Both of A's appointments (Fri 30 Oct and the seeded Sat 31 Oct) have ended; B's seeded one has too.
+    await page.clock.setFixedTime(at("2026-11-05T12:00:00Z"));
+    await page.reload();
+    await expect(
+      upcoming(page).getByText(
+        "You have nothing booked at the moment. Use Book a service to pick a time.",
+      ),
+    ).toBeVisible();
+    const cards = earlier(page).getByRole("article");
+    await expect(cards).toHaveCount(2);
+    await expect(cards.first().getByRole("link").first()).toHaveAccessibleName(
+      /^Sat 31 Oct/,
+    );
+    await expect(cards.last().getByRole("link").first()).toHaveAccessibleName(
+      /^Fri 30 Oct/,
+    );
+    for (const i of [0, 1]) {
+      await expect(
+        cards.nth(i).getByText("Past", { exact: true }),
+      ).toBeVisible();
+    }
+  });
+
   test("with nothing upcoming the list says so; staff on /appointments get the no-permission words", async ({
     page,
   }) => {
@@ -432,6 +460,24 @@ test.describe("reschedule", () => {
       .getByRole("radio", { name: "13:00 to 16:00", exact: true })
       .check();
     await expect(button(page, "Confirm new time")).toBeEnabled();
+  });
+
+  test("D-0001-101: a time that overlaps the old one and is blocked only by it is offered, and the move succeeds", async ({
+    page,
+  }) => {
+    await start(page, 1440, "/appointments");
+    const fri = await bookAs(page, A, FRI_10);
+    // The other technician and bay are taken for the same hours, so only this appointment's own slot blocks 11:00.
+    await fillTime(page, FRI_10);
+    await page.goto(`/appointments/${fri.id}/reschedule`);
+    await expect(
+      page.getByRole("radio", { name: /^Fri 30 Oct,/ }),
+    ).toBeChecked();
+    await page
+      .getByRole("radio", { name: "11:00 to 14:00", exact: true })
+      .check();
+    await button(page, "Confirm new time").click();
+    await expect(h1(page, "Fri 30 Oct, 11:00 to 14:00")).toBeVisible();
   });
 
   test("REQ-BOOK-012.AC-2, REQ-BOOK-009.AC-4: one POST for a double press, same id, new time, toast; the old time stays until the answer, then is offered again", async ({

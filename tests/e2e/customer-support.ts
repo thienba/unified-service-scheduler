@@ -111,7 +111,7 @@ export async function mine(page: Page, user: string) {
     page,
     user,
     "GET",
-    "/appointments?includeCancelled=true",
+    "/appointments?includeCancelled=true&includePast=true",
   );
   return answer.body as Appointment[];
 }

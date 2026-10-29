@@ -33,7 +33,6 @@ export const users = {
   managerLondon: "user-manager-london",
   staffSaigon: "user-staff-saigon",
   managerSaigon: "user-manager-saigon",
-  staffBoth: "user-staff-both",
 } as const;
 export type UserKey = keyof typeof users;
 

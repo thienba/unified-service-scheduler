@@ -32,7 +32,7 @@ import resourceFile from "./resources.json";
 import serviceTypeFile from "./service-types.json";
 
 /** Raise this when the seed files change, so older browser databases are reset (AD-17). */
-export const SEED_VERSION = 3;
+export const SEED_VERSION = 4;
 
 /** A seeded appointment is written as "N days from today at a local time". */
 interface SeedAppointment extends Omit<

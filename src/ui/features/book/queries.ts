@@ -39,6 +39,7 @@ export const availabilityKey = (
   date: string,
   transport: Transport,
   technicianId?: string,
+  appointmentId?: string,
 ) =>
   [
     "availability",
@@ -47,16 +48,19 @@ export const availabilityKey = (
     date,
     transport,
     technicianId ?? null,
+    appointmentId ?? null,
   ] as const;
 
 /** The free start times of each date: one call per date (customer.md, "for the architect"). With a
- * technician, only that technician's times (staff from a free gap, D-0001-31 A). */
+ * technician, only that technician's times (staff from a free gap, D-0001-31 A). With an appointment, that
+ * appointment is left out of the search, for the person moving it (D-0001-101). */
 export function useWeekAvailability(
   dealershipId: string | undefined,
   serviceTypeId: string | undefined,
   dates: readonly string[],
   transport: Transport,
   technicianId?: string,
+  appointmentId?: string,
 ) {
   const { client } = useSession();
   return useQueries({
@@ -67,6 +71,7 @@ export function useWeekAvailability(
         date,
         transport,
         technicianId,
+        appointmentId,
       ),
       queryFn: () =>
         call(
@@ -78,6 +83,7 @@ export function useWeekAvailability(
                 date,
                 transport,
                 ...(technicianId ? { technicianId } : {}),
+                ...(appointmentId ? { appointmentId } : {}),
               },
             },
           }),

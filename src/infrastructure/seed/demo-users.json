@@ -40,12 +40,5 @@
     "role": "manager",
     "customerId": null,
     "dealershipIds": ["dealership-saigon"]
-  },
-  {
-    "id": "user-staff-both",
-    "name": "Demo Staff Both Sites",
-    "role": "staff",
-    "customerId": null,
-    "dealershipIds": ["dealership-london", "dealership-saigon"]
   }
 ]

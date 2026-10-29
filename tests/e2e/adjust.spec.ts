@@ -107,7 +107,7 @@ for (const width of [390, 1440] as const) {
       ).toBeVisible();
       await expect(page.getByLabel("Technician")).toHaveValue("");
       await expect(
-        page.getByRole("option", { name: "Same as now (Demo Tech Birch)" }),
+        page.getByRole("option", { name: "Same as now (Amara Okafor)" }),
       ).toBeAttached();
       await expect(
         page.getByText("Ends 12:15. The job takes about 3 hours."),
@@ -172,7 +172,7 @@ for (const width of [390, 1440] as const) {
       ).toBeVisible({ timeout: 10_000 });
       await expect(
         page.getByText(
-          /^The appointment is now Mon 2 Nov, 09:00 to 12:00 with Demo Tech Ash in bay \d\. Demo Tech Birch was busy then, so Demo Tech Ash was picked\..* The customer has a new message in the outbox\.$/,
+          /^The appointment is now Mon 2 Nov, 09:00 to 12:00 with Oliver Hughes in bay \d\. Amara Okafor was busy then, so Oliver Hughes was picked\..* The customer has a new message in the outbox\.$/,
         ),
       ).toBeVisible();
       await expect(
@@ -235,7 +235,7 @@ for (const width of [390, 1440] as const) {
       await expect(title).toBeFocused();
       await expect(
         page.getByText(
-          /\. The appointment is still at 09:15 with Demo Tech Birch in bay \d\.$/,
+          /\. The appointment is still at 09:15 with Amara Okafor in bay \d\.$/,
         ),
       ).toBeVisible();
       await expect(page.getByText(/[A-Z]{2,}_[A-Z]{2,}/)).toHaveCount(0);
@@ -309,7 +309,7 @@ for (const width of [390, 1440] as const) {
         page.getByRole("heading", { name: "This booking no longer fits" }),
       ).toBeVisible();
       await expect(
-        page.getByText(/^Ends after Demo's shift, 13:00\./),
+        page.getByText(/^Ends after Amara's shift, 13:00\./),
       ).toBeVisible();
       const fits = page
         .getByRole("group", { name: "Times that fit" })
@@ -616,7 +616,7 @@ for (const width of [390, 1440] as const) {
       });
       await expect(
         page.getByText(
-          /Demo Tech Birch was busy then, so Demo Tech Ash was picked\./,
+          /Amara Okafor was busy then, so Oliver Hughes was picked\./,
         ),
       ).toBeVisible();
     });
@@ -804,6 +804,22 @@ for (const width of [390, 1440] as const) {
     });
   });
 }
+
+test("D-0001-102: Times that fit offers a time that only the booking's own slot blocks", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await start(page);
+  // Oliver is on his break 12:00 to 13:00 and Tom has no mechanic skill, so only Amara could take 12:00, and her
+  // own 12:30 job (Jonas's) is what blocks her.
+  const id = await flaggedJonas(page);
+  await openAdjust(page, id);
+  await expect(
+    page
+      .getByRole("group", { name: "Times that fit" })
+      .getByRole("button", { name: /^Fri 30 Oct, 12:00 / }),
+  ).toBeVisible();
+});
 
 test("TOO_SOON and BEYOND_HORIZON read in words with the dealership's numbers (D-0001-45 A)", async ({
   page,

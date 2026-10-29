@@ -428,22 +428,21 @@ describe("the demo endpoints (AD-2, AD-17)", () => {
     );
   });
 
-  const SEVEN = [
+  const SIX = [
     "user-customer-a",
     "user-customer-b",
     "user-staff-london",
     "user-manager-london",
     "user-staff-saigon",
     "user-manager-saigon",
-    "user-staff-both",
   ];
 
-  it("GET /_demo/users answers 200 with no X-Demo-User: the seven users, each id, name, role and dealershipIds only", async () => {
+  it("GET /_demo/users answers 200 with no X-Demo-User: the six users, each id, name, role and dealershipIds only", async () => {
     const reply = await call("/_demo/users");
     expect(reply.status).toBe(200);
     expect(reply.problems).toEqual([]);
     expect(reply.body.map((u: { id: string }) => u.id).sort()).toEqual(
-      [...SEVEN].sort(),
+      [...SIX].sort(),
     );
     for (const user of reply.body) {
       expect(Object.keys(user).sort()).toEqual([
@@ -453,13 +452,12 @@ describe("the demo endpoints (AD-2, AD-17)", () => {
         "role",
       ]);
     }
-    expect(
-      reply.body.find((u: { id: string }) => u.id === "user-staff-both"),
-    ).toMatchObject({
-      name: "Demo Staff Both Sites",
-      role: "staff",
-      dealershipIds: ["dealership-london", "dealership-saigon"],
-    });
+    // D-0001-89: no staff member is linked to two dealerships.
+    for (const user of reply.body.filter(
+      (u: { role: string }) => u.role === "staff",
+    )) {
+      expect(user.dealershipIds).toHaveLength(1);
+    }
     const text = JSON.stringify(reply.body);
     expect(text).not.toContain("customerId");
     // The user's name is the label the switcher shows; the customer's phone and email must not appear.
@@ -488,13 +486,13 @@ describe("the demo endpoints (AD-2, AD-17)", () => {
     }
   });
 
-  it("after POST /_demo/reset the same seven users are returned", async () => {
+  it("after POST /_demo/reset the same six users are returned", async () => {
     const before = (await call("/_demo/users")).body;
     await book(users.customerA);
     await call("/_demo/reset", { user: users.customerA, method: "POST" });
     const after = await call("/_demo/users");
     expect(after.body).toEqual(before);
-    expect(after.body).toHaveLength(7);
+    expect(after.body).toHaveLength(6);
   });
 });
 

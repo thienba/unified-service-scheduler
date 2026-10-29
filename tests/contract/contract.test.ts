@@ -172,6 +172,58 @@ describe.each(transports)("API contract through $name", (transport) => {
       expect(taken.body.suggestions.length).toBeGreaterThan(0);
     });
 
+    it("D-0001-101, D-0001-102: appointmentId leaves that appointment out of the check and the day search, for people who may reach it only", async () => {
+      // The seeded EV check uses Oliver at 10:00; Tom is the only other EV technician, and customer B takes him.
+      await book(users.customerB, {
+        serviceTypeId: EV,
+        start: SEEDED_A.start,
+        vehicleId: "vehicle-b",
+      });
+      const body = { serviceTypeId: EV, start: SEEDED_A.start };
+      const day = (user: string, appointmentId?: string) =>
+        send(`/dealerships/${LON}/availability`, {
+          user,
+          query: {
+            serviceTypeId: EV,
+            date: SEEDED_A.date,
+            transport: "wait",
+            ...(appointmentId ? { appointmentId } : {}),
+          },
+        });
+      const offered = (reply: Reply) =>
+        reply.body.slots.some(
+          (x: { start: string }) => x.start === SEEDED_A.start,
+        );
+
+      expect((await check(users.customerA, body)).body.available).toBe(false);
+      expect(offered(await day(users.customerA))).toBe(false);
+      for (const user of [
+        users.customerA,
+        users.staffLondon,
+        users.managerLondon,
+      ]) {
+        const sent = { ...body, appointmentId: SEEDED_A.id };
+        expect((await check(user, sent)).body.available).toBe(true);
+        expect(offered(await day(user, SEEDED_A.id))).toBe(true);
+      }
+      // Everyone else still sees the old time as busy.
+      expect((await check(users.customerB, body)).body.available).toBe(false);
+      // A stranger gets the answer for a missing appointment.
+      const missing = "f7d1c2aa-0000-4000-8000-000000000000";
+      for (const id of [SEEDED_A.id, missing]) {
+        const checked = await check(users.customerB, {
+          ...body,
+          appointmentId: id,
+        });
+        expect(checked.status).toBe(404);
+        expect((await day(users.customerB, id)).status).toBe(404);
+      }
+      expect(
+        (await check(users.customerA, { ...body, appointmentId: missing }))
+          .status,
+      ).toBe(404);
+    });
+
     it("a missing field is 422 naming it, and an unreal date is 422", async () => {
       const missing = await check(users.customerA, { dealershipId: undefined });
       expect(missing.status).toBe(422);
@@ -267,7 +319,9 @@ describe.each(transports)("API contract through $name", (transport) => {
       // The owner sees the service, the vehicle and the technician's name (D-0001-71), not the bay or customer name.
       expect(reply.body.display).toEqual({
         serviceTypeName: "Oil and filter change",
-        technicianName: expect.stringMatching(/^Demo Tech /),
+        technicianName: expect.stringMatching(
+          /^(Oliver Hughes|Amara Okafor|Tom Fletcher)$/,
+        ),
         vehicle: {
           registration: "AB00 DMA",
           make: "Demo Motors",
@@ -504,6 +558,30 @@ describe.each(transports)("API contract through $name", (transport) => {
       ]);
     });
 
+    it("D-0001-94: includePast=true adds a customer's own ended appointments after the others, newest first, and never another customer's", async () => {
+      const earlier = await book(users.customerA, {
+        start: at("2026-11-04", "10:00"),
+      });
+      const later = await book(users.customerA, {
+        start: at("2026-11-12", "10:00"),
+      });
+      world.clock.set(Date.parse("2026-11-05T12:00:00Z"));
+      const ids = async (user: string, query: Record<string, boolean>) =>
+        (await send("/appointments", { user, query })).body.map(
+          (a: { id: string }) => a.id,
+        );
+      expect(await ids(users.customerA, { includePast: true })).toEqual([
+        later.body.id,
+        SEEDED_A.id,
+        earlier.body.id,
+      ]);
+      expect(await ids(users.customerA, {})).toEqual([later.body.id]);
+      const mine = await ids(users.customerB, { includePast: true });
+      expect(mine).not.toContain(SEEDED_A.id);
+      expect(mine).not.toContain(earlier.body.id);
+      expect(mine).not.toContain(later.body.id);
+    });
+
     it("reschedule to a free time keeps the id; to a taken time is 409 and the original is unchanged", async () => {
       const move = (start: string, serviceKey = key()) =>
         send(`/appointments/${SEEDED_A.id}/reschedule`, {
@@ -685,7 +763,7 @@ describe.each(transports)("API contract through $name", (transport) => {
         display: {
           serviceTypeName: "Battery and EV systems check",
           vehicle: { registration: "AB00 DMA" },
-          technicianName: "Demo Tech Ash",
+          technicianName: "Oliver Hughes",
           serviceBayName: expect.stringMatching(/^Bay/),
           customerName: "Demo Customer A",
         },
@@ -705,11 +783,11 @@ describe.each(transports)("API contract through $name", (transport) => {
         user: users.customerA,
       });
       expect(mine.status).toBe(200);
-      expect(mine.body.display.technicianName).toBe("Demo Tech Ash");
+      expect(mine.body.display.technicianName).toBe("Oliver Hughes");
       expect(mine.body.display).not.toHaveProperty("serviceBayName");
       expect(mine.body.display).not.toHaveProperty("customerName");
       const listed = await send("/appointments", { user: users.customerA });
-      expect(listed.body[0].display.technicianName).toBe("Demo Tech Ash");
+      expect(listed.body[0].display.technicianName).toBe("Oliver Hughes");
       expect(
         (await send(`/appointments/${SEEDED_A.id}`, { user: users.customerB }))
           .status,
@@ -898,7 +976,7 @@ describe.each(transports)("API contract through $name", (transport) => {
       expect(saved.status).toBe(200);
       expect(saved.body.flagged[0].flags[0]).toMatchObject({
         kind: "outside_shift",
-        reason: "Demo is not working this day",
+        reason: "Oliver is not working this day",
       });
       const bad = await send("/technicians/tech-lon-ash/shifts", {
         user: users.managerLondon,
@@ -978,11 +1056,7 @@ describe.each(transports)("API contract through $name", (transport) => {
       const ask = (user: string) =>
         send("/outbox", { user, query: { dealershipId: LON } });
       expect((await ask(users.managerSaigon)).status).toBe(403);
-      for (const user of [
-        users.customerA,
-        users.staffLondon,
-        users.staffBoth,
-      ]) {
+      for (const user of [users.customerA, users.staffLondon]) {
         expect((await ask(user)).status).toBe(403);
       }
     });

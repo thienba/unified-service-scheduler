@@ -158,7 +158,7 @@ describe("flagReason (D-0001-34)", () => {
   });
 
   it("uses only the first name of a technician with a longer name", () => {
-    const long = technician("t1", { name: "Demo Tech Ash" }, shift);
+    const long = technician("t1", { name: "Oliver Hughes" }, shift);
     expect(
       flagReason(
         "outside_shift",
@@ -166,7 +166,7 @@ describe("flagReason (D-0001-34)", () => {
         d,
         long,
       ),
-    ).toBe("Ends after Demo's shift, 13:00");
+    ).toBe("Ends after Oliver's shift, 13:00");
   });
 
   it("says the booking overlaps the technician's break", () => {

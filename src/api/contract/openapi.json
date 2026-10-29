@@ -330,7 +330,7 @@
         "operationId": "searchAvailability",
         "tags": ["availability"],
         "summary": "Free start times on one local date",
-        "description": "Every role. `technicianId` is for staff and managers only; a customer who sends it is refused.\nStaff and managers ask about their own dealerships.\n",
+        "description": "Every role. `technicianId` is for staff and managers only; a customer who sends it is refused.\nStaff and managers ask about their own dealerships. `appointmentId` leaves that appointment out of\nthe search, for the person moving it; only its owner, or staff or a manager of its dealership, may send\nit, and anyone else gets the same 404 as for a missing appointment.\n",
         "parameters": [
           { "$ref": "#/components/parameters/Traceparent" },
           { "$ref": "#/components/parameters/DealershipId" },
@@ -354,6 +354,12 @@
           },
           {
             "name": "technicianId",
+            "in": "query",
+            "required": false,
+            "schema": { "$ref": "#/components/schemas/Id" }
+          },
+          {
+            "name": "appointmentId",
             "in": "query",
             "required": false,
             "schema": { "$ref": "#/components/schemas/Id" }
@@ -384,7 +390,7 @@
         "operationId": "checkAvailability",
         "tags": ["availability"],
         "summary": "Check one start time",
-        "description": "Says whether one start time is free. It never answers 409: a taken time is a normal answer\n(`available: false`, with reasons and suggested times). `technicianId` is for staff and managers only.\n",
+        "description": "Says whether one start time is free. It never answers 409: a taken time is a normal answer\n(`available: false`, with reasons and suggested times). `technicianId` is for staff and managers only.\n`appointmentId` leaves that appointment out of the check, for the person moving it; only its owner, or\nstaff or a manager of its dealership, may send it, and anyone else gets the same 404 as for a missing\nappointment.\n",
         "parameters": [{ "$ref": "#/components/parameters/Traceparent" }],
         "requestBody": {
           "required": true,
@@ -421,7 +427,7 @@
         "operationId": "listAppointments",
         "tags": ["appointments"],
         "summary": "List appointments",
-        "description": "Staff and managers: the appointments of one dealership on one local date (`dealershipId` and\n`date`), or with `flagged=true` every flagged appointment of the dealership from now on, soonest first.\nCustomers: only their own. Without a date a customer gets their own appointments from now on,\nsoonest first. Cancelled appointments are left out unless `includeCancelled=true`.\n",
+        "description": "Staff and managers: the appointments of one dealership on one local date (`dealershipId` and\n`date`), or with `flagged=true` every flagged appointment of the dealership from now on, soonest first.\nCustomers: only their own. Without a date a customer gets their own appointments from now on,\nsoonest first. Cancelled appointments are left out unless `includeCancelled=true`. With\n`includePast=true` a customer also gets their own appointments that have ended, after the others,\nnewest first. `includePast` changes nothing for staff and managers.\n",
         "parameters": [
           { "$ref": "#/components/parameters/Traceparent" },
           {
@@ -444,6 +450,12 @@
           },
           {
             "name": "includeCancelled",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "boolean" }
+          },
+          {
+            "name": "includePast",
             "in": "query",
             "required": false,
             "schema": { "type": "boolean" }
@@ -654,7 +666,7 @@
         "operationId": "searchCustomers",
         "tags": ["customers"],
         "summary": "Find customers",
-        "description": "Staff and managers. Send `text` (3 to 50 characters; part of a name, a phone or a registration),\nor `phone` and/or `registration` to look for an exact match (the new-customer duplicate hint).\nThe search text travels in the body, never in the URL. At most 10 customers come back.\n",
+        "description": "Staff and managers. Send `text` (3 to 50 characters; part of a name, a phone or a registration),\nor `phone` and/or `registration` to look for the same number (digits only) or plate (letters and numbers) (the new-customer duplicate hint).\nThe search text travels in the body, never in the URL. At most 10 customers come back.\n",
         "parameters": [{ "$ref": "#/components/parameters/Traceparent" }],
         "requestBody": {
           "required": true,
@@ -1441,7 +1453,7 @@
           "since": { "$ref": "#/components/schemas/Instant" },
           "reason": {
             "type": "string",
-            "description": "One short phrase that says why, for example \"Ends after Ash's shift, 13:00\""
+            "description": "One short phrase that says why, for example \"Ends after Oliver's shift, 13:00\""
           }
         }
       },
@@ -1723,7 +1735,8 @@
           "serviceTypeId": { "$ref": "#/components/schemas/Id" },
           "start": { "$ref": "#/components/schemas/Instant" },
           "transport": { "$ref": "#/components/schemas/Transport" },
-          "technicianId": { "$ref": "#/components/schemas/Id" }
+          "technicianId": { "$ref": "#/components/schemas/Id" },
+          "appointmentId": { "$ref": "#/components/schemas/Id" }
         }
       },
       "RescheduleRequest": {
@@ -1784,7 +1797,7 @@
       },
       "CustomerSearchRequest": {
         "type": "object",
-        "description": "Either `text` (3 to 50 characters), or `phone` and/or `registration` for an exact match.\nNever both kinds in one request.\n",
+        "description": "Either `text` (3 to 50 characters), or `phone` and/or `registration` for the same number (digits only) or plate (letters and numbers).\nNever both kinds in one request.\n",
         "additionalProperties": false,
         "properties": {
           "text": { "type": "string", "minLength": 3, "maxLength": 50 },

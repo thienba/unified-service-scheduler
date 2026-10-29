@@ -195,7 +195,9 @@ export interface paths {
     /**
      * Free start times on one local date
      * @description Every role. `technicianId` is for staff and managers only; a customer who sends it is refused.
-     *     Staff and managers ask about their own dealerships.
+     *     Staff and managers ask about their own dealerships. `appointmentId` leaves that appointment out of
+     *     the search, for the person moving it; only its owner, or staff or a manager of its dealership, may send
+     *     it, and anyone else gets the same 404 as for a missing appointment.
      */
     get: operations["searchAvailability"];
     put?: never;
@@ -219,6 +221,9 @@ export interface paths {
      * Check one start time
      * @description Says whether one start time is free. It never answers 409: a taken time is a normal answer
      *     (`available: false`, with reasons and suggested times). `technicianId` is for staff and managers only.
+     *     `appointmentId` leaves that appointment out of the check, for the person moving it; only its owner, or
+     *     staff or a manager of its dealership, may send it, and anyone else gets the same 404 as for a missing
+     *     appointment.
      */
     post: operations["checkAvailability"];
     delete?: never;
@@ -239,7 +244,9 @@ export interface paths {
      * @description Staff and managers: the appointments of one dealership on one local date (`dealershipId` and
      *     `date`), or with `flagged=true` every flagged appointment of the dealership from now on, soonest first.
      *     Customers: only their own. Without a date a customer gets their own appointments from now on,
-     *     soonest first. Cancelled appointments are left out unless `includeCancelled=true`.
+     *     soonest first. Cancelled appointments are left out unless `includeCancelled=true`. With
+     *     `includePast=true` a customer also gets their own appointments that have ended, after the others,
+     *     newest first. `includePast` changes nothing for staff and managers.
      */
     get: operations["listAppointments"];
     put?: never;
@@ -337,7 +344,7 @@ export interface paths {
     /**
      * Find customers
      * @description Staff and managers. Send `text` (3 to 50 characters; part of a name, a phone or a registration),
-     *     or `phone` and/or `registration` to look for an exact match (the new-customer duplicate hint).
+     *     or `phone` and/or `registration` to look for the same number (digits only) or plate (letters and numbers) (the new-customer duplicate hint).
      *     The search text travels in the body, never in the URL. At most 10 customers come back.
      */
     post: operations["searchCustomers"];
@@ -666,7 +673,7 @@ export interface components {
       /** @enum {string} */
       kind: "outside_opening_hours" | "outside_shift";
       since: components["schemas"]["Instant"];
-      /** @description One short phrase that says why, for example "Ends after Ash's shift, 13:00" */
+      /** @description One short phrase that says why, for example "Ends after Oliver's shift, 13:00" */
       reason: string;
     };
     /**
@@ -797,6 +804,7 @@ export interface components {
       start: components["schemas"]["Instant"];
       transport: components["schemas"]["Transport"];
       technicianId?: components["schemas"]["Id"];
+      appointmentId?: components["schemas"]["Id"];
     };
     RescheduleRequest: {
       start: components["schemas"]["Instant"];
@@ -821,7 +829,7 @@ export interface components {
       shiftExceptions: components["schemas"]["ShiftExceptions"];
     };
     /**
-     * @description Either `text` (3 to 50 characters), or `phone` and/or `registration` for an exact match.
+     * @description Either `text` (3 to 50 characters), or `phone` and/or `registration` for the same number (digits only) or plate (letters and numbers).
      *     Never both kinds in one request.
      */
     CustomerSearchRequest: {
@@ -1288,6 +1296,7 @@ export interface operations {
         date: components["schemas"]["LocalDate"];
         transport: components["schemas"]["Transport"];
         technicianId?: components["schemas"]["Id"];
+        appointmentId?: components["schemas"]["Id"];
       };
       header?: {
         /** @description W3C trace context, `00-<32 hex>-<16 hex>-<2 hex>`. A value that does not match is ignored and a new trace id is made. */
@@ -1357,6 +1366,7 @@ export interface operations {
         date?: components["schemas"]["LocalDate"];
         flagged?: boolean;
         includeCancelled?: boolean;
+        includePast?: boolean;
       };
       header?: {
         /** @description W3C trace context, `00-<32 hex>-<16 hex>-<2 hex>`. A value that does not match is ignored and a new trace id is made. */

@@ -9,6 +9,7 @@ import {
   problemBody,
   widths,
 } from "./support";
+import { shot } from "./customer-support";
 
 const nav = (page: import("@playwright/test").Page) =>
   page.getByRole("navigation", { name: "Main" });
@@ -123,33 +124,30 @@ test("an unknown route shows not-found with the role's home", async ({
   ).toBeVisible();
 });
 
-test("a staff member with two dealerships gets a select; changing it updates ?dealership=; another dealership is refused", async ({
-  page,
-}) => {
-  await openApp(page);
-  await pickRole(page, "Staff");
-  await page.getByLabel("Who").selectOption({ label: "Demo Staff Both Sites" });
-  await expect(
-    page.getByText(/Now viewing as Staff, Demo Staff Both Sites/),
-  ).toBeVisible();
-  const picker = page.getByLabel("Dealership");
-  await expect(picker).toBeVisible();
-  await picker.selectOption({ index: 1 });
-  await expect(page).toHaveURL(/dealership=dealership-/);
-
-  await page.getByLabel("Who").selectOption({ label: "Demo Staff London" });
-  await expect(
-    page.getByText(/Now viewing as Staff, Demo Staff London/),
-  ).toBeVisible();
-  await expect(page.getByLabel("Dealership")).toHaveCount(0);
-  await page.goto("/schedule?dealership=dealership-saigon");
-  await expect(
-    page.getByRole("heading", { name: "You cannot open that dealership." }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("link", { name: /^Go to the .* schedule$/ }),
-  ).toBeVisible();
-});
+for (const width of [390, 1440]) {
+  test(`at ${width} wide: a staff member works at one dealership: no dealership choice, and another dealership is refused (D-0001-89)`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await openApp(page);
+    await pickRole(page, "Staff");
+    await expect(
+      page.getByText(/Now viewing as Staff, Demo Staff London/),
+    ).toBeVisible();
+    await expect(page.getByLabel("Dealership")).toHaveCount(0);
+    await expect(
+      page.getByText("Fakeford Motors (demo)").first(),
+    ).toBeVisible();
+    await shot(page, "staff-header", "one-dealership");
+    await page.goto("/schedule?dealership=dealership-saigon");
+    await expect(
+      page.getByRole("heading", { name: "You cannot open that dealership." }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: /^Go to the .* schedule$/ }),
+    ).toBeVisible();
+  });
+}
 
 test("remote proof: page.route does not see calls the service worker answers (D-0001-58)", async ({
   page,

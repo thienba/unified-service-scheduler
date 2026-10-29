@@ -24,6 +24,8 @@ import {
   byStartThenId,
   byTechnicianThenDate,
   matchesSearch,
+  phoneDigits,
+  plateKey,
   touchesRange,
 } from "../shared";
 
@@ -157,16 +159,20 @@ function buildStores(data: Data): Stores {
         }
         data.vehicles.set(vehicle.id, copy(vehicle));
       },
-      findDuplicates: async (phone, registration) =>
-        byId(
+      findDuplicates: async (phone, registration) => {
+        const digits = phoneDigits(phone);
+        const plate = plateKey(registration);
+        return byId(
           [...data.customers.values()]
             .map((c) => withVehicles(data, c))
             .filter(
               (c) =>
-                c.phone === phone ||
-                c.vehicles.some((v) => v.registration === registration),
+                (digits !== "" && phoneDigits(c.phone) === digits) ||
+                (plate !== "" &&
+                  c.vehicles.some((v) => plateKey(v.registration) === plate)),
             ),
-        ),
+        );
+      },
     },
     settings: {
       saveDealershipSettings: async (id, settings) => {
