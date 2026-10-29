@@ -37,6 +37,10 @@ The manager can do all of the above, and also adjust a booking (new time, techni
 | <img src="docs/images/manager-flagged-desktop.png" alt="Bookings that no longer fit, with the reason for each" width="280"> | <img src="docs/images/manager-outbox-desktop.png" alt="Confirmation and reminder messages" width="280"> | <img src="docs/images/dev-panel-desktop.png" alt="Numbers and recent requests" width="280"> |
 |                                  Each flagged booking says why, and offers Move or Cancel.                                  |          The confirmations and reminders a real system would send. Nothing leaves the browser.          |         Logs and numbers from the demo, for anyone who wants to see what happened.          |
 
+Drop-downs, dates and times use styled controls that work with a keyboard and a screen reader. Here is the calendar on the adjust page, where closed days are hatched and days that cannot be chosen are crossed out:
+
+<img src="docs/images/themed-date-picker.png" alt="The adjust page with its calendar open: closed days are hatched and unavailable days are crossed out" width="520">
+
 On a phone, the same manager screens fit a narrow page:
 
 <img src="docs/images/manager-flagged-phone.png" alt="The flagged list on a phone" width="180"> <img src="docs/images/manager-outbox-phone.png" alt="The outbox on a phone" width="180"> <img src="docs/images/customer-appointments-phone.png" alt="My appointments on a phone" width="180">
