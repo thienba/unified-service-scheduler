@@ -1,0 +1,175 @@
+Live site: https://keyloop-service-scheduler-ivory.vercel.app
+Browser: chromium
+
+Requests (72):
+GET https://keyloop-service-scheduler-ivory.vercel.app/ (document)
+GET https://keyloop-service-scheduler-ivory.vercel.app/assets/index-DUwmM9jn.js (script)
+GET https://keyloop-service-scheduler-ivory.vercel.app/assets/rolldown-runtime-XKyaHtl9.js (script)
+GET https://keyloop-service-scheduler-ivory.vercel.app/assets/index-MzVepfhE.css (stylesheet)
+GET https://keyloop-service-scheduler-ivory.vercel.app/assets/boot-mock-DXjaokER.js (script)
+GET https://keyloop-service-scheduler-ivory.vercel.app/mockServiceWorker.js (script)
+GET https://keyloop-service-scheduler-ivory.vercel.app/api/me (fetch)
+GET https://keyloop-service-scheduler-ivory.vercel.app/api/_demo/users (fetch)
+GET https://keyloop-service-scheduler-ivory.vercel.app/assets/ibm-plex-sans-latin-BD64o3ke.woff2 (font)
+GET https://keyloop-service-scheduler-ivory.vercel.app/assets/plus-jakarta-sans-latin-B2KjpZfh.woff2 (font)
+GET https://keyloop-service-scheduler-ivory.vercel.app/assets/ibm-plex-sans-latin-BD64o3ke.woff2 (fetch)
+GET https://keyloop-service-scheduler-ivory.vercel.app/assets/plus-jakarta-sans-latin-B2KjpZfh.woff2 (fetch)
+GET https://keyloop-service-scheduler-ivory.vercel.app/api/me (fetch)
+GET https://keyloop-service-scheduler-ivory.vercel.app/api/dealerships (fetch)
+GET https://keyloop-service-scheduler-ivory.vercel.app/api/service-types (fetch)
+GET https://keyloop-service-scheduler-ivory.vercel.app/api/customers/customer-a/vehicles (fetch)
+GET https://keyloop-service-scheduler-ivory.vercel.app/book?dealership=dealership-london&service=service-full (document)
+GET https://keyloop-service-scheduler-ivory.vercel.app/book?dealership=dealership-london&service=service-full (fetch)
+GET https://keyloop-service-scheduler-ivory.vercel.app/assets/index-DUwmM9jn.js (script)
+GET https://keyloop-service-scheduler-ivory.vercel.app/assets/rolldown-runtime-XKyaHtl9.js (script)
+GET https://keyloop-service-scheduler-ivory.vercel.app/assets/index-MzVepfhE.css (stylesheet)
+GET https://keyloop-service-scheduler-ivory.vercel.app/assets/boot-mock-DXjaokER.js (script)
+GET https://keyloop-service-scheduler-ivory.vercel.app/api/me (fetch)
+GET https://keyloop-service-scheduler-ivory.vercel.app/api/_demo/users (fetch)
+GET https://keyloop-service-scheduler-ivory.vercel.app/api/dealerships (fetch)
+GET https://keyloop-service-scheduler-ivory.vercel.app/api/dealerships (fetch)
+GET https://keyloop-service-scheduler-ivory.vercel.app/api/service-types (fetch)
+GET https://keyloop-service-scheduler-ivory.vercel.app/api/customers/customer-a/vehicles (fetch)
+GET https://keyloop-service-scheduler-ivory.vercel.app/assets/ibm-plex-sans-latin-BD64o3ke.woff2 (font)
+GET https://keyloop-service-scheduler-ivory.vercel.app/assets/plus-jakarta-sans-latin-B2KjpZfh.woff2 (font)
+GET https://keyloop-service-scheduler-ivory.vercel.app/assets/ibm-plex-sans-latin-BD64o3ke.woff2 (fetch)
+GET https://keyloop-service-scheduler-ivory.vercel.app/assets/plus-jakarta-sans-latin-B2KjpZfh.woff2 (fetch)
+GET https://keyloop-service-scheduler-ivory.vercel.app/api/dealerships/dealership-london/availability?serviceTypeId=service-full&date=2026-10-29&transport=wait (fetch)
+GET https://keyloop-service-scheduler-ivory.vercel.app/api/dealerships/dealership-london/availability?serviceTypeId=service-full&date=2026-10-30&transport=wait (fetch)
+GET https://keyloop-service-scheduler-ivory.vercel.app/api/dealerships/dealership-london/availability?serviceTypeId=service-full&date=2026-10-31&transport=wait (fetch)
+GET https://keyloop-service-scheduler-ivory.vercel.app/api/dealerships/dealership-london/availability?serviceTypeId=service-full&date=2026-11-02&transport=wait (fetch)
+GET https://keyloop-service-scheduler-ivory.vercel.app/api/dealerships/dealership-london/availability?serviceTypeId=service-full&date=2026-11-03&transport=wait (fetch)
+GET https://keyloop-service-scheduler-ivory.vercel.app/api/dealerships/dealership-london/availability?serviceTypeId=service-full&date=2026-11-04&transport=wait (fetch)
+POST https://keyloop-service-scheduler-ivory.vercel.app/api/availability-checks (fetch)
+POST https://keyloop-service-scheduler-ivory.vercel.app/api/availability-checks (fetch)
+GET https://keyloop-service-scheduler-ivory.vercel.app/api/dealerships (fetch)
+GET https://keyloop-service-scheduler-ivory.vercel.app/api/dealerships (fetch)
+POST https://keyloop-service-scheduler-ivory.vercel.app/api/appointments (fetch)
+GET https://keyloop-service-scheduler-ivory.vercel.app/api/dealerships/dealership-london/availability?serviceTypeId=service-full&date=2026-10-29&transport=wait (fetch)
+GET https://keyloop-service-scheduler-ivory.vercel.app/api/dealerships/dealership-london/availability?serviceTypeId=service-full&date=2026-10-30&transport=wait (fetch)
+GET https://keyloop-service-scheduler-ivory.vercel.app/api/dealerships/dealership-london/availability?serviceTypeId=service-full&date=2026-10-31&transport=wait (fetch)
+GET https://keyloop-service-scheduler-ivory.vercel.app/api/dealerships/dealership-london/availability?serviceTypeId=service-full&date=2026-11-02&transport=wait (fetch)
+GET https://keyloop-service-scheduler-ivory.vercel.app/api/dealerships/dealership-london/availability?serviceTypeId=service-full&date=2026-11-03&transport=wait (fetch)
+GET https://keyloop-service-scheduler-ivory.vercel.app/api/dealerships/dealership-london/availability?serviceTypeId=service-full&date=2026-11-04&transport=wait (fetch)
+GET https://keyloop-service-scheduler-ivory.vercel.app/api/appointments/40a54274-efc1-4223-b471-d9d0b1157fd8 (fetch)
+GET https://keyloop-service-scheduler-ivory.vercel.app/api/dealerships (fetch)
+GET https://keyloop-service-scheduler-ivory.vercel.app/api/appointments/40a54274-efc1-4223-b471-d9d0b1157fd8 (fetch)
+GET https://keyloop-service-scheduler-ivory.vercel.app/api/me (fetch)
+GET https://keyloop-service-scheduler-ivory.vercel.app/api/dealerships (fetch)
+GET https://keyloop-service-scheduler-ivory.vercel.app/api/appointments/40a54274-efc1-4223-b471-d9d0b1157fd8 (fetch)
+GET https://keyloop-service-scheduler-ivory.vercel.app/api/dealerships/dealership-london/schedule?date=2026-10-29 (fetch)
+GET https://keyloop-service-scheduler-ivory.vercel.app/schedule?date=2026-10-30 (document)
+GET https://keyloop-service-scheduler-ivory.vercel.app/schedule?date=2026-10-30 (fetch)
+GET https://keyloop-service-scheduler-ivory.vercel.app/assets/index-DUwmM9jn.js (script)
+GET https://keyloop-service-scheduler-ivory.vercel.app/assets/rolldown-runtime-XKyaHtl9.js (script)
+GET https://keyloop-service-scheduler-ivory.vercel.app/assets/index-MzVepfhE.css (stylesheet)
+GET https://keyloop-service-scheduler-ivory.vercel.app/assets/boot-mock-DXjaokER.js (script)
+GET https://keyloop-service-scheduler-ivory.vercel.app/api/me (fetch)
+GET https://keyloop-service-scheduler-ivory.vercel.app/api/_demo/users (fetch)
+GET https://keyloop-service-scheduler-ivory.vercel.app/assets/ibm-plex-sans-latin-BD64o3ke.woff2 (font)
+GET https://keyloop-service-scheduler-ivory.vercel.app/assets/plus-jakarta-sans-latin-B2KjpZfh.woff2 (font)
+GET https://keyloop-service-scheduler-ivory.vercel.app/assets/ibm-plex-sans-latin-BD64o3ke.woff2 (fetch)
+GET https://keyloop-service-scheduler-ivory.vercel.app/assets/plus-jakarta-sans-latin-B2KjpZfh.woff2 (fetch)
+GET https://keyloop-service-scheduler-ivory.vercel.app/api/dealerships (fetch)
+GET https://keyloop-service-scheduler-ivory.vercel.app/api/dealerships/dealership-london/schedule?date=2026-10-30 (fetch)
+GET https://keyloop-service-scheduler-ivory.vercel.app/api/dealerships (fetch)
+GET https://keyloop-service-scheduler-ivory.vercel.app/api/dealerships (fetch)
+
+Console (95):
+[service worker started] https://keyloop-service-scheduler-ivory.vercel.app/mockServiceWorker.js
+info: {"ts":"2026-10-29T13:12:28.576Z","level":"info","msg":"http.request","traceId":"4b4394bd3ed22c6145fa8eb94ac7e953","route":"GET /me","method":"GET","status":401,"durationMs":4,"outcome":"unknown_user"}
+error: Failed to load resource: the server responded with a status of 401 ()
+info: {"ts":"2026-10-29T13:12:28.579Z","level":"info","msg":"http.request","traceId":"76f62b7fce4fc0a69e31dd8e2418ccf6","route":"GET /_demo/users","method":"GET","status":200,"durationMs":6,"outcome":"ok"}
+info: {"ts":"2026-10-29T13:12:28.718Z","level":"info","msg":"http.request","traceId":"a46975637903a9d0eb2c7f966f18570a","route":"GET /me","method":"GET","status":200,"durationMs":1,"actorRole":"customer","outcome":"ok"}
+info: {"ts":"2026-10-29T13:12:28.742Z","level":"info","msg":"step.load","traceId":"ec3b434a3093084acb380c38b2c03b55","durationMs":1}
+info: {"ts":"2026-10-29T13:12:28.742Z","level":"info","msg":"step.load","traceId":"ace3d32a2202f67bc3dec96a247e111a","durationMs":0}
+info: {"ts":"2026-10-29T13:12:28.742Z","level":"info","msg":"http.request","traceId":"ec3b434a3093084acb380c38b2c03b55","route":"GET /dealerships","method":"GET","status":200,"durationMs":1,"actorRole":"customer","outcome":"ok"}
+info: {"ts":"2026-10-29T13:12:28.742Z","level":"info","msg":"http.request","traceId":"ace3d32a2202f67bc3dec96a247e111a","route":"GET /service-types","method":"GET","status":200,"durationMs":1,"actorRole":"customer","outcome":"ok"}
+info: {"ts":"2026-10-29T13:12:28.743Z","level":"info","msg":"step.load","traceId":"9c5342e6db945833611adb0b4917b295","durationMs":1}
+info: {"ts":"2026-10-29T13:12:28.743Z","level":"info","msg":"http.request","traceId":"9c5342e6db945833611adb0b4917b295","route":"GET /customers/{customerId}/vehicles","method":"GET","status":200,"durationMs":2,"actorRole":"customer","outcome":"ok"}
+info: {"ts":"2026-10-29T13:12:29.678Z","level":"info","msg":"http.request","traceId":"54d7564ccf6933338ebe3738230aec18","route":"GET /me","method":"GET","status":200,"durationMs":1,"actorRole":"customer","outcome":"ok"}
+info: {"ts":"2026-10-29T13:12:29.678Z","level":"info","msg":"http.request","traceId":"64ba7141655f4051b078c9c836fd2223","route":"GET /_demo/users","method":"GET","status":200,"durationMs":0,"outcome":"ok"}
+info: {"ts":"2026-10-29T13:12:29.681Z","level":"info","msg":"step.load","traceId":"679b2309dafd90c9d24920ab044f6d97","durationMs":1}
+info: {"ts":"2026-10-29T13:12:29.681Z","level":"info","msg":"http.request","traceId":"679b2309dafd90c9d24920ab044f6d97","route":"GET /dealerships","method":"GET","status":200,"durationMs":1,"actorRole":"customer","outcome":"ok"}
+info: {"ts":"2026-10-29T13:12:29.692Z","level":"info","msg":"step.load","traceId":"34ede417690479105606a78293d93b7e","durationMs":0}
+info: {"ts":"2026-10-29T13:12:29.692Z","level":"info","msg":"step.load","traceId":"337b20eeb15fdb57db9e4e6a8cf210ee","durationMs":0}
+info: {"ts":"2026-10-29T13:12:29.692Z","level":"info","msg":"http.request","traceId":"34ede417690479105606a78293d93b7e","route":"GET /dealerships","method":"GET","status":200,"durationMs":1,"actorRole":"customer","outcome":"ok"}
+info: {"ts":"2026-10-29T13:12:29.692Z","level":"info","msg":"http.request","traceId":"337b20eeb15fdb57db9e4e6a8cf210ee","route":"GET /service-types","method":"GET","status":200,"durationMs":1,"actorRole":"customer","outcome":"ok"}
+info: {"ts":"2026-10-29T13:12:29.692Z","level":"info","msg":"step.load","traceId":"e473377bd2241388185d31fc91bc3ccd","durationMs":0}
+info: {"ts":"2026-10-29T13:12:29.692Z","level":"info","msg":"http.request","traceId":"e473377bd2241388185d31fc91bc3ccd","route":"GET /customers/{customerId}/vehicles","method":"GET","status":200,"durationMs":1,"actorRole":"customer","outcome":"ok"}
+info: {"ts":"2026-10-29T13:12:29.705Z","level":"info","msg":"step.load","traceId":"8c6d19b3234d854107263c9375042f98","durationMs":7}
+info: {"ts":"2026-10-29T13:12:29.705Z","level":"info","msg":"step.load","traceId":"b51bae2340fb7ace756f860468adb13f","durationMs":6}
+info: {"ts":"2026-10-29T13:12:29.705Z","level":"info","msg":"step.load","traceId":"6875f0108b83ae040c93fe9c143ea751","durationMs":6}
+info: {"ts":"2026-10-29T13:12:29.705Z","level":"info","msg":"step.load","traceId":"b5d7b5fd8ff9f973bb5a95d47c27e8ba","durationMs":6}
+info: {"ts":"2026-10-29T13:12:29.706Z","level":"info","msg":"step.load","traceId":"cf0de3602b2bf3d6617c6e8078f69c2f","durationMs":7}
+info: {"ts":"2026-10-29T13:12:29.706Z","level":"info","msg":"step.load","traceId":"1801abf2b4dc335a57dd6e038d0dc358","durationMs":7}
+info: {"ts":"2026-10-29T13:12:29.707Z","level":"info","msg":"step.check","traceId":"8c6d19b3234d854107263c9375042f98","durationMs":1}
+info: {"ts":"2026-10-29T13:12:29.707Z","level":"info","msg":"http.request","traceId":"8c6d19b3234d854107263c9375042f98","route":"GET /dealerships/{dealershipId}/availability","method":"GET","status":200,"durationMs":10,"dealershipId":"dealership-london","actorRole":"customer","outcome":"ok"}
+info: {"ts":"2026-10-29T13:12:29.708Z","level":"info","msg":"step.check","traceId":"b51bae2340fb7ace756f860468adb13f","durationMs":1}
+info: {"ts":"2026-10-29T13:12:29.708Z","level":"info","msg":"http.request","traceId":"b51bae2340fb7ace756f860468adb13f","route":"GET /dealerships/{dealershipId}/availability","method":"GET","status":200,"durationMs":11,"dealershipId":"dealership-london","actorRole":"customer","outcome":"ok"}
+info: {"ts":"2026-10-29T13:12:29.709Z","level":"info","msg":"step.check","traceId":"6875f0108b83ae040c93fe9c143ea751","durationMs":1}
+info: {"ts":"2026-10-29T13:12:29.709Z","level":"info","msg":"http.request","traceId":"6875f0108b83ae040c93fe9c143ea751","route":"GET /dealerships/{dealershipId}/availability","method":"GET","status":200,"durationMs":12,"dealershipId":"dealership-london","actorRole":"customer","outcome":"ok"}
+info: {"ts":"2026-10-29T13:12:29.709Z","level":"info","msg":"step.check","traceId":"b5d7b5fd8ff9f973bb5a95d47c27e8ba","durationMs":0}
+info: {"ts":"2026-10-29T13:12:29.709Z","level":"info","msg":"http.request","traceId":"b5d7b5fd8ff9f973bb5a95d47c27e8ba","route":"GET /dealerships/{dealershipId}/availability","method":"GET","status":200,"durationMs":12,"dealershipId":"dealership-london","actorRole":"customer","outcome":"ok"}
+info: {"ts":"2026-10-29T13:12:29.710Z","level":"info","msg":"step.check","traceId":"cf0de3602b2bf3d6617c6e8078f69c2f","durationMs":0}
+info: {"ts":"2026-10-29T13:12:29.710Z","level":"info","msg":"http.request","traceId":"cf0de3602b2bf3d6617c6e8078f69c2f","route":"GET /dealerships/{dealershipId}/availability","method":"GET","status":200,"durationMs":13,"dealershipId":"dealership-london","actorRole":"customer","outcome":"ok"}
+info: {"ts":"2026-10-29T13:12:29.711Z","level":"info","msg":"step.check","traceId":"1801abf2b4dc335a57dd6e038d0dc358","durationMs":1}
+info: {"ts":"2026-10-29T13:12:29.712Z","level":"info","msg":"http.request","traceId":"1801abf2b4dc335a57dd6e038d0dc358","route":"GET /dealerships/{dealershipId}/availability","method":"GET","status":200,"durationMs":15,"dealershipId":"dealership-london","actorRole":"customer","outcome":"ok"}
+info: {"ts":"2026-10-29T13:12:32.438Z","level":"info","msg":"step.check","traceId":"9a581535dca1c3dc6ba5462c9d46e2a5","durationMs":0}
+info: {"ts":"2026-10-29T13:12:32.438Z","level":"info","msg":"step.load","traceId":"9a581535dca1c3dc6ba5462c9d46e2a5","durationMs":1}
+info: {"ts":"2026-10-29T13:12:32.439Z","level":"info","msg":"step.check","traceId":"05b25db70fdd5b831eb039f33efa5b18","durationMs":0}
+info: {"ts":"2026-10-29T13:12:32.439Z","level":"info","msg":"step.load","traceId":"05b25db70fdd5b831eb039f33efa5b18","durationMs":2}
+info: {"ts":"2026-10-29T13:12:32.439Z","level":"info","msg":"http.request","traceId":"9a581535dca1c3dc6ba5462c9d46e2a5","route":"POST /availability-checks","method":"POST","status":200,"durationMs":4,"dealershipId":"dealership-london","actorRole":"customer","outcome":"ok"}
+info: {"ts":"2026-10-29T13:12:32.439Z","level":"info","msg":"http.request","traceId":"05b25db70fdd5b831eb039f33efa5b18","route":"POST /availability-checks","method":"POST","status":200,"durationMs":3,"dealershipId":"dealership-london","actorRole":"customer","outcome":"ok"}
+info: {"ts":"2026-10-29T13:12:33.361Z","level":"info","msg":"step.load","traceId":"db7e4c33fb75acbeb4a365385cb22477","durationMs":0}
+info: {"ts":"2026-10-29T13:12:33.361Z","level":"info","msg":"http.request","traceId":"db7e4c33fb75acbeb4a365385cb22477","route":"GET /dealerships","method":"GET","status":200,"durationMs":0,"actorRole":"customer","outcome":"ok"}
+info: {"ts":"2026-10-29T13:12:33.425Z","level":"info","msg":"step.load","traceId":"26b2912bd3e6e83fec3b0e268728e827","durationMs":0}
+info: {"ts":"2026-10-29T13:12:33.425Z","level":"info","msg":"http.request","traceId":"26b2912bd3e6e83fec3b0e268728e827","route":"GET /dealerships","method":"GET","status":200,"durationMs":1,"actorRole":"customer","outcome":"ok"}
+info: {"ts":"2026-10-29T13:12:34.439Z","level":"info","msg":"step.load","traceId":"1ceade0d1b5b053f078754a66c4ded0f","durationMs":2}
+info: {"ts":"2026-10-29T13:12:34.439Z","level":"info","msg":"step.check","traceId":"1ceade0d1b5b053f078754a66c4ded0f","durationMs":0}
+info: {"ts":"2026-10-29T13:12:34.441Z","level":"info","msg":"step.write","traceId":"1ceade0d1b5b053f078754a66c4ded0f","durationMs":2}
+info: {"ts":"2026-10-29T13:12:34.442Z","level":"info","msg":"appointment.book","traceId":"1ceade0d1b5b053f078754a66c4ded0f","route":"POST /appointments","method":"POST","status":201,"dealershipId":"dealership-london","actorRole":"customer","outcome":"confirmed","appointmentId":"40a54274-efc1-4223-b471-d9d0b1157fd8","technicianId":"tech-lon-ash","serviceBayId":"bay-lon-1"}
+info: {"ts":"2026-10-29T13:12:34.442Z","level":"info","msg":"http.request","traceId":"1ceade0d1b5b053f078754a66c4ded0f","route":"POST /appointments","method":"POST","status":201,"durationMs":7,"dealershipId":"dealership-london","actorRole":"customer","outcome":"ok"}
+info: {"ts":"2026-10-29T13:12:34.450Z","level":"info","msg":"step.load","traceId":"2f2b026b0c24bc51c4f68d9b557b9e86","durationMs":0}
+info: {"ts":"2026-10-29T13:12:34.451Z","level":"info","msg":"http.request","traceId":"2f2b026b0c24bc51c4f68d9b557b9e86","route":"GET /dealerships","method":"GET","status":200,"durationMs":1,"actorRole":"customer","outcome":"ok"}
+info: {"ts":"2026-10-29T13:12:34.454Z","level":"info","msg":"step.load","traceId":"1a72d8da678dc69ff78df765d506dbcc","durationMs":4}
+info: {"ts":"2026-10-29T13:12:34.454Z","level":"info","msg":"http.request","traceId":"1a72d8da678dc69ff78df765d506dbcc","route":"GET /appointments/{appointmentId}","method":"GET","status":200,"durationMs":4,"dealershipId":"dealership-london","actorRole":"customer","outcome":"ok"}
+info: {"ts":"2026-10-29T13:12:34.454Z","level":"info","msg":"step.load","traceId":"3c2832f52e543f97f1e3c88c249d4df6","durationMs":4}
+info: {"ts":"2026-10-29T13:12:34.456Z","level":"info","msg":"step.load","traceId":"8dcfcdc230428cf943476246f2d2cab4","durationMs":6}
+info: {"ts":"2026-10-29T13:12:34.456Z","level":"info","msg":"step.check","traceId":"3c2832f52e543f97f1e3c88c249d4df6","durationMs":0}
+info: {"ts":"2026-10-29T13:12:34.456Z","level":"info","msg":"http.request","traceId":"3c2832f52e543f97f1e3c88c249d4df6","route":"GET /dealerships/{dealershipId}/availability","method":"GET","status":200,"durationMs":7,"dealershipId":"dealership-london","actorRole":"customer","outcome":"ok"}
+info: {"ts":"2026-10-29T13:12:34.457Z","level":"info","msg":"step.load","traceId":"a85f151f528fe3148d8d5c42db824ae3","durationMs":7}
+info: {"ts":"2026-10-29T13:12:34.457Z","level":"info","msg":"step.load","traceId":"d76d60fd568d0be63752fc5fa58bb45c","durationMs":7}
+info: {"ts":"2026-10-29T13:12:34.457Z","level":"info","msg":"step.load","traceId":"87f322b55d582cb58b94ba457a2b44b3","durationMs":7}
+info: {"ts":"2026-10-29T13:12:34.457Z","level":"info","msg":"step.load","traceId":"e5c2c616bd5230f815d86b1692503a56","durationMs":6}
+info: {"ts":"2026-10-29T13:12:34.457Z","level":"info","msg":"step.check","traceId":"8dcfcdc230428cf943476246f2d2cab4","durationMs":0}
+info: {"ts":"2026-10-29T13:12:34.458Z","level":"info","msg":"http.request","traceId":"8dcfcdc230428cf943476246f2d2cab4","route":"GET /dealerships/{dealershipId}/availability","method":"GET","status":200,"durationMs":9,"dealershipId":"dealership-london","actorRole":"customer","outcome":"ok"}
+info: {"ts":"2026-10-29T13:12:34.458Z","level":"info","msg":"step.check","traceId":"a85f151f528fe3148d8d5c42db824ae3","durationMs":0}
+info: {"ts":"2026-10-29T13:12:34.458Z","level":"info","msg":"http.request","traceId":"a85f151f528fe3148d8d5c42db824ae3","route":"GET /dealerships/{dealershipId}/availability","method":"GET","status":200,"durationMs":9,"dealershipId":"dealership-london","actorRole":"customer","outcome":"ok"}
+info: {"ts":"2026-10-29T13:12:34.459Z","level":"info","msg":"step.check","traceId":"d76d60fd568d0be63752fc5fa58bb45c","durationMs":0}
+info: {"ts":"2026-10-29T13:12:34.459Z","level":"info","msg":"http.request","traceId":"d76d60fd568d0be63752fc5fa58bb45c","route":"GET /dealerships/{dealershipId}/availability","method":"GET","status":200,"durationMs":10,"dealershipId":"dealership-london","actorRole":"customer","outcome":"ok"}
+info: {"ts":"2026-10-29T13:12:34.460Z","level":"info","msg":"step.check","traceId":"87f322b55d582cb58b94ba457a2b44b3","durationMs":1}
+info: {"ts":"2026-10-29T13:12:34.460Z","level":"info","msg":"http.request","traceId":"87f322b55d582cb58b94ba457a2b44b3","route":"GET /dealerships/{dealershipId}/availability","method":"GET","status":200,"durationMs":11,"dealershipId":"dealership-london","actorRole":"customer","outcome":"ok"}
+info: {"ts":"2026-10-29T13:12:34.460Z","level":"info","msg":"step.check","traceId":"e5c2c616bd5230f815d86b1692503a56","durationMs":0}
+info: {"ts":"2026-10-29T13:12:34.460Z","level":"info","msg":"http.request","traceId":"e5c2c616bd5230f815d86b1692503a56","route":"GET /dealerships/{dealershipId}/availability","method":"GET","status":200,"durationMs":11,"dealershipId":"dealership-london","actorRole":"customer","outcome":"ok"}
+info: {"ts":"2026-10-29T13:12:36.461Z","level":"info","msg":"step.load","traceId":"07102e5ffb3bc74acaa79b78e8dfdddc","durationMs":1}
+info: {"ts":"2026-10-29T13:12:36.461Z","level":"info","msg":"http.request","traceId":"07102e5ffb3bc74acaa79b78e8dfdddc","route":"GET /appointments/{appointmentId}","method":"GET","status":200,"durationMs":2,"dealershipId":"dealership-london","actorRole":"customer","outcome":"ok"}
+info: {"ts":"2026-10-29T13:12:36.501Z","level":"info","msg":"http.request","traceId":"db04222b965d2b26590dcb67e1745007","route":"GET /me","method":"GET","status":200,"durationMs":0,"actorRole":"staff","outcome":"ok"}
+info: {"ts":"2026-10-29T13:12:36.514Z","level":"info","msg":"step.load","traceId":"4edb1fcf176bfd7dc5c39958e9e2bf45","durationMs":0}
+info: {"ts":"2026-10-29T13:12:36.514Z","level":"info","msg":"http.request","traceId":"4edb1fcf176bfd7dc5c39958e9e2bf45","route":"GET /dealerships","method":"GET","status":200,"durationMs":1,"actorRole":"staff","outcome":"ok"}
+info: {"ts":"2026-10-29T13:12:36.517Z","level":"info","msg":"step.load","traceId":"e98ed2a3294650918bee50166fe19aff","durationMs":3}
+info: {"ts":"2026-10-29T13:12:36.519Z","level":"info","msg":"http.request","traceId":"e98ed2a3294650918bee50166fe19aff","route":"GET /appointments/{appointmentId}","method":"GET","status":200,"durationMs":6,"dealershipId":"dealership-london","actorRole":"staff","outcome":"ok"}
+info: {"ts":"2026-10-29T13:12:36.522Z","level":"info","msg":"step.load","traceId":"b281a7feaa066c568c9d073a8025fa0a","durationMs":2}
+info: {"ts":"2026-10-29T13:12:36.523Z","level":"info","msg":"http.request","traceId":"b281a7feaa066c568c9d073a8025fa0a","route":"GET /dealerships/{dealershipId}/schedule","method":"GET","status":200,"durationMs":6,"dealershipId":"dealership-london","actorRole":"staff","outcome":"ok"}
+info: {"ts":"2026-10-29T13:12:36.771Z","level":"info","msg":"http.request","traceId":"543112f4e47eb2d3cd2e66be7d982f95","route":"GET /me","method":"GET","status":200,"durationMs":1,"actorRole":"staff","outcome":"ok"}
+info: {"ts":"2026-10-29T13:12:36.771Z","level":"info","msg":"http.request","traceId":"4fffe1b48fae9854e1c6be3d62d575e4","route":"GET /_demo/users","method":"GET","status":200,"durationMs":1,"outcome":"ok"}
+info: {"ts":"2026-10-29T13:12:36.775Z","level":"info","msg":"step.load","traceId":"20f288a6c38c33e453d69f3a6ab23580","durationMs":0}
+info: {"ts":"2026-10-29T13:12:36.775Z","level":"info","msg":"http.request","traceId":"20f288a6c38c33e453d69f3a6ab23580","route":"GET /dealerships","method":"GET","status":200,"durationMs":0,"actorRole":"staff","outcome":"ok"}
+info: {"ts":"2026-10-29T13:12:36.786Z","level":"info","msg":"step.load","traceId":"6d3fedf7215a3a28280f46ef2700fc52","durationMs":5}
+info: {"ts":"2026-10-29T13:12:36.787Z","level":"info","msg":"http.request","traceId":"6d3fedf7215a3a28280f46ef2700fc52","route":"GET /dealerships/{dealershipId}/schedule","method":"GET","status":200,"durationMs":10,"dealershipId":"dealership-london","actorRole":"staff","outcome":"ok"}
+info: {"ts":"2026-10-29T13:12:38.310Z","level":"info","msg":"step.load","traceId":"306077c0437227178094eab93ab4283b","durationMs":0}
+info: {"ts":"2026-10-29T13:12:38.310Z","level":"info","msg":"http.request","traceId":"306077c0437227178094eab93ab4283b","route":"GET /dealerships","method":"GET","status":200,"durationMs":1,"actorRole":"staff","outcome":"ok"}
+info: {"ts":"2026-10-29T13:12:38.364Z","level":"info","msg":"step.load","traceId":"2a88644b4a7f632a454dfaa78197e457","durationMs":1}
+info: {"ts":"2026-10-29T13:12:38.364Z","level":"info","msg":"http.request","traceId":"2a88644b4a7f632a454dfaa78197e457","route":"GET /dealerships","method":"GET","status":200,"durationMs":1,"actorRole":"staff","outcome":"ok"}
+
+Policy violations (0):
