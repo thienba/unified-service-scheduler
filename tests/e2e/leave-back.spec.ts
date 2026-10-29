@@ -3,6 +3,7 @@
 import path from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 import { day, openAs } from "./manage-support";
+import { chooseOption, selectNamed } from "./support";
 
 const MANAGER = "user-manager-london";
 const evidence = process.env["EVIDENCE_DIR"];
@@ -13,7 +14,7 @@ const screens = [
     link: "Settings",
     url: /\/manage\/dealership$/,
     ready: (page: Page) => day(page, "Saturday"),
-    edit: (page: Page) => day(page, "Saturday").getByLabel("Closes"),
+    edit: (page: Page) => selectNamed(day(page, "Saturday"), "Closes"),
     changed: "15:00",
   },
   {
@@ -21,8 +22,7 @@ const screens = [
     link: "Shifts",
     url: /\/manage\/shifts$/,
     ready: (page: Page) => day(page, "Saturday"),
-    edit: (page: Page) =>
-      day(page, "Monday").getByLabel("Ends", { exact: true }),
+    edit: (page: Page) => selectNamed(day(page, "Monday"), "Ends"),
     changed: "16:00",
   },
 ];
@@ -55,7 +55,7 @@ for (const width of [390, 1440] as const) {
 
       // Changes: Back asks; Keep editing stays with the edit.
       const field = screen.edit(page);
-      await field.fill(screen.changed);
+      await chooseOption(field, screen.changed);
       await page.waitForTimeout(500);
       await back(page);
       const dialog = page.getByRole("dialog", {
@@ -77,7 +77,7 @@ for (const width of [390, 1440] as const) {
       await dialog.getByRole("button", { name: "Keep editing" }).click();
       await expect(dialog).toBeHidden();
       await expect(page).toHaveURL(screen.url);
-      await expect(field).toHaveValue(screen.changed);
+      await expect(field).toHaveAttribute("data-value", screen.changed);
       await page.waitForTimeout(800);
 
       // Back again, then Leave goes back.

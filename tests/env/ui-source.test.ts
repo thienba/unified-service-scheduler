@@ -31,3 +31,16 @@ it("window.location is never assigned", () => {
   );
   expect(assigners).toEqual([]);
 });
+
+// D-0001-131: the drop-down, date and time controls are our themed Select, DatePicker and TimeField. A native
+// `<select>`, `type="date"` or `type="time"` written in src/ui would bring back the browser's own pickers.
+it("src/ui writes no native <select>, date input or time input", () => {
+  const uiFiles = files.filter((f) =>
+    f.startsWith(path.resolve(import.meta.dirname, "../../src/ui")),
+  );
+  expect(uiFiles.length).toBeGreaterThan(50);
+  const native =
+    /<select[\s>]|createElement\(\s*["']select["']|type\s*[=:]\s*\{?\s*["'](date|time|datetime-local)["']/;
+  const found = uiFiles.filter((f) => native.test(readFileSync(f, "utf8")));
+  expect(found).toEqual([]);
+});

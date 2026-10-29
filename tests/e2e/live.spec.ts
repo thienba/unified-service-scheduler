@@ -11,7 +11,7 @@ import {
   recordPolicyViolations,
   withoutWebKitSelectMessage,
 } from "./policy-support";
-import { openApp, pickRole } from "./support";
+import { openApp, pickRole, chooseOption } from "./support";
 
 const liveUrl = process.env["LIVE_URL"];
 const evidence = process.env["EVIDENCE_DIR"];
@@ -54,10 +54,10 @@ test("the live site: a customer books, staff see it, every request is the site's
   await openApp(page, "/");
   await pickRole(page, "Customer");
   await page.goto("/book?dealership=dealership-london&service=service-full");
-  await expect(page.getByRole("combobox", { name: /^Car/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: /^Car/ })).toBeVisible();
   const slow = () => page.waitForTimeout(900);
   await slow();
-  await page.getByRole("combobox", { name: /^Car/ }).selectOption("vehicle-a");
+  await chooseOption(page.getByRole("button", { name: /^Car/ }), "vehicle-a");
   await slow();
   await page
     .getByRole("radio", { name: /^(Mon|Tue|Wed|Thu|Fri|Sat|Sun) \d+ \w+,/ })

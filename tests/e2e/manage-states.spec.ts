@@ -9,6 +9,10 @@ import {
   interceptApi,
   problemBody,
   widths,
+  chooseOption,
+  typeDate,
+  dateNamed,
+  selectNamed,
 } from "./support";
 import {
   LONDON,
@@ -58,11 +62,12 @@ for (const width of [390, 1440] as const) {
       await book(page, "b", instant(saturday, "15:00"));
       await shot(page, "dealership-settings-idle");
 
-      await day(page, "Saturday").getByLabel("Closes").fill("14:00");
+      await chooseOption(selectNamed(day(page, "Saturday"), "Closes"), "14:00");
       await shot(page, "dealership-settings-dirty");
 
-      await day(page, "Monday").getByLabel("Closes").fill("07:00");
-      await day(page, "Tuesday").getByLabel("Opens").fill("08:10");
+      await chooseOption(selectNamed(day(page, "Monday"), "Closes"), "07:00");
+      // D-0001-133: no time off the quarter hour can be chosen, so Tuesday opens when it closes.
+      await chooseOption(selectNamed(day(page, "Tuesday"), "Opens"), "18:00");
       await page.getByLabel("Shortest notice (hours)").fill("80");
       await page.getByLabel("Furthest ahead (days)").fill("0");
       await settingsSave(page).click();
@@ -71,8 +76,8 @@ for (const width of [390, 1440] as const) {
       ).toBeVisible();
       await shot(page, "dealership-settings-validation");
 
-      await day(page, "Monday").getByLabel("Closes").fill("18:00");
-      await day(page, "Tuesday").getByLabel("Opens").fill("08:00");
+      await chooseOption(selectNamed(day(page, "Monday"), "Closes"), "18:00");
+      await chooseOption(selectNamed(day(page, "Tuesday"), "Opens"), "08:00");
       await page.getByLabel("Shortest notice (hours)").fill("2");
       await page.getByLabel("Furthest ahead (days)").fill("30");
       await settingsSave(page).click();
@@ -213,16 +218,12 @@ for (const width of [390, 1440] as const) {
       await expect(day(page, "Saturday")).toBeVisible();
       await shot(page, "shifts-idle");
 
-      await day(page, "Monday")
-        .getByLabel("Ends", { exact: true })
-        .fill("16:00");
+      await chooseOption(selectNamed(day(page, "Monday"), "Ends"), "16:00");
       await shot(page, "shifts-dirty");
 
-      await day(page, "Tuesday")
-        .getByLabel("Ends", { exact: true })
-        .fill("07:00");
-      await page.getByLabel("First day").fill(monday);
-      await page.getByLabel("Last day (optional)").fill(today());
+      await chooseOption(selectNamed(day(page, "Tuesday"), "Ends"), "07:00");
+      await typeDate(dateNamed(page, "First day"), monday);
+      await typeDate(dateNamed(page, "Last day (optional)"), today());
       await shiftsSave(page).click();
       await expect(page.getByText(/things? needs? fixing/)).toBeVisible();
       await shot(page, "shifts-validation");
@@ -230,7 +231,7 @@ for (const width of [390, 1440] as const) {
       // Start again from the saved shifts, then add the leave.
       await page.reload();
       await expect(day(page, "Saturday")).toBeVisible();
-      await page.getByLabel("First day").fill(monday);
+      await typeDate(dateNamed(page, "First day"), monday);
       await page.getByRole("button", { name: "Add to the list" }).click();
       await shiftsSave(page).click();
       await expect(
@@ -260,7 +261,7 @@ for (const width of [390, 1440] as const) {
     test("shifts: saved, leave-dialog", async ({ page }) => {
       await openAs(page, MANAGER, "/manage/shifts");
       await expect(day(page, "Saturday")).toBeVisible();
-      await page.getByLabel("First day").fill(next(2, today(), 7));
+      await typeDate(dateNamed(page, "First day"), next(2, today(), 7));
       await page.getByRole("button", { name: "Add to the list" }).click();
       await shiftsSave(page).click();
       await expect(
@@ -268,9 +269,7 @@ for (const width of [390, 1440] as const) {
       ).toBeVisible();
       await shot(page, "shifts-saved");
 
-      await day(page, "Monday")
-        .getByLabel("Ends", { exact: true })
-        .fill("16:00");
+      await chooseOption(selectNamed(day(page, "Monday"), "Ends"), "16:00");
       // The footer link: on a phone the action bar takes the place of the tab bar.
       await page.getByRole("link", { name: "Dev panel" }).click();
       await expect(
@@ -283,9 +282,7 @@ for (const width of [390, 1440] as const) {
       await interceptApi(page, { path: "/shifts", networkError: true });
       await openAs(page, MANAGER, "/manage/shifts");
       await expect(day(page, "Saturday")).toBeVisible();
-      await day(page, "Monday")
-        .getByLabel("Ends", { exact: true })
-        .fill("16:00");
+      await chooseOption(selectNamed(day(page, "Monday"), "Ends"), "16:00");
       await shiftsSave(page).click();
       await expect(
         page.getByRole("heading", { name: "Your changes were not saved" }),
@@ -328,7 +325,10 @@ test("at every width: no sideways scroll; rows stack on a phone, two per line fr
       await openAs(page, MANAGER, screen);
       await expect(day(page, "Monday")).toBeVisible();
       await expectNoSidewaysScroll(page);
-      const inputs = day(page, "Monday").locator('input[type="time"]');
+      // The time fields are the themed TimeField buttons (D-0001-133).
+      const inputs = day(page, "Monday").locator(
+        'button[aria-haspopup="listbox"]',
+      );
       const tops = await inputs.evaluateAll((els) =>
         els.map((e) => {
           // The top of the field's cell in the row (a long label can push its input lower in the same line).

@@ -1,4 +1,5 @@
 // design.md 8.23 to 8.25: WeekPatternEditor, DateExceptionList and FlagImpactDialog in their states.
+import "../testing/css-escape";
 import {
   cleanup,
   fireEvent,
@@ -31,7 +32,7 @@ it("WeekPatternEditor: a group per weekday, Closed disables the times, the row e
     />,
   );
   const monday = screen.getByRole("group", { name: "Monday" });
-  const close = within(monday).getByLabelText("Closes");
+  const close = within(monday).getByRole("button", { name: /^Closes/ });
   expect(close.getAttribute("aria-invalid")).toBe("true");
   const describedBy = close.getAttribute("aria-describedby")!;
   expect(document.getElementById(describedBy)?.textContent).toContain(
@@ -39,7 +40,11 @@ it("WeekPatternEditor: a group per weekday, Closed disables the times, the row e
   );
   const sunday = screen.getByRole("group", { name: "Sunday" });
   expect(
-    (within(sunday).getByLabelText("Opens") as HTMLInputElement).disabled,
+    (
+      within(sunday).getByRole("button", {
+        name: /^Opens/,
+      }) as HTMLButtonElement
+    ).disabled,
   ).toBe(true);
   fireEvent.click(within(monday).getByLabelText("Closed"));
   expect(onChange).toHaveBeenCalledWith(0, { off: true });
@@ -62,11 +67,23 @@ it("WeekPatternEditor: shift mode has Day off and four time fields", () => {
   );
   const monday = screen.getByRole("group", { name: "Monday" });
   expect(within(monday).getByLabelText("Day off")).toBeTruthy();
-  expect(within(monday).getAllByDisplayValue(/./)).toHaveLength(3);
+  // Three fields show a value: Starts, Ends and the Day off box; the two break times read "Not set".
+  const times = within(monday).getAllByRole("button", {
+    name: /^(Starts|Ends|Break)/,
+  });
+  expect(times.map((t) => t.getAttribute("data-value"))).toEqual([
+    "08:00",
+    "16:30",
+    "",
+    "",
+  ]);
+  expect(times[2]!.textContent).toBe("Not set");
   expect(
     within(monday).getByText("Dealership open 08:00 to 18:00"),
   ).toBeTruthy();
-  expect(within(monday).getByLabelText("Break ends (optional)")).toBeTruthy();
+  expect(
+    within(monday).getByRole("button", { name: /^Break ends \(optional\)/ }),
+  ).toBeTruthy();
 });
 
 it("DateExceptionList: empty text, new badge, remove named by its date, and the line that adding does not save", () => {
