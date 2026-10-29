@@ -65,7 +65,10 @@ for (const width of [390, 1440] as const) {
       await expect(page).toHaveURL(screen.url);
       if (evidence && screen.name === "settings") {
         await page.screenshot({
-          path: path.join(evidence, `back-dialog-settings-${width}.png`),
+          path: path.join(
+            evidence,
+            `dealership-settings-back-dialog-${width}.png`,
+          ),
           fullPage: true,
         });
       }

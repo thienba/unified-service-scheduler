@@ -534,6 +534,83 @@ test("a move cancels the old reminders, lists the new ones and a Moved message; 
   ).toBeVisible();
 });
 
+/** "Fri 30 Oct, 09:15" in London, the words the outbox uses for a time ahead. */
+function words(instant: string): string {
+  const at = new Date(instant);
+  const zone = "Europe/London";
+  const day = new Intl.DateTimeFormat("en-GB", {
+    timeZone: zone,
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  })
+    .format(at)
+    .replace(",", "");
+  const time = new Intl.DateTimeFormat("en-GB", {
+    timeZone: zone,
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).format(at);
+  return `${day}, ${time}`;
+}
+
+for (const width of [390, 1440]) {
+  test(`after two moves the old times are exact, in the order the messages were made, at ${width} wide (D-0001-79)`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await asManager(page);
+    const booked = await book(page, "a", 5);
+    const id = booked.body.id as string;
+    const first = (await reschedule(page, id, 8)).body.start as string;
+    const second = (await reschedule(page, id, 11)).body.start as string;
+
+    // The API says when each message was made and which start it was for.
+    const sent = await api(page, `/outbox?appointmentId=${id}`, {
+      user: "user-manager-london",
+    });
+    const made = sent.body as {
+      kind: string;
+      createdAt: string;
+      forStart: string;
+    }[];
+    expect(made).toHaveLength(9);
+    expect(
+      [...made]
+        .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+        .filter((m) => ["confirmation", "moved"].includes(m.kind))
+        .map((m) => m.forStart),
+    ).toEqual([booked.body.start, first, second]);
+
+    await page.reload();
+    await expect(rows(page)).toHaveCount(9);
+    await expect(
+      page.getByText(
+        `Moved from ${words(first)}. In the order the messages were made.`,
+      ),
+    ).toBeVisible();
+    expect(
+      await rows(page).evaluateAll((all) =>
+        all.map((r) => r.textContent ?? ""),
+      ),
+    ).toEqual([
+      expect.stringContaining(`For ${words(booked.body.start)}`),
+      expect.stringContaining(`For the old time, ${words(booked.body.start)}`),
+      expect.stringContaining(`For the old time, ${words(booked.body.start)}`),
+      expect.stringContaining(`To ${words(first)}`),
+      expect.stringContaining(`For the old time, ${words(first)}`),
+      expect.stringContaining(`For the old time, ${words(first)}`),
+      expect.stringContaining(`To ${words(second)}`),
+      expect.stringContaining(`For ${words(second)}`),
+      expect.stringContaining(`For ${words(second)}`),
+    ]);
+    await expectNoAxeViolations(page);
+    await expectNoSidewaysScroll(page);
+    await shot(page, "two-moves");
+  });
+}
+
 test("message times are London time across the clock change (2026-10-24T10:00Z shows 11:00)", async ({
   page,
 }) => {
@@ -547,6 +624,8 @@ test("message times are London time across the clock change (2026-10-24T10:00Z s
         dealershipId: LONDON,
         kind: "confirmation",
         dueAt: "2026-10-24T10:00:00Z",
+        createdAt: "2026-10-24T10:00:00Z",
+        forStart: "2026-11-02T09:00:00Z",
         status: "pending",
         links: { cancel: "/x", reschedule: "/y" },
       },

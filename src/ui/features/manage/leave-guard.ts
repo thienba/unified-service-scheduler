@@ -5,11 +5,11 @@ import { useCallback, useEffect } from "react";
 import { useBlocker } from "react-router";
 
 export function useLeaveGuard(dirty: boolean) {
+  // Only a move to another page: a change of the address's query stays on the page (the shifts screen asks about
+  // switching technician itself).
   const blocker = useBlocker(
     ({ currentLocation, nextLocation }) =>
-      dirty &&
-      currentLocation.pathname + currentLocation.search !==
-        nextLocation.pathname + nextLocation.search,
+      dirty && currentLocation.pathname !== nextLocation.pathname,
   );
 
   useEffect(() => {
