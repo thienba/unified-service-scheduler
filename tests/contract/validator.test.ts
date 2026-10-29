@@ -91,7 +91,7 @@ describe("matchOperation and validateRequest", () => {
   });
 
   it("every operation of the contract has an operationId and the tags it is listed under", () => {
-    expect(operations).toHaveLength(22);
+    expect(operations).toHaveLength(23);
     expect(operations.every((o) => o.id && o.tags.length === 1)).toBe(true);
   });
 

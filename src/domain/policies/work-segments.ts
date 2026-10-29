@@ -3,7 +3,11 @@ import type { Dealership, LocalDate, Shift, Technician } from "../model";
 import { instantAt, weekdayOf } from "../time";
 import { openingWindow } from "./opening-window";
 
-function shiftOn(technician: Technician, date: LocalDate): Shift | undefined {
+/** The shift of a local date: a date exception replaces the weekly pattern; leave is no shift. */
+export function shiftOn(
+  technician: Technician,
+  date: LocalDate,
+): Shift | undefined {
   const exception = technician.shiftExceptions[date];
   if (exception === undefined) return technician.shiftPattern[weekdayOf(date)];
   return exception.kind === "leave" ? undefined : exception.shift;

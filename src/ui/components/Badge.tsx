@@ -43,7 +43,10 @@ export function Badge({
 }
 
 export type Transport = "wait" | "drop_off" | "courtesy_car";
-const transportWords: Record<Transport, { icon: IconName; label: string }> = {
+export const transportWords: Record<
+  Transport,
+  { icon: IconName; label: string }
+> = {
   wait: { icon: "hourglass", label: "Waiting" },
   drop_off: { icon: "login", label: "Drop-off" },
   courtesy_car: { icon: "key", label: "Courtesy car" },
