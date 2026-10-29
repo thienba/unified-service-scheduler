@@ -418,6 +418,79 @@ for (const width of [390, 1440]) {
   });
 }
 
+/** The "N times" count a day tile shows. */
+async function tileCount(page: Page, label: string) {
+  const name = await day(page, label).getAttribute("aria-label");
+  const words =
+    name ??
+    (await day(page, label).evaluate(
+      (e) => (e as HTMLInputElement).labels?.[0]?.textContent ?? "",
+    ));
+  const count = /(\d+) times?/.exec(words);
+  return count ? Number(count[1]) : 0;
+}
+/** The enabled start-time chips on the page. */
+const enabledChips = (page: Page) =>
+  page
+    .getByRole("radio", { name: /^\d\d:\d\d to \d\d:\d\d$/ })
+    .and(page.locator(":not([disabled])"));
+
+test("the day tile counts follow the car choice: with the car out from 11:00 to 12:00, the courtesy count is lower and equals the chips", async ({
+  page,
+}) => {
+  await start(page, 1440, DEEP, "Customer", (p) => takeTheCar(p, "11:00"));
+  await carAndDay(page);
+  await expect(chip(page, "11:30 to 14:30")).toBeVisible();
+  const waitCount = await tileCount(page, "Fri 30 Oct");
+  await expect(enabledChips(page)).toHaveCount(waitCount);
+  await option(page, CAR).check();
+  await expect(chip(page, "11:30 to 14:30")).toHaveCount(0);
+  const carCount = await tileCount(page, "Fri 30 Oct");
+  expect(carCount).toBeLessThan(waitCount);
+  expect(carCount).toBeGreaterThan(0);
+  await expect(enabledChips(page)).toHaveCount(carCount);
+});
+
+test("courtesy-cleared on a week only searched with the courtesy car: the strip stays and the clicked time keeps focus (WCAG 2.4.3)", async ({
+  page,
+}) => {
+  await start(page, 1440, DEEP);
+  await page.getByRole("combobox", { name: /^Car/ }).selectOption("vehicle-a");
+  await expect(day(page, "Wed 28 Oct")).toBeVisible();
+  // The courtesy car is chosen before the next week is ever searched for waiting.
+  await option(page, CAR).check();
+  await page.getByRole("button", { name: "Next week" }).click();
+  await day(page, "Thu 5 Nov").check();
+  const time = chip(page, "11:30 to 14:30");
+  await expect(time).toBeVisible();
+  // The list on this page is now out of date: the only car goes from 11:00 to 12:00.
+  const taken = await api(page, STAFF, "POST", "/appointments", {
+    dealershipId: LONDON,
+    serviceTypeId: "service-ev-check",
+    start: "2026-11-05T11:00:00Z",
+    transport: "courtesy_car",
+    technicianId: "tech-lon-cedar",
+    newCustomer: {
+      name: "Ravi Menon",
+      phone: "0161 496 0456",
+      email: "ravi@example.com",
+    },
+    newVehicle: { registration: "GH78 MNO", make: "Skoda", model: "Octavia" },
+  });
+  expect(taken.status).toBe(201);
+  await time.focus();
+  await page.keyboard.press("Space");
+  await expect(
+    page.getByText(
+      "A courtesy car is not free from 11:30 to 14:30, so we cleared that choice. Please choose again.",
+    ),
+  ).toBeVisible();
+  await expect(option(page, CAR_OFF)).not.toBeChecked();
+  await expect(time).toBeChecked();
+  await expect(time).toBeFocused();
+  await expect(page.getByText("Loading the days and times")).toHaveCount(0);
+});
+
 test("NFR-7: at every width the three options are rows of at least 44 px, 8 px apart, with no sideways scroll", async ({
   page,
 }) => {

@@ -429,7 +429,7 @@ function Booking({ who }: { who: Who }) {
     if (transport !== "courtesy_car" || !carBusy) return;
     setValue("transport", "");
     setClearedAt(start);
-  });
+  }, [transport, carBusy, start, setValue]);
 
   function resetChoice() {
     setValue("start", "");

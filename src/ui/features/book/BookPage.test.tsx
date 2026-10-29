@@ -609,6 +609,105 @@ describe("book with a courtesy car", () => {
     expect(screen.queryByText(/^No courtesy car is free/)).toBeNull();
   });
 
+  it("the day tiles and the chips follow the car choice: with the courtesy car, the tile count equals the enabled chips", async () => {
+    const enabledChips = () =>
+      screen
+        .getAllByRole("radio", { name: /^\d\d:\d\d to \d\d:\d\d$/ })
+        .filter((r) => !(r as HTMLInputElement).disabled);
+    open(
+      deepLink,
+      bookingApi({
+        "POST /availability-checks": courtesyCheck([]),
+        // The only courtesy car is out in the afternoon of Fri 30 Oct: 13:00 has no car.
+        "GET /dealerships/d-leeds/availability": (request) => {
+          const query = new URL(request.url).searchParams;
+          const date = query.get("date")!;
+          const all =
+            date === "2026-10-28" ? slotsOn(date).slice(2) : slotsOn(date);
+          const slots =
+            query.get("transport") === "courtesy_car" && date === "2026-10-30"
+              ? all.filter((s) => s.start !== at(date, "13:00"))
+              : all;
+          return json({
+            date,
+            timeZone: "Europe/London",
+            gridMinutes: 15,
+            slots,
+          });
+        },
+      }),
+    );
+    await chooseCar();
+    fireEvent.click(
+      await screen.findByRole("radio", { name: "Fri 30 Oct, 3 times" }),
+    );
+    await screen.findByRole("radio", { name: "13:00 to 16:00" });
+    expect(enabledChips()).toHaveLength(3);
+    fireEvent.click(radio("Borrow a courtesy car"));
+    const tile = await screen.findByRole("radio", {
+      name: "Fri 30 Oct, 2 times",
+    });
+    expect((tile as HTMLInputElement).checked).toBe(true);
+    await waitFor(() =>
+      expect(
+        screen.queryByRole("radio", { name: "13:00 to 16:00" }),
+      ).toBeNull(),
+    );
+    expect(enabledChips()).toHaveLength(2);
+  });
+
+  it("courtesy-cleared on a week only asked with the courtesy car: the strip stays and the clicked chip keeps focus (WCAG 2.4.3)", async () => {
+    open(
+      deepLink,
+      bookingApi({
+        "POST /availability-checks": courtesyCheck([at("2026-11-04", "10:00")]),
+        // The wait search is slow, so a strip that waits for it would show its loading block.
+        "GET /dealerships/d-leeds/availability": async (request) => {
+          const query = new URL(request.url).searchParams;
+          const date = query.get("date")!;
+          if (query.get("transport") === "wait" && date >= "2026-11-04")
+            await new Promise((resolve) => setTimeout(resolve, 150));
+          const slots =
+            date === "2026-10-28" ? slotsOn(date).slice(2) : slotsOn(date);
+          return json({
+            date,
+            timeZone: "Europe/London",
+            gridMinutes: 15,
+            slots,
+          });
+        },
+      }),
+    );
+    await chooseCar();
+    await screen.findByRole("radio", { name: "Wed 28 Oct, 1 time" });
+    fireEvent.click(radio("Borrow a courtesy car"));
+    fireEvent.click(screen.getByRole("button", { name: "Next week" }));
+    const chip = await screen.findByRole("radio", { name: "10:00 to 13:00" });
+    expect(
+      (screen.getByRole("radio", { name: /^Wed 4 Nov/ }) as HTMLInputElement)
+        .checked,
+    ).toBe(true);
+    chip.focus();
+    fireEvent.click(chip);
+    await screen.findByText(
+      "A courtesy car is not free from 10:00 to 13:00, so we cleared that choice. Please choose again.",
+    );
+    expect(screen.queryByText("Loading the days and times")).toBeNull();
+    expect(chip.isConnected).toBe(true);
+    expect(document.activeElement).toBe(chip);
+    // Once the wait search answers, the chip is still the same element and still has focus.
+    await waitFor(
+      () =>
+        expect(
+          screen.getByRole("radio", { name: /^Wed 4 Nov, 3 times/ }),
+        ).toBeTruthy(),
+      { timeout: 2000 },
+    );
+    await act(() => new Promise((resolve) => setTimeout(resolve, 300)));
+    expect(chip.isConnected).toBe(true);
+    expect(document.activeElement).toBe(chip);
+  });
+
   it("conflict-courtesy: a 409 COURTESY_CAR_BUSY books nothing, keeps the time, clears the choice and lists up to five times with a car", async () => {
     const six = ["10:30", "10:45", "11:00", "11:15", "11:30", "11:45"].map(
       (t) => ({
