@@ -1,0 +1,2 @@
+src/domain/ lines 449/450 = 99.78%; branches 330/331 = 99.70%; statements 507/508 = 99.80%; functions 121/122 = 99.18%
+src/application/ lines 602/603 = 99.83%; branches 431/441 = 97.73%; statements 667/673 = 99.11%; functions 150/150 = 100.00%
