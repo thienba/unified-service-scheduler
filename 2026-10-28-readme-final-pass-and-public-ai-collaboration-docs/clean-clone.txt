@@ -1,0 +1,1137 @@
+Clean clone run, 2026-10-29T11:04:10Z
+
+$ git clone --quiet /Users/bason/Documents/thienba/keyloop-service-scheduler-vtc/.state/2026-10-28-readme-final-pass-and-public-ai-collaboration-docs /private/tmp/claude-501/-Users-bason--claude-spares-spare-JQLRSg/e0116503-a2b2-4d39-810f-fca6a3ec2556/scratchpad/clean-clone
+[exit 0]
+
+$ git log --oneline -1
+494b422 README final pass and public AI collaboration docs
+[exit 0]
+
+$ node --version
+v22.17.1
+[exit 0]
+
+$ npm --version
+10.9.2
+[exit 0]
+
+$ npm ci
+npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+npm warn deprecated glob@7.2.3: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+npm warn deprecated sourcemap-codec@1.4.8: Please use @jridgewell/sourcemap-codec instead
+
+added 547 packages, and audited 548 packages in 3s
+
+167 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+[exit 0]
+
+$ npm run dev   (left running while the reset example runs, then stopped)
+
+> keyloop-service-scheduler@0.0.0 dev
+> vite
+
+
+  VITE v8.3.5  ready in 754 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+$ curl -s -o /dev/null -w '%{http_code}
+' http://localhost:5173/
+200
+# In the browser console at http://localhost:5173 (run here through Playwright):
+await fetch("/api/_demo/reset", { method: "POST", headers: { "X-Demo-User": "user-manager-london" } }).then((r) => r.status)
+204
+shifts phone shot saved (Oliver Hughes shown)
+[exit 0]
+
+$ npm run build
+
+> keyloop-service-scheduler@0.0.0 build
+> node scripts/generate-contract.mjs --check && vite build && node scripts/check-build.mjs
+
+The generated contract files match openapi.yaml.
+vite v8.3.5 building client environment for production...
+transforming...
+✓ 393 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                       0.71 kB │ gzip:   0.39 kB
+dist/mockServiceWorker.js                            12.75 kB
+dist/assets/plus-jakarta-sans-latin-B2KjpZfh.woff2   27.27 kB
+dist/assets/ibm-plex-sans-latin-BD64o3ke.woff2       40.24 kB
+dist/assets/index-MzVepfhE.css                       42.38 kB │ gzip:   8.96 kB
+dist/assets/rolldown-runtime-XKyaHtl9.js              0.72 kB │ gzip:   0.42 kB
+dist/assets/index-DUwmM9jn.js                       764.53 kB │ gzip: 227.46 kB
+dist/assets/boot-mock-DXjaokER.js                   902.22 kB │ gzip: 266.37 kB
+
+[33m[MODULE_LEVEL_DIRECTIVE] [0mThe semantics of the module level directive "use client" in "node_modules/react-router/dist/development/index.mjs" may not be preserved when bundling.
+    [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m node_modules/react-router/dist/development/index.mjs:11:1 [38;5;246m][0m
+    [38;5;246m│[0m
+ [38;5;246m11 │[0m "use client";
+ [38;5;240m   │[0m ──────┬──────  
+ [38;5;240m   │[0m       ╰──────── module level directive may not be preserved
+ [38;5;240m   │[0m 
+ [38;5;240m   │[0m [38;5;115mHelp[0m: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[38;5;246m────╯[0m
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[33m[MODULE_LEVEL_DIRECTIVE] [0mThe semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/useQuery.js" may not be preserved when bundling.
+   [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m node_modules/@tanstack/react-query/build/modern/useQuery.js:1:1 [38;5;246m][0m
+   [38;5;246m│[0m
+ [38;5;246m1 │[0m "use client";
+ [38;5;240m  │[0m ──────┬──────  
+ [38;5;240m  │[0m       ╰──────── module level directive may not be preserved
+ [38;5;240m  │[0m 
+ [38;5;240m  │[0m [38;5;115mHelp[0m: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[38;5;246m───╯[0m
+
+[33m[MODULE_LEVEL_DIRECTIVE] [0mThe semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/IsRestoringProvider.js" may not be preserved when bundling.
+   [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m node_modules/@tanstack/react-query/build/modern/IsRestoringProvider.js:1:1 [38;5;246m][0m
+   [38;5;246m│[0m
+ [38;5;246m1 │[0m "use client";
+ [38;5;240m  │[0m ──────┬──────  
+ [38;5;240m  │[0m       ╰──────── module level directive may not be preserved
+ [38;5;240m  │[0m 
+ [38;5;240m  │[0m [38;5;115mHelp[0m: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[38;5;246m───╯[0m
+
+[33m[MODULE_LEVEL_DIRECTIVE] [0mThe semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js" may not be preserved when bundling.
+   [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:1:1 [38;5;246m][0m
+   [38;5;246m│[0m
+ [38;5;246m1 │[0m "use client";
+ [38;5;240m  │[0m ──────┬──────  
+ [38;5;240m  │[0m       ╰──────── module level directive may not be preserved
+ [38;5;240m  │[0m 
+ [38;5;240m  │[0m [38;5;115mHelp[0m: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[38;5;246m───╯[0m
+
+[33m[MODULE_LEVEL_DIRECTIVE] [0mThe semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/HydrationBoundary.js" may not be preserved when bundling.
+   [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m node_modules/@tanstack/react-query/build/modern/HydrationBoundary.js:1:1 [38;5;246m][0m
+   [38;5;246m│[0m
+ [38;5;246m1 │[0m "use client";
+ [38;5;240m  │[0m ──────┬──────  
+ [38;5;240m  │[0m       ╰──────── module level directive may not be preserved
+ [38;5;240m  │[0m 
+ [38;5;240m  │[0m [38;5;115mHelp[0m: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[38;5;246m───╯[0m
+
+[33m[MODULE_LEVEL_DIRECTIVE] [0mThe semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/useSuspenseQueries.js" may not be preserved when bundling.
+   [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m node_modules/@tanstack/react-query/build/modern/useSuspenseQueries.js:1:1 [38;5;246m][0m
+   [38;5;246m│[0m
+ [38;5;246m1 │[0m "use client";
+ [38;5;240m  │[0m ──────┬──────  
+ [38;5;240m  │[0m       ╰──────── module level directive may not be preserved
+ [38;5;240m  │[0m 
+ [38;5;240m  │[0m [38;5;115mHelp[0m: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[38;5;246m───╯[0m
+
+[33m[MODULE_LEVEL_DIRECTIVE] [0mThe semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/useSuspenseInfiniteQuery.js" may not be preserved when bundling.
+   [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m node_modules/@tanstack/react-query/build/modern/useSuspenseInfiniteQuery.js:1:1 [38;5;246m][0m
+   [38;5;246m│[0m
+ [38;5;246m1 │[0m "use client";
+ [38;5;240m  │[0m ──────┬──────  
+ [38;5;240m  │[0m       ╰──────── module level directive may not be preserved
+ [38;5;240m  │[0m 
+ [38;5;240m  │[0m [38;5;115mHelp[0m: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[38;5;246m───╯[0m
+
+[33m[MODULE_LEVEL_DIRECTIVE] [0mThe semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/useSuspenseQuery.js" may not be preserved when bundling.
+   [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m node_modules/@tanstack/react-query/build/modern/useSuspenseQuery.js:1:1 [38;5;246m][0m
+   [38;5;246m│[0m
+ [38;5;246m1 │[0m "use client";
+ [38;5;240m  │[0m ──────┬──────  
+ [38;5;240m  │[0m       ╰──────── module level directive may not be preserved
+ [38;5;240m  │[0m 
+ [38;5;240m  │[0m [38;5;115mHelp[0m: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[38;5;246m───╯[0m
+
+[33m[MODULE_LEVEL_DIRECTIVE] [0mThe semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/useQueries.js" may not be preserved when bundling.
+   [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m node_modules/@tanstack/react-query/build/modern/useQueries.js:1:1 [38;5;246m][0m
+   [38;5;246m│[0m
+ [38;5;246m1 │[0m "use client";
+ [38;5;240m  │[0m ──────┬──────  
+ [38;5;240m  │[0m       ╰──────── module level directive may not be preserved
+ [38;5;240m  │[0m 
+ [38;5;240m  │[0m [38;5;115mHelp[0m: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[38;5;246m───╯[0m
+
+[33m[MODULE_LEVEL_DIRECTIVE] [0mThe semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/useInfiniteQuery.js" may not be preserved when bundling.
+   [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m node_modules/@tanstack/react-query/build/modern/useInfiniteQuery.js:1:1 [38;5;246m][0m
+   [38;5;246m│[0m
+ [38;5;246m1 │[0m "use client";
+ [38;5;240m  │[0m ──────┬──────  
+ [38;5;240m  │[0m       ╰──────── module level directive may not be preserved
+ [38;5;240m  │[0m 
+ [38;5;240m  │[0m [38;5;115mHelp[0m: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[38;5;246m───╯[0m
+
+[33m[MODULE_LEVEL_DIRECTIVE] [0mThe semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/useMutation.js" may not be preserved when bundling.
+   [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m node_modules/@tanstack/react-query/build/modern/useMutation.js:1:1 [38;5;246m][0m
+   [38;5;246m│[0m
+ [38;5;246m1 │[0m "use client";
+ [38;5;240m  │[0m ──────┬──────  
+ [38;5;240m  │[0m       ╰──────── module level directive may not be preserved
+ [38;5;240m  │[0m 
+ [38;5;240m  │[0m [38;5;115mHelp[0m: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[38;5;246m───╯[0m
+
+[33m[MODULE_LEVEL_DIRECTIVE] [0mThe semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/useMutationState.js" may not be preserved when bundling.
+   [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m node_modules/@tanstack/react-query/build/modern/useMutationState.js:1:1 [38;5;246m][0m
+   [38;5;246m│[0m
+ [38;5;246m1 │[0m "use client";
+ [38;5;240m  │[0m ──────┬──────  
+ [38;5;240m  │[0m       ╰──────── module level directive may not be preserved
+ [38;5;240m  │[0m 
+ [38;5;240m  │[0m [38;5;115mHelp[0m: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[38;5;246m───╯[0m
+
+[33m[MODULE_LEVEL_DIRECTIVE] [0mThe semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/QueryErrorResetBoundary.js" may not be preserved when bundling.
+   [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m node_modules/@tanstack/react-query/build/modern/QueryErrorResetBoundary.js:1:1 [38;5;246m][0m
+   [38;5;246m│[0m
+ [38;5;246m1 │[0m "use client";
+ [38;5;240m  │[0m ──────┬──────  
+ [38;5;240m  │[0m       ╰──────── module level directive may not be preserved
+ [38;5;240m  │[0m 
+ [38;5;240m  │[0m [38;5;115mHelp[0m: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[38;5;246m───╯[0m
+
+[33m[MODULE_LEVEL_DIRECTIVE] [0mThe semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/useIsFetching.js" may not be preserved when bundling.
+   [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m node_modules/@tanstack/react-query/build/modern/useIsFetching.js:1:1 [38;5;246m][0m
+   [38;5;246m│[0m
+ [38;5;246m1 │[0m "use client";
+ [38;5;240m  │[0m ──────┬──────  
+ [38;5;240m  │[0m       ╰──────── module level directive may not be preserved
+ [38;5;240m  │[0m 
+ [38;5;240m  │[0m [38;5;115mHelp[0m: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[38;5;246m───╯[0m
+
+[33m[MODULE_LEVEL_DIRECTIVE] [0mThe semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/errorBoundaryUtils.js" may not be preserved when bundling.
+   [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m node_modules/@tanstack/react-query/build/modern/errorBoundaryUtils.js:1:1 [38;5;246m][0m
+   [38;5;246m│[0m
+ [38;5;246m1 │[0m "use client";
+ [38;5;240m  │[0m ──────┬──────  
+ [38;5;240m  │[0m       ╰──────── module level directive may not be preserved
+ [38;5;240m  │[0m 
+ [38;5;240m  │[0m [38;5;115mHelp[0m: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[38;5;246m───╯[0m
+
+[33m[MODULE_LEVEL_DIRECTIVE] [0mThe semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/useBaseQuery.js" may not be preserved when bundling.
+   [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m node_modules/@tanstack/react-query/build/modern/useBaseQuery.js:1:1 [38;5;246m][0m
+   [38;5;246m│[0m
+ [38;5;246m1 │[0m "use client";
+ [38;5;240m  │[0m ──────┬──────  
+ [38;5;240m  │[0m       ╰──────── module level directive may not be preserved
+ [38;5;240m  │[0m 
+ [38;5;240m  │[0m [38;5;115mHelp[0m: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[38;5;246m───╯[0m
+
+✓ built in 402ms
+The built page has its Content Security Policy and loads nothing off-site.
+[exit 0]
+
+$ npm run lint
+
+> keyloop-service-scheduler@0.0.0 lint
+> eslint . && prettier --check . && npm run lint:contract
+
+Checking formatting...
+All matched files use Prettier code style!
+
+> keyloop-service-scheduler@0.0.0 lint:contract
+> spectral lint src/api/contract/openapi.yaml --ruleset .spectral.mjs --fail-severity=warn
+
+No results with a severity of 'warn' or higher found!
+[exit 0]
+
+$ npm run typecheck
+
+> keyloop-service-scheduler@0.0.0 typecheck
+> tsc --noEmit
+
+[exit 0]
+
+$ npm test
+
+> keyloop-service-scheduler@0.0.0 test
+> vitest run
+
+
+ RUN  v5.0.5 /private/tmp/claude-501/-Users-bason--claude-spares-spare-JQLRSg/e0116503-a2b2-4d39-810f-fca6a3ec2556/scratchpad/clean-clone
+
+searchDay (one day): 13.4 ms (budget 50 ms)
+suggest (14 days): 11.5 ms (budget 200 ms)
+
+ Test Files  62 passed (62)
+      Tests  1344 passed (1344)
+   Start at  18:04:31
+   Duration  6.53s (tests 47%, environment 26%, import 13%, transform 12%, worker 1%)
+
+[exit 0]
+
+$ npm run test:tz
+
+> keyloop-service-scheduler@0.0.0 test:tz
+> TZ=UTC vitest run --project node && TZ=Pacific/Kiritimati vitest run --project node
+
+
+ RUN  v5.0.5 /private/tmp/claude-501/-Users-bason--claude-spares-spare-JQLRSg/e0116503-a2b2-4d39-810f-fca6a3ec2556/scratchpad/clean-clone
+
+searchDay (one day): 12.5 ms (budget 50 ms)
+suggest (14 days): 18.3 ms (budget 200 ms)
+
+ Test Files  41 passed (41)
+      Tests  1133 passed (1133)
+   Start at  11:04:38
+   Duration  2.07s (tests 71%, import 24%, transform 5%, worker 1%)
+
+
+ RUN  v5.0.5 /private/tmp/claude-501/-Users-bason--claude-spares-spare-JQLRSg/e0116503-a2b2-4d39-810f-fca6a3ec2556/scratchpad/clean-clone
+
+searchDay (one day): 7.5 ms (budget 50 ms)
+suggest (14 days): 4.4 ms (budget 200 ms)
+
+ Test Files  41 passed (41)
+      Tests  1133 passed (1133)
+   Start at  01:04:40
+   Duration  2.08s (tests 70%, import 24%, transform 5%, worker 1%)
+
+[exit 0]
+
+$ npm run test:coverage
+
+> keyloop-service-scheduler@0.0.0 test:coverage
+> vitest run --coverage
+
+
+ RUN  v5.0.5 /private/tmp/claude-501/-Users-bason--claude-spares-spare-JQLRSg/e0116503-a2b2-4d39-810f-fca6a3ec2556/scratchpad/clean-clone
+      Coverage enabled with v8
+
+searchDay (one day): 8.4 ms (budget 50 ms)
+suggest (14 days): 11.7 ms (budget 200 ms)
+
+ Test Files  62 passed (62)
+      Tests  1344 passed (1344)
+   Start at  18:04:42
+   Duration  8.06s (tests 55%, environment 22%, import 11%, transform 8%, worker 3%)
+
+[34m % [39m[2mCoverage report from [22m[33mv8[39m
+-------------------|---------|----------|---------|---------|-------------------
+File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+-------------------|---------|----------|---------|---------|-------------------
+All files          |   99.24 |       98 |   99.72 |   99.76 |                   
+ api/mock          |   98.15 |       95 |     100 |   99.48 |                   
+  api.ts           |    98.7 |    96.55 |     100 |     100 | 92,152            
+  operations.ts    |   96.87 |    94.11 |     100 |   98.82 | 98                
+  trace.ts         |     100 |       90 |     100 |     100 | 10                
+  wire.ts          |     100 |    91.66 |     100 |     100 | 77                
+ application       |   98.03 |    96.15 |     100 |     100 |                   
+  idempotency.ts   |   94.11 |    91.66 |     100 |     100 | 7                 
+ ...ation/commands |   98.93 |    98.09 |     100 |    99.7 |                   
+  ...ppointment.ts |   98.48 |     98.5 |     100 |     100 | 123               
+  ...ppointment.ts |   99.04 |    98.76 |     100 |   98.97 | 110               
+  ...ppointment.ts |   98.21 |    97.22 |     100 |     100 | 115               
+  shared.ts        |      96 |    88.88 |     100 |     100 | 104               
+  ...cianShifts.ts |     100 |    95.65 |     100 |     100 | 99                
+ ...cation/queries |   99.59 |    97.36 |     100 |     100 |                   
+  ...ntmentView.ts |     100 |    81.25 |     100 |     100 | 77-79,84          
+  dealerships.ts   |   97.22 |    91.66 |     100 |     100 | 99                
+ ...in/appointment |   98.14 |      100 |   92.85 |   97.91 |                   
+  flags.ts         |   94.73 |      100 |   83.33 |   93.75 | 54                
+ domain/schedule   |     100 |       95 |     100 |     100 |                   
+  day-plan.ts      |     100 |       95 |     100 |     100 | 94                
+-------------------|---------|----------|---------|---------|-------------------
+
+=============================== Coverage summary ===============================
+Statements   : 99.24% ( 1451/1462 )
+Branches     : 98% ( 931/950 )
+Functions    : 99.72% ( 358/359 )
+Lines        : 99.76% ( 1299/1302 )
+================================================================================
+[exit 0]
+
+$ npm run e2e
+
+> keyloop-service-scheduler@0.0.0 e2e
+> playwright test --project=chromium
+
+[WebServer] [MODULE_LEVEL_DIRECTIVE] The semantics of the module level directive "use client" in "node_modules/react-router/dist/development/index.mjs" may not be preserved when bundling.
+[WebServer]     ╭─[ node_modules/react-router/dist/development/index.mjs:11:1 ]
+[WebServer]     │
+[WebServer]  11 │ "use client";
+[WebServer]     │ ──────┬──────  
+[WebServer]     │       ╰──────── module level directive may not be preserved
+[WebServer]     │ 
+[WebServer]     │ Help: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[WebServer] ────╯
+[WebServer] 
+[WebServer] [plugin builtin:vite-reporter] 
+[WebServer] (!) Some chunks are larger than 500 kB after minification. Consider:
+[WebServer] - Using dynamic import() to code-split the application
+[WebServer] - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+[WebServer] - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[WebServer] [MODULE_LEVEL_DIRECTIVE] The semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/IsRestoringProvider.js" may not be preserved when bundling.
+[WebServer]    ╭─[ node_modules/@tanstack/react-query/build/modern/IsRestoringProvider.js:1:1 ]
+[WebServer]    │
+[WebServer]  1 │ "use client";
+[WebServer]    │ ──────┬──────  
+[WebServer]    │       ╰──────── module level directive may not be preserved
+[WebServer]    │ 
+[WebServer]    │ Help: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[WebServer] ───╯
+[WebServer] 
+[WebServer] [MODULE_LEVEL_DIRECTIVE] The semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/HydrationBoundary.js" may not be preserved when bundling.
+[WebServer]    ╭─[ node_modules/@tanstack/react-query/build/modern/HydrationBoundary.js:1:1 ]
+[WebServer]    │
+[WebServer]  1 │ "use client";
+[WebServer]    │ ──────┬──────  
+[WebServer]    │       ╰──────── module level directive may not be preserved
+[WebServer]    │ 
+[WebServer]    │ Help: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[WebServer] ───╯
+[WebServer] 
+[WebServer] [MODULE_LEVEL_DIRECTIVE] The semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js" may not be preserved when bundling.
+[WebServer]    ╭─[ node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:1:1 ]
+[WebServer]    │
+[WebServer]  1 │ "use client";
+[WebServer]    │ ──────┬──────  
+[WebServer]    │       ╰──────── module level directive may not be preserved
+[WebServer]    │ 
+[WebServer]    │ Help: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[WebServer] ───╯
+[WebServer] 
+[WebServer] [MODULE_LEVEL_DIRECTIVE] The semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/useQuery.js" may not be preserved when bundling.
+[WebServer]    ╭─[ node_modules/@tanstack/react-query/build/modern/useQuery.js:1:1 ]
+[WebServer]    │
+[WebServer]  1 │ "use client";
+[WebServer]    │ ──────┬──────  
+[WebServer]    │       ╰──────── module level directive may not be preserved
+[WebServer]    │ 
+[WebServer]    │ Help: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[WebServer] ───╯
+[WebServer] 
+[WebServer] [MODULE_LEVEL_DIRECTIVE] The semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/useSuspenseQueries.js" may not be preserved when bundling.
+[WebServer]    ╭─[ node_modules/@tanstack/react-query/build/modern/useSuspenseQueries.js:1:1 ]
+[WebServer]    │
+[WebServer]  1 │ "use client";
+[WebServer]    │ ──────┬──────  
+[WebServer]    │       ╰──────── module level directive may not be preserved
+[WebServer]    │ 
+[WebServer]    │ Help: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[WebServer] ───╯
+[WebServer] 
+[WebServer] [MODULE_LEVEL_DIRECTIVE] The semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/useSuspenseQuery.js" may not be preserved when bundling.
+[WebServer]    ╭─[ node_modules/@tanstack/react-query/build/modern/useSuspenseQuery.js:1:1 ]
+[WebServer]    │
+[WebServer]  1 │ "use client";
+[WebServer]    │ ──────┬──────  
+[WebServer]    │       ╰──────── module level directive may not be preserved
+[WebServer]    │ 
+[WebServer]    │ Help: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[WebServer] ───╯
+[WebServer] 
+[WebServer] [MODULE_LEVEL_DIRECTIVE] The semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/useQueries.js" may not be preserved when bundling.
+[WebServer]    ╭─[ node_modules/@tanstack/react-query/build/modern/useQueries.js:1:1 ]
+[WebServer]    │
+[WebServer]  1 │ "use client";
+[WebServer]    │ ──────┬──────  
+[WebServer]    │       ╰──────── module level directive may not be preserved
+[WebServer]    │ 
+[WebServer]    │ Help: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[WebServer] ───╯
+[WebServer] 
+[WebServer] [MODULE_LEVEL_DIRECTIVE] The semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/useIsFetching.js" may not be preserved when bundling.
+[WebServer]    ╭─[ node_modules/@tanstack/react-query/build/modern/useIsFetching.js:1:1 ]
+[WebServer]    │
+[WebServer]  1 │ "use client";
+[WebServer]    │ ──────┬──────  
+[WebServer]    │       ╰──────── module level directive may not be preserved
+[WebServer]    │ 
+[WebServer]    │ Help: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[WebServer] ───╯
+[WebServer] 
+[WebServer] [MODULE_LEVEL_DIRECTIVE] The semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/useSuspenseInfiniteQuery.js" may not be preserved when bundling.
+[WebServer]    ╭─[ node_modules/@tanstack/react-query/build/modern/useSuspenseInfiniteQuery.js:1:1 ]
+[WebServer]    │
+[WebServer]  1 │ "use client";
+[WebServer]    │ ──────┬──────  
+[WebServer]    │       ╰──────── module level directive may not be preserved
+[WebServer]    │ 
+[WebServer]    │ Help: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[WebServer] ───╯
+[WebServer] 
+[WebServer] [MODULE_LEVEL_DIRECTIVE] The semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/QueryErrorResetBoundary.js" may not be preserved when bundling.
+[WebServer]    ╭─[ node_modules/@tanstack/react-query/build/modern/QueryErrorResetBoundary.js:1:1 ]
+[WebServer]    │
+[WebServer]  1 │ "use client";
+[WebServer]    │ ──────┬──────  
+[WebServer]    │       ╰──────── module level directive may not be preserved
+[WebServer]    │ 
+[WebServer]    │ Help: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[WebServer] ───╯
+[WebServer] 
+[WebServer] [MODULE_LEVEL_DIRECTIVE] The semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/useMutationState.js" may not be preserved when bundling.
+[WebServer]    ╭─[ node_modules/@tanstack/react-query/build/modern/useMutationState.js:1:1 ]
+[WebServer]    │
+[WebServer]  1 │ "use client";
+[WebServer]    │ ──────┬──────  
+[WebServer]    │       ╰──────── module level directive may not be preserved
+[WebServer]    │ 
+[WebServer]    │ Help: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[WebServer] ───╯
+[WebServer] 
+[WebServer] [MODULE_LEVEL_DIRECTIVE] The semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/useInfiniteQuery.js" may not be preserved when bundling.
+[WebServer]    ╭─[ node_modules/@tanstack/react-query/build/modern/useInfiniteQuery.js:1:1 ]
+[WebServer]    │
+[WebServer]  1 │ "use client";
+[WebServer]    │ ──────┬──────  
+[WebServer]    │       ╰──────── module level directive may not be preserved
+[WebServer]    │ 
+[WebServer]    │ Help: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[WebServer] ───╯
+[WebServer] 
+[WebServer] [MODULE_LEVEL_DIRECTIVE] The semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/useMutation.js" may not be preserved when bundling.
+[WebServer]    ╭─[ node_modules/@tanstack/react-query/build/modern/useMutation.js:1:1 ]
+[WebServer]    │
+[WebServer]  1 │ "use client";
+[WebServer]    │ ──────┬──────  
+[WebServer]    │       ╰──────── module level directive may not be preserved
+[WebServer]    │ 
+[WebServer]    │ Help: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[WebServer] ───╯
+[WebServer] 
+[WebServer] [MODULE_LEVEL_DIRECTIVE] The semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/useBaseQuery.js" may not be preserved when bundling.
+[WebServer]    ╭─[ node_modules/@tanstack/react-query/build/modern/useBaseQuery.js:1:1 ]
+[WebServer]    │
+[WebServer]  1 │ "use client";
+[WebServer]    │ ──────┬──────  
+[WebServer]    │       ╰──────── module level directive may not be preserved
+[WebServer]    │ 
+[WebServer]    │ Help: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[WebServer] ───╯
+[WebServer] 
+[WebServer] [MODULE_LEVEL_DIRECTIVE] The semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/errorBoundaryUtils.js" may not be preserved when bundling.
+[WebServer]    ╭─[ node_modules/@tanstack/react-query/build/modern/errorBoundaryUtils.js:1:1 ]
+[WebServer]    │
+[WebServer]  1 │ "use client";
+[WebServer]    │ ──────┬──────  
+[WebServer]    │       ╰──────── module level directive may not be preserved
+[WebServer]    │ 
+[WebServer]    │ Help: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[WebServer] ───╯
+[WebServer] 
+
+Running 384 tests using 5 workers
+
+  ✓    3 [chromium] › tests/e2e/api.spec.ts:64:1 › the service worker answers /api/me with an X-Trace-Id (645ms)
+  ✓    1 [chromium] › tests/e2e/customer-appointments.spec.ts:91:3 › my-appointments › REQ-BOOK-012.AC-1, SEC-5.AC-4: two customers with appointments on one day each see only their own, also after a reload (1.1s)
+  ✓    6 [chromium] › tests/e2e/api.spec.ts:75:1 › a booking is still there after the page is reloaded (456ms)
+  ✓    8 [chromium] › tests/e2e/api.spec.ts:100:3 › two pages post the same booking together: one 201, one 409 with suggestions, one appointment stored (478ms)
+  ✓    7 [chromium] › tests/e2e/customer-appointments.spec.ts:119:3 › my-appointments › a card shows the date line, time, badges, service, car, dealership and technician, with no bay; the first date is the largest (608ms)
+  ✓   10 [chromium] › tests/e2e/customer-appointments.spec.ts:167:3 › my-appointments › REQ-BOOK-012.AC-4, D-0001-25 A: inside the change window a card has the sentence and the phone, and no Reschedule or Cancel (504ms)
+  ✓   11 [chromium] › tests/e2e/customer-appointments.spec.ts:189:3 › my-appointments › Past and cancelled shows the latest 10, then Show earlier (648ms)
+  ✓    9 [chromium] › tests/e2e/api.spec.ts:100:3 › two pages post the same booking one second apart: one 201, one 409 with suggestions, one appointment stored (1.5s)
+  ✓   12 [chromium] › tests/e2e/customer-appointments.spec.ts:213:3 › my-appointments › D-0001-94: ended appointments show under Past and cancelled with the Past badge, newest first, and never another customer's (522ms)
+  ✓   13 [chromium] › tests/e2e/api.spec.ts:148:1 › the console shows JSON lines with the trace id, the telemetry answers, and reset brings the seed back (294ms)
+  ✓   14 [chromium] › tests/e2e/customer-appointments.spec.ts:241:3 › my-appointments › with nothing upcoming the list says so; staff on /appointments get the no-permission words (638ms)
+  ✓    5 [chromium] › tests/e2e/book.spec.ts:167:5 › at 390 wide › idle, deep-link, time-chosen, then a booking and its confirmation (success, reload) (5.2s)
+  ✓    2 [chromium] › tests/e2e/courtesy.spec.ts:104:5 › at 390 wide › REQ-BOOK-010.AC-1/2: three choices, no default; a courtesy car is stored and shown on the confirmation, the appointment and the staff schedule (5.6s)
+  ✓    4 [chromium] › tests/e2e/adjust.spec.ts:85:5 › at 390 wide › idle, changed, validation, checking, saved (another technician picked) (5.9s)
+  ✓   15 [chromium] › tests/e2e/customer-states.spec.ts:31:5 › at 390 wide › my-appointments: upcoming, cancel-dialog, after-cancel, no-permission (3.2s)
+  ✓   16 [chromium] › tests/e2e/customer-appointments.spec.ts:264:3 › cancel › REQ-BOOK-012.AC-1: the dialog, one POST, Cancelling…, the card moves, the toast, and the time is offered to customer B (3.1s)
+  ✓   19 [chromium] › tests/e2e/adjust.spec.ts:207:5 › at 390 wide › clash and closest times, then a technician-only change says nobody else was picked (1.5s)
+  ✓   18 [chromium] › tests/e2e/courtesy.spec.ts:158:5 › at 390 wide › no-courtesy-car: the car is booked from 09:45; at 10:00 the option is off with its reason and the API's next start; waiting still books (1.9s)
+  ✓   21 [chromium] › tests/e2e/customer-appointments.spec.ts:340:3 › cancel › the cancelled page: badge, sunken facts, no actions, the line and Book a service (528ms)
+  ✓   20 [chromium] › tests/e2e/customer-states.spec.ts:81:5 › at 390 wide › my-appointments: past-and-cancelled (all cancelled) (1.6s)
+  ✓   24 [chromium] › tests/e2e/customer-appointments.spec.ts:363:3 › cancel › cancel-error: a 500 keeps the dialog open with Keep appointment and Try again (969ms)
+  ✓   22 [chromium] › tests/e2e/adjust.spec.ts:282:5 › at 390 wide › clash-empty: no other times in the next 14 days (1.4s)
+  ✓   23 [chromium] › tests/e2e/courtesy.spec.ts:197:5 › at 390 wide › courtesy-cleared: with the car chosen, someone books it for 11:00; picking 11:30 clears the choice and says so (1.8s)
+  ✓   26 [chromium] › tests/e2e/customer-appointments.spec.ts:395:3 › cancel › a second cancel from another tab answers the same cancelled appointment, shown without an error (1.2s)
+  ✓   25 [chromium] › tests/e2e/customer-states.spec.ts:95:5 › at 390 wide › my-appointments: past (D-0001-94) (1.6s)
+  ✓   27 [chromium] › tests/e2e/adjust.spec.ts:303:5 › at 390 wide › already-flagged: times that fit, then a move that fits clears the flag (1.5s)
+  ✓   29 [chromium] › tests/e2e/customer-appointments.spec.ts:423:3 › reschedule › REQ-BOOK-012.AC-2: the own day, the info panel, Your time, the summary and the Confirm words (736ms)
+  ✓   32 [chromium] › tests/e2e/customer-appointments.spec.ts:467:3 › reschedule › D-0001-101: a time that overlaps the old one and is blocked only by it is offered, and the move succeeds (758ms)
+  ✓   17 [chromium] › tests/e2e/book.spec.ts:312:5 › at 390 wide › confirming: a double press sends one request with one key and books once (6.1s)
+  ✓   30 [chromium] › tests/e2e/customer-states.spec.ts:110:5 › at 390 wide › my-appointments: empty (1.6s)
+  ✓   28 [chromium] › tests/e2e/courtesy.spec.ts:219:5 › at 390 wide › conflict-courtesy: two pages want the only car at 10:00; the second gets the apology, nothing is booked and every offered time has a car (2.5s)
+  ✓   35 [chromium] › tests/e2e/customer-states.spec.ts:126:5 › at 390 wide › my-appointments: no-permission for staff (1.5s)
+  ✓   34 [chromium] › tests/e2e/book.spec.ts:338:5 › at 390 wide › validation: Confirm with the car and the car choice missing sends nothing and lists both (1.7s)
+  ✓   36 [chromium] › tests/e2e/courtesy.spec.ts:304:5 › at 390 wide › courtesy-note: a courtesy car appointment is only offered times with a car, and its car choice stays the same (1.9s)
+  ✓   31 [chromium] › tests/e2e/adjust.spec.ts:334:5 › at 390 wide › cancel-dialog, cancelling, cancel-refused, then cancelled-appointment (3.7s)
+  ✓   38 [chromium] › tests/e2e/book.spec.ts:371:5 › at 390 wide › no-vehicle: a customer with no car sees the info Alert and no strip (1.6s)
+  ✓   33 [chromium] › tests/e2e/customer-appointments.spec.ts:485:3 › reschedule › REQ-BOOK-012.AC-2, REQ-BOOK-009.AC-4: one POST for a double press, same id, new time, toast; the old time stays until the answer, then is offered again (3.9s)
+  ✓   40 [chromium] › tests/e2e/adjust.spec.ts:397:5 › at 390 wide › cancel-refused (1.7s)
+  ✓   37 [chromium] › tests/e2e/customer-states.spec.ts:138:5 › at 390 wide › my-appointments: loading and error (2.8s)
+  ✓   42 [chromium] › tests/e2e/customer-appointments.spec.ts:526:3 › reschedule › REQ-BOOK-012.AC-3: another customer takes the time first; the appointment is unchanged, the day and choices stay, the closest times are offered (881ms)
+  ✓   41 [chromium] › tests/e2e/book.spec.ts:388:5 › at 390 wide › empty-day: a stale count; the day turns Fully booked and offers the closest times on other days (1.7s)
+  ✓   39 [chromium] › tests/e2e/courtesy.spec.ts:373:5 › at 390 wide › staff: the same option in the third person, the summary says Borrows a courtesy car, and a 409 says someone else took the last one (2.9s)
+  ✓   45 [chromium] › tests/e2e/customer-appointments.spec.ts:567:3 › reschedule › REQ-BOOK-009.AC-4: confirm-error says nothing changed, and Try again sends the same Idempotency-Key (751ms)
+  ✓   43 [chromium] › tests/e2e/adjust.spec.ts:429:5 › at 390 wide › loading and error (1.7s)
+  ✓   49 [chromium] › tests/e2e/adjust.spec.ts:443:5 › at 390 wide › error (1.2s)
+  ✓   46 [chromium] › tests/e2e/book.spec.ts:460:5 › at 390 wide › closed-day, day-too-soon and day-too-far: a link to a day that cannot be booked says why (3.6s)
+  ✓   50 [chromium] › tests/e2e/adjust.spec.ts:464:5 › at 390 wide › no-permission for staff and a customer, not-found for another dealership (2.2s)
+  ✓   48 [chromium] › tests/e2e/customer-appointments.spec.ts:600:3 › reschedule › the times are locked while a confirm is on its way; after a failure, Try again sends the time shown, under a new key when it changed (4.3s)
+  ✓   47 [chromium] › tests/e2e/courtesy.spec.ts:104:5 › at 1440 wide › REQ-BOOK-010.AC-1/2: three choices, no default; a courtesy car is stored and shown on the confirmation, the appointment and the staff schedule (4.8s)
+  ✓   52 [chromium] › tests/e2e/adjust.spec.ts:544:5 › at 390 wide › a failed save: Try again sends the form as it is now, and an edit clears the failure (764ms)
+  ✓   53 [chromium] › tests/e2e/customer-appointments.spec.ts:649:3 › reschedule › Q-0001-236 B: on the appointment's own day with no other time free, the grid keeps Your time and says nothing else is left (746ms)
+  ✓   55 [chromium] › tests/e2e/adjust.spec.ts:625:5 › at 390 wide › a blank date or start time: Save names the field and sends nothing (482ms)
+  ✓   57 [chromium] › tests/e2e/adjust.spec.ts:646:5 › at 390 wide › a 422 on the technician links to the Technician select; another field is listed as text (556ms)
+  ✓   56 [chromium] › tests/e2e/customer-appointments.spec.ts:687:3 › reschedule › after a move, Back goes to where the customer came from, not to the finished reschedule screen (801ms)
+  ✓   51 [chromium] › tests/e2e/book.spec.ts:529:5 › at 390 wide › conflict: two pages pick the same time; the second gets the apology and only one appointment exists (2.9s)
+  ✓   54 [chromium] › tests/e2e/courtesy.spec.ts:158:5 › at 1440 wide › no-courtesy-car: the car is booked from 09:45; at 10:00 the option is off with its reason and the API's next start; waiting still books (1.6s)
+  ✓   59 [chromium] › tests/e2e/customer-appointments.spec.ts:710:3 › reschedule › D-0001-60 A, D-0001-39 B: a reschedule link of a cancelled appointment, and a 409 ALREADY_CANCELLED on confirm, show the cancelled page with one quiet line (842ms)
+  ✓   58 [chromium] › tests/e2e/adjust.spec.ts:680:5 › at 390 wide › an appointment that has ended: no Adjust on the schedule, and adjust says it has ended (1.2s)
+  ✓   44 [chromium] › tests/e2e/customer-states.spec.ts:167:5 › at 390 wide › appointment: confirmed, cancel-dialog, cancel-error, cancelling, cancelled (8.5s)
+  ✓   60 [chromium] › tests/e2e/book.spec.ts:596:5 › at 390 wide › conflict-empty: no suggestions; the page says so with the phone (1.8s)
+  ✓   61 [chromium] › tests/e2e/courtesy.spec.ts:197:5 › at 1440 wide › courtesy-cleared: with the car chosen, someone books it for 11:00; picking 11:30 clears the choice and says so (1.5s)
+  ✓   63 [chromium] › tests/e2e/adjust.spec.ts:708:5 › at 390 wide › a cancel from the appointment page puts focus on the cancelled note (901ms)
+  ✓   62 [chromium] › tests/e2e/customer-appointments.spec.ts:739:3 › after the cutoff (D-0001-22 a) › at start minus lead time exactly, Cancel and Reschedule still work (1.3s)
+  ✓   68 [chromium] › tests/e2e/customer-appointments.spec.ts:770:3 › after the cutoff (D-0001-22 a) › one minute later the appointment page is change-closed and the reschedule route says the same, with one way back (825ms)
+  ✓   65 [chromium] › tests/e2e/book.spec.ts:623:5 › at 390 wide › conflict-too-soon: the chosen time slips inside the notice time while the page is open (1.8s)
+  ✓   69 [chromium] › tests/e2e/customer-appointments.spec.ts:811:3 › after the cutoff (D-0001-22 a) › cancel-refused: the cutoff passes while the dialog is open; nothing was cancelled (986ms)
+  ✓   66 [chromium] › tests/e2e/courtesy.spec.ts:219:5 › at 1440 wide › conflict-courtesy: two pages want the only car at 10:00; the second gets the apology, nothing is booked and every offered time has a car (2.2s)
+  ✓   64 [chromium] › tests/e2e/customer-states.spec.ts:225:5 › at 390 wide › appointment: cancel-refused, then change-closed (2.9s)
+  ✓   67 [chromium] › tests/e2e/adjust.spec.ts:727:5 › at 390 wide › appointment and appointment-flagged (manager), schedule-additions (3.2s)
+  ✓   70 [chromium] › tests/e2e/book.spec.ts:649:5 › at 390 wide › conflict-too-far: the manager shortens the horizon; every day beyond it reads Too far ahead (1.8s)
+  ✓   72 [chromium] › tests/e2e/courtesy.spec.ts:304:5 › at 1440 wide › courtesy-note: a courtesy car appointment is only offered times with a car, and its car choice stays the same (1.6s)
+  ✓   71 [chromium] › tests/e2e/customer-appointments.spec.ts:841:3 › after the cutoff (D-0001-22 a) › WCAG 2.4.3: after a cancel or a refusal the opener is gone, so focus goes to the title or the card, never the page (2.1s)
+  ✓   75 [chromium] › tests/e2e/book.spec.ts:702:5 › at 390 wide › confirm-error: a 500 keeps the choices; Try again sends the same key and books once (1.9s)
+  ✓   77 [chromium] › tests/e2e/customer-appointments.spec.ts:916:3 › the message links (D-0001-22 f, D-0001-77 A, SEC-17.AC-2, SEC-11.AC-4) › the owner opens the appointment and the reschedule screen; nobody picked sees signed-out; another customer sees not-found; staff and managers see no-permission on reschedule (1.4s)
+  ✓   76 [chromium] › tests/e2e/courtesy.spec.ts:373:5 › at 1440 wide › staff: the same option in the third person, the summary says Borrows a courtesy car, and a 409 says someone else took the last one (2.6s)
+  ✓   79 [chromium] › tests/e2e/customer-appointments.spec.ts:969:3 › other customers (REQ-BOOK-012.AC-5, SEC-5.AC-1, AC-2) › A sees not-found for B's appointment and its reschedule link, word for word as a random id, also after B's cutoff (921ms)
+  ✓   73 [chromium] › tests/e2e/customer-states.spec.ts:255:5 › at 390 wide › appointment: loading, error, not-found (3.9s)
+  ✓   80 [chromium] › tests/e2e/courtesy.spec.ts:438:1 › the day tile counts follow the car choice: with the car out from 11:00 to 12:00, the courtesy count is lower and equals the chips (648ms)
+  ✓   78 [chromium] › tests/e2e/book.spec.ts:730:5 › at 390 wide › confirm-error with no network says we could not reach the booking service (1.8s)
+  ✓   81 [chromium] › tests/e2e/customer-appointments.spec.ts:1003:3 › NFR-4, NFR-7 › the dialog keeps Tab inside; the sheet below 640 has the danger button on top (1.2s)
+  ✓   83 [chromium] › tests/e2e/courtesy.spec.ts:454:1 › courtesy-cleared on a week only searched with the courtesy car: the strip stays and the clicked time keeps focus (WCAG 2.4.3) (787ms)
+  ✓   86 [chromium] › tests/e2e/courtesy.spec.ts:494:1 › NFR-7: at every width the three options are rows of at least 44 px, 8 px apart, with no sideways scroll (526ms)
+  -   87 [chromium] › tests/e2e/courtesy.spec.ts:516:1 › video: a customer chooses a courtesy car, sees it greyed out for a busy time, then gets the no-car-left apology
+  ✓   85 [chromium] › tests/e2e/customer-appointments.spec.ts:1029:3 › NFR-4, NFR-7 › the ActionBar shows below 768 only and never covers a focused control (855ms)
+  ✓   74 [chromium] › tests/e2e/adjust.spec.ts:85:5 › at 1440 wide › idle, changed, validation, checking, saved (another technician picked) (5.6s)
+  ✓   90 [chromium] › tests/e2e/adjust.spec.ts:207:5 › at 1440 wide › clash and closest times, then a technician-only change says nobody else was picked (1.6s)
+  ✓   89 [chromium] › tests/e2e/customer-appointments.spec.ts:1061:3 › NFR-4, NFR-7 › no sideways scroll at 320 to 1440; cards one column on a phone and two from 640; targets at least 44 px (2.1s)
+  -   92 [chromium] › tests/e2e/customer-appointments.spec.ts:1115:1 › video: a customer cancels one appointment, reschedules another, and opens the cancel link of a message
+  ✓   82 [chromium] › tests/e2e/customer-states.spec.ts:294:5 › at 390 wide › reschedule: idle, time-chosen, conflict, then rescheduled (4.2s)
+  ✓   84 [chromium] › tests/e2e/book.spec.ts:748:5 › at 390 wide › loading, days-error and times-error (3.8s)
+  ✓   91 [chromium] › tests/e2e/adjust.spec.ts:282:5 › at 1440 wide › clash-empty: no other times in the next 14 days (1.4s)
+  ✓   93 [chromium] › tests/e2e/dev-panel.spec.ts:217:1 › after a booking, a 409 and an empty search the numbers equal the API's, and the 409 line carries the reference the customer saw (1.6s)
+  ✓   95 [chromium] › tests/e2e/book.spec.ts:801:5 › at 390 wide › no-permission: a booking link for another customer (1.5s)
+  ✓   97 [chromium] › tests/e2e/dev-panel.spec.ts:324:1 › no name, phone, email or registration of the canary booking appears anywhere on the page, opened JSON included; typed text stays text (592ms)
+  ✓   96 [chromium] › tests/e2e/adjust.spec.ts:303:5 › at 1440 wide › already-flagged: times that fit, then a move that fits clears the flag (1.4s)
+  ✓   99 [chromium] › tests/e2e/dev-panel.spec.ts:358:1 › reset: the dialog starts on Keep my data, the reset empties what this browser made, and the seed is back (1.1s)
+  ✓  101 [chromium] › tests/e2e/dev-panel.spec.ts:463:1 › a failed reset says so inside the dialog and keeps it open (583ms)
+  ✓  102 [chromium] › tests/e2e/dev-panel.spec.ts:486:1 › on a phone the switch shows Numbers or Logs, one at a time; from 1024 both columns show (916ms)
+  ✓  103 [chromium] › tests/e2e/dev-panel.spec.ts:512:1 › no sideways scroll at 320, 390, 768, 1024 and 1440, with the logs open (652ms)
+  ✓   98 [chromium] › tests/e2e/book.spec.ts:817:5 › at 390 wide › book-confirmed loading, error and not-found (3.7s)
+  ✓  100 [chromium] › tests/e2e/adjust.spec.ts:334:5 › at 1440 wide › cancel-dialog, cancelling, cancel-refused, then cancelled-appointment (3.7s)
+  ✓  106 [chromium] › tests/e2e/adjust.spec.ts:397:5 › at 1440 wide › cancel-refused (1.3s)
+  ✓   94 [chromium] › tests/e2e/customer-states.spec.ts:338:5 › at 390 wide › reschedule: confirming, confirm-error, conflict-empty, empty-day (8.2s)
+  ✓   88 [chromium] › tests/e2e/demo.spec.ts:130:1 › scenario 1, customer books (REQ-BOOK-001, 002, 003, 010.AC-1): dealership, car and service, the strip and chips, a courtesy car, the confirmation, a reload and My appointments (11.1s)
+  ✓  107 [chromium] › tests/e2e/adjust.spec.ts:429:5 › at 1440 wide › loading and error (1.8s)
+  ✓  105 [chromium] › tests/e2e/book.spec.ts:167:5 › at 1440 wide › idle, deep-link, time-chosen, then a booking and its confirmation (success, reload) (4.6s)
+  ✓  110 [chromium] › tests/e2e/adjust.spec.ts:443:5 › at 1440 wide › error (1.2s)
+  ✓  104 [chromium] › tests/e2e/dev-panel.spec.ts:532:5 › every state at 390, with axe › metrics, logs, problems, reset-dialog, resetting and reset-done (5.8s)
+  ✓  113 [chromium] › tests/e2e/dev-panel.spec.ts:576:5 › every state at 390, with axe › empty (1.3s)
+  ✓  108 [chromium] › tests/e2e/customer-states.spec.ts:442:5 › at 390 wide › reschedule: change-closed, loading, error, not-found (4.6s)
+  ✓  112 [chromium] › tests/e2e/adjust.spec.ts:464:5 › at 1440 wide › no-permission for staff and a customer, not-found for another dealership (2.2s)
+  ✓  116 [chromium] › tests/e2e/adjust.spec.ts:544:5 › at 1440 wide › a failed save: Try again sends the form as it is now, and an edit clears the failure (774ms)
+  ✓  117 [chromium] › tests/e2e/adjust.spec.ts:625:5 › at 1440 wide › a blank date or start time: Save names the field and sends nothing (402ms)
+  ✓  114 [chromium] › tests/e2e/dev-panel.spec.ts:591:5 › every state at 390, with axe › loading (1.7s)
+  ✓  118 [chromium] › tests/e2e/adjust.spec.ts:646:5 › at 1440 wide › a 422 on the technician links to the Technician select; another field is listed as text (545ms)
+  ✓  119 [chromium] › tests/e2e/dev-panel.spec.ts:604:5 › every state at 390, with axe › error (1.3s)
+  ✓  120 [chromium] › tests/e2e/adjust.spec.ts:680:5 › at 1440 wide › an appointment that has ended: no Adjust on the schedule, and adjust says it has ended (1.3s)
+  ✓  115 [chromium] › tests/e2e/customer-states.spec.ts:495:5 › at 390 wide › not-found: appointment, confirmation, page (3.2s)
+  ✓  111 [chromium] › tests/e2e/book.spec.ts:312:5 › at 1440 wide › confirming: a double press sends one request with one key and books once (5.7s)
+  ✓  122 [chromium] › tests/e2e/adjust.spec.ts:708:5 › at 1440 wide › a cancel from the appointment page puts focus on the cancelled note (574ms)
+  ✓  124 [chromium] › tests/e2e/book.spec.ts:338:5 › at 1440 wide › validation: Confirm with the car and the car choice missing sends nothing and lists both (1.4s)
+  ✓  126 [chromium] › tests/e2e/book.spec.ts:371:5 › at 1440 wide › no-vehicle: a customer with no car sees the info Alert and no strip (1.2s)
+  ✓  123 [chromium] › tests/e2e/customer-states.spec.ts:31:5 › at 1440 wide › my-appointments: upcoming, cancel-dialog, after-cancel, no-permission (3.0s)
+  ✓  125 [chromium] › tests/e2e/adjust.spec.ts:727:5 › at 1440 wide › appointment and appointment-flagged (manager), schedule-additions (3.1s)
+  ✓  129 [chromium] › tests/e2e/adjust.spec.ts:809:1 › D-0001-102: Times that fit offers a time that only the booking's own slot blocks (406ms)
+  ✓  127 [chromium] › tests/e2e/book.spec.ts:388:5 › at 1440 wide › empty-day: a stale count; the day turns Fully booked and offers the closest times on other days (1.4s)
+  ✓  128 [chromium] › tests/e2e/customer-states.spec.ts:81:5 › at 1440 wide › my-appointments: past-and-cancelled (all cancelled) (1.3s)
+  ✓  130 [chromium] › tests/e2e/adjust.spec.ts:825:1 › TOO_SOON and BEYOND_HORIZON read in words with the dealership's numbers (D-0001-45 A) (649ms)
+  ✓  121 [chromium] › tests/e2e/dev-panel.spec.ts:532:5 › every state at 1440, with axe › metrics, logs, problems, reset-dialog, resetting and reset-done (5.7s)
+  ✓  132 [chromium] › tests/e2e/customer-states.spec.ts:95:5 › at 1440 wide › my-appointments: past (D-0001-94) (1.3s)
+  ✓  133 [chromium] › tests/e2e/adjust.spec.ts:854:1 › adjust: no sideways scroll at 320, 390, 768, 1024 and 1440 wide (NFR-7) (967ms)
+  ✓  134 [chromium] › tests/e2e/dev-panel.spec.ts:576:5 › every state at 1440, with axe › empty (1.1s)
+  ✓  135 [chromium] › tests/e2e/customer-states.spec.ts:110:5 › at 1440 wide › my-appointments: empty (1.2s)
+  ✓  137 [chromium] › tests/e2e/dev-panel.spec.ts:591:5 › every state at 1440, with axe › loading (1.4s)
+  ✓  131 [chromium] › tests/e2e/book.spec.ts:460:5 › at 1440 wide › closed-day, day-too-soon and day-too-far: a link to a day that cannot be booked says why (3.5s)
+  ✓  138 [chromium] › tests/e2e/customer-states.spec.ts:126:5 › at 1440 wide › my-appointments: no-permission for staff (1.2s)
+  ✓  136 [chromium] › tests/e2e/early-warning.spec.ts:174:1 › D-0001-107, REQ-BOOK-009.AC-2: book: page B books the time page A chose; page A shows the apology at its next check, before Confirm, focus kept (2.8s)
+  ✓  139 [chromium] › tests/e2e/dev-panel.spec.ts:604:5 › every state at 1440, with axe › error (1.0s)
+  ✓  142 [chromium] › tests/e2e/early-warning.spec.ts:214:1 › D-0001-107: staff book: page B books the time staff chose for a customer; the staff page shows Someone else's apology at its next check (760ms)
+  ✓  143 [chromium] › tests/e2e/dev-panel.spec.ts:632:1 › D-0001-84: a booking and a lost race made on the real booking screen, then the real schedule, are in the panel (1.4s)
+  ✓  140 [chromium] › tests/e2e/book.spec.ts:529:5 › at 1440 wide › conflict: two pages pick the same time; the second gets the apology and only one appointment exists (2.6s)
+  ✓  141 [chromium] › tests/e2e/customer-states.spec.ts:138:5 › at 1440 wide › my-appointments: loading and error (2.6s)
+  ✓  145 [chromium] › tests/e2e/dev-panel.spec.ts:721:1 › every role can open /dev, and the footer link is there in mock mode (776ms)
+  ✓  144 [chromium] › tests/e2e/early-warning.spec.ts:237:1 › D-0001-107, REQ-BOOK-012.AC-3: reschedule: page B books the new time page A chose; page A shows the apology at its next check and the appointment has not changed (2.3s)
+  ✓  146 [chromium] › tests/e2e/book.spec.ts:596:5 › at 1440 wide › conflict-empty: no suggestions; the page says so with the phone (1.5s)
+  ✓  149 [chromium] › tests/e2e/early-warning.spec.ts:284:1 › D-0001-107: adjust: page B books the start the manager typed; the clash state shows at the next check, before Save, focus kept in the field (540ms)
+  ✓  151 [chromium] › tests/e2e/early-warning.spec.ts:324:1 › D-0001-107: a failed check shows nothing new and does not block Confirm, which still runs its own check (578ms)
+  ✓  150 [chromium] › tests/e2e/book.spec.ts:623:5 › at 1440 wide › conflict-too-soon: the chosen time slips inside the notice time while the page is open (1.5s)
+  ✓  153 [chromium] › tests/e2e/book.spec.ts:649:5 › at 1440 wide › conflict-too-far: the manager shortens the horizon; every day beyond it reads Too far ahead (1.4s)
+  ✓  109 [chromium] › tests/e2e/demo.spec.ts:196:1 › scenario 2, staff sees it and books (REQ-BOOK-004, 010.AC-2, 014): the new appointment on its technician's row, bays and list, a free gap, search by name, phone and plate, a new customer, just taken, a closest time (22.3s)
+  ✓  154 [chromium] › tests/e2e/book.spec.ts:702:5 › at 1440 wide › confirm-error: a 500 keeps the choices; Try again sends the same key and books once (1.6s)
+  ✓  156 [chromium] › tests/e2e/book.spec.ts:730:5 › at 1440 wide › confirm-error with no network says we could not reach the booking service (1.4s)
+  ✓  147 [chromium] › tests/e2e/customer-states.spec.ts:167:5 › at 1440 wide › appointment: confirmed, cancel-dialog, cancel-error, cancelling, cancelled (7.5s)
+  ✓  158 [chromium] › tests/e2e/customer-states.spec.ts:225:5 › at 1440 wide › appointment: cancel-refused, then change-closed (2.5s)
+  ✓  157 [chromium] › tests/e2e/book.spec.ts:748:5 › at 1440 wide › loading, days-error and times-error (3.5s)
+  ✓  160 [chromium] › tests/e2e/book.spec.ts:801:5 › at 1440 wide › no-permission: a booking link for another customer (1.2s)
+  ✓  152 [chromium] › tests/e2e/early-warning.spec.ts:363:1 › early warning video: page A has a time chosen, page B books it, page A shows the apology without pressing Confirm (11.5s)
+  ✓  159 [chromium] › tests/e2e/customer-states.spec.ts:255:5 › at 1440 wide › appointment: loading, error, not-found (3.5s)
+  ✓  161 [chromium] › tests/e2e/book.spec.ts:817:5 › at 1440 wide › book-confirmed loading, error and not-found (3.4s)
+  ✓  148 [chromium] › tests/e2e/dev-panel.spec.ts:732:1 › video: a booking and a just-taken answer in two pages, the line found by its reference, then a reset (15.1s)
+  ✓  164 [chromium] › tests/e2e/book.spec.ts:871:1 › SEC-12.AC-1: a link with a script as the dealership opens with both fields empty and shows none of it (443ms)
+  ✓  166 [chromium] › tests/e2e/book.spec.ts:895:1 › a staff user without a customer chosen sees the shared no-permission block (395ms)
+  ✓  155 [chromium] › tests/e2e/demo.spec.ts:324:1 › scenario 3, customer changes it (REQ-BOOK-012, 013): reschedule and cancel through the links in the messages; past the cutoff the same links say it can no longer be changed online (11.6s)
+  ✓  167 [chromium] › tests/e2e/book.spec.ts:909:1 › NFR-7: no sideways scroll at any width, 44 px targets, the strip scrolls in its own row, one Confirm (642ms)
+  ✓  163 [chromium] › tests/e2e/customer-states.spec.ts:294:5 › at 1440 wide › reschedule: idle, time-chosen, conflict, then rescheduled (3.8s)
+  ✓  169 [chromium] › tests/e2e/book.spec.ts:996:1 › NFR-4: the whole booking can be done with the keyboard, the error links move focus, and focus is never behind the ActionBar (939ms)
+  -  171 [chromium] › tests/e2e/book.spec.ts:1057:1 › video: a customer books end to end, then a second page gets the just-taken apology
+  ✓  162 [chromium] › tests/e2e/flagged.spec.ts:93:5 › at 390 wide › list, cancel-dialog, cancelling, after-cancel (4.6s)
+  ✓  173 [chromium] › tests/e2e/flagged.spec.ts:209:5 › at 390 wide › cancel-refused (1.7s)
+  ✓  165 [chromium] › tests/e2e/leave-back.spec.ts:34:5 › at 390 wide, Back on settings leaves at once when nothing changed, and asks first when something did (5.0s)
+  ✓  174 [chromium] › tests/e2e/flagged.spec.ts:241:5 › at 390 wide › empty, and the last cancel leads to it (1.6s)
+  ✓  176 [chromium] › tests/e2e/flagged.spec.ts:269:5 › at 390 wide › loading (1.7s)
+  ✓  177 [chromium] › tests/e2e/flagged.spec.ts:282:5 › at 390 wide › error (1.1s)
+  ✓  170 [chromium] › tests/e2e/customer-states.spec.ts:338:5 › at 1440 wide › reschedule: confirming, confirm-error, conflict-empty, empty-day (7.7s)
+  ✓  175 [chromium] › tests/e2e/leave-back.spec.ts:34:5 › at 390 wide, Back on shifts leaves at once when nothing changed, and asks first when something did (5.0s)
+  ✓  178 [chromium] › tests/e2e/flagged.spec.ts:302:5 › at 390 wide › no-permission for staff, no-permission-dealership for another dealership (2.0s)
+  ✓  179 [chromium] › tests/e2e/customer-states.spec.ts:442:5 › at 1440 wide › reschedule: change-closed, loading, error, not-found (4.3s)
+  ✓  180 [chromium] › tests/e2e/leave-back.spec.ts:34:5 › at 1440 wide, Back on settings leaves at once when nothing changed, and asks first when something did (5.0s)
+  ✓  172 [chromium] › tests/e2e/manage-flow.spec.ts:8:1 › a manager shortens Saturday, saves with flags, opens Flagged, then marks a technician on leave (13.2s)
+  ✓  181 [chromium] › tests/e2e/flagged.spec.ts:93:5 › at 1440 wide › list, cancel-dialog, cancelling, after-cancel (4.7s)
+  ✓  184 [chromium] › tests/e2e/manage-settings.spec.ts:40:1 › the form shows the dealership's hours, dates and rules from the API, and never says override (314ms)
+  ✓  186 [chromium] › tests/e2e/manage-settings.spec.ts:77:1 › ticking Closed empties and disables the day; the Save row and the phone bar follow the changes (394ms)
+  ✓  187 [chromium] › tests/e2e/manage-settings.spec.ts:97:1 › six wrong values each show their own message, the summary links to each, and nothing is sent (477ms)
+  ✓  182 [chromium] › tests/e2e/customer-states.spec.ts:495:5 › at 1440 wide › not-found: appointment, confirmation, page (2.8s)
+  ✓  188 [chromium] › tests/e2e/manage-settings.spec.ts:165:1 › Add this date only adds to the list, marked new, and sends nothing until Save (357ms)
+  ✓  185 [chromium] › tests/e2e/flagged.spec.ts:209:5 › at 1440 wide › cancel-refused (1.5s)
+  ✓  189 [chromium] › tests/e2e/manage-shifts.spec.ts:53:1 › the technician's weekly pattern comes from the API, with the dealership's hours beside each day (539ms)
+  ✓  190 [chromium] › tests/e2e/manage-settings.spec.ts:195:1 › saved dates change what availability lists: longer, shorter, closed, and the weekly hours with no entry (641ms)
+  ✓  192 [chromium] › tests/e2e/manage-shifts.spec.ts:99:1 › a half break, a break outside the shift, an end before the start and a last day before the first each show their message; nothing is sent (449ms)
+  ✓  193 [chromium] › tests/e2e/manage-settings.spec.ts:259:1 › two dealerships each show and save their own hours; a change at one leaves the other alone (498ms)
+  ✓  194 [chromium] › tests/e2e/manage-shifts.spec.ts:149:1 › new entries are marked until saved; a different shift shows four times and leave hides them (436ms)
+  ✓  191 [chromium] › tests/e2e/flagged.spec.ts:241:5 › at 1440 wide › empty, and the last cancel leads to it (1.4s)
+  ✓  195 [chromium] › tests/e2e/manage-settings.spec.ts:288:1 › new booking rules apply to the next search and leave every booking as it was (475ms)
+  ✓  196 [chromium] › tests/e2e/manage-shifts.spec.ts:179:1 › leave on a date takes the technician out of availability; an extra shift on a day off puts them in (701ms)
+  ✓  183 [chromium] › tests/e2e/leave-back.spec.ts:34:5 › at 1440 wide, Back on shifts leaves at once when nothing changed, and asks first when something did (4.9s)
+  ✓  199 [chromium] › tests/e2e/manage-shifts.spec.ts:217:1 › marking a technician on leave on a day with a booking warns first, then flags it without deleting it (946ms)
+  ✓  197 [chromium] › tests/e2e/flagged.spec.ts:269:5 › at 1440 wide › loading (1.8s)
+  ✓  198 [chromium] › tests/e2e/manage-settings.spec.ts:335:1 › with nothing touched, Save previews first, then saves at once with Settings saved and the toast (2.2s)
+  ✓  201 [chromium] › tests/e2e/manage-shifts.spec.ts:270:1 › switching technician with unsaved edits asks first, with Keep editing first (912ms)
+  ✓  204 [chromium] › tests/e2e/manage-shifts.spec.ts:304:1 › a dealership with no technicians shows No technicians yet with the dev panel link (263ms)
+  ✓  202 [chromium] › tests/e2e/flagged.spec.ts:282:5 › at 1440 wide › error (1.1s)
+  ✓  205 [chromium] › tests/e2e/manage-shifts.spec.ts:317:1 › a technician of another dealership is not found, with Show all technicians (337ms)
+  ✓  203 [chromium] › tests/e2e/manage-settings.spec.ts:363:1 › shortening Saturday warns before saving: two bookings listed, Go back saves nothing, Save and flag flags them (963ms)
+  ✓  207 [chromium] › tests/e2e/manage-shifts.spec.ts:333:3 › a Customer opening shifts sees no-permission, no fields and sends no PUT (304ms)
+  ✓  209 [chromium] › tests/e2e/manage-shifts.spec.ts:333:3 › a Staff opening shifts sees no-permission, no fields and sends no PUT (253ms)
+  ✓  208 [chromium] › tests/e2e/manage-settings.spec.ts:458:1 › the warning lists five bookings and says how many more (801ms)
+  ✓  211 [chromium] › tests/e2e/manage-settings.spec.ts:498:3 › a save that fails with a 500 keeps the edits and offers Try again (415ms)
+  ✓  168 [chromium] › tests/e2e/demo.spec.ts:422:1 › scenario 4, manager (REQ-BOOK-005, 007, 008, 011, 013): move to a free time, a clash with closest times, a shorter weekday that flags one booking, Review flagged and Move, leave that the customer's strip shows, and the outbox (22.4s)
+  ✓  212 [chromium] › tests/e2e/manage-settings.spec.ts:498:3 › a save that fails with no network keeps the edits and offers Try again (449ms)
+  ✓  206 [chromium] › tests/e2e/flagged.spec.ts:302:5 › at 1440 wide › no-permission for staff, no-permission-dealership for another dealership (2.0s)
+  ✓  215 [chromium] › tests/e2e/flagged.spec.ts:334:1 › flagged: no sideways scroll at 320 to 1440 wide, Move and Cancel wrap under the text (NFR-7) (791ms)
+  ✓  214 [chromium] › tests/e2e/manage-settings.spec.ts:520:1 › leaving with unsaved changes asks first, with Keep editing first (1.2s)
+  ✓  216 [chromium] › tests/e2e/flagged.spec.ts:357:1 › Move opens adjust with the times that fit listed (584ms)
+  ✓  217 [chromium] › tests/e2e/manage-settings.spec.ts:549:1 › loading shows a skeleton and a failed load shows the error with Try again (304ms)
+  ✓  219 [chromium] › tests/e2e/manage-settings.spec.ts:571:3 › a Customer sees no-permission, no fields and sends no PUT (280ms)
+  ✓  220 [chromium] › tests/e2e/manage-settings.spec.ts:571:3 › a Staff sees no-permission, no fields and sends no PUT (322ms)
+  ✓  218 [chromium] › tests/e2e/flagged.spec.ts:374:1 › stored text is shown as text on the flagged list, adjust and appointment pages (SEC-11.AC-2) (739ms)
+  ✓  221 [chromium] › tests/e2e/manage-settings.spec.ts:595:1 › a manager who opens another dealership sees no-permission-dealership and none of its data (235ms)
+  ✓  223 [chromium] › tests/e2e/policy-support.spec.ts:20:1 › the WebKit <select> message is taken out at most once per set-aside <select> event (1ms)
+  ✓  224 [chromium] › tests/e2e/policy-support.spec.ts:43:1 › in Firefox and Chromium nothing is taken out (0ms)
+  ✓  225 [chromium] › tests/e2e/policy-support.spec.ts:51:1 › a page with two native selects under the policy leaves no policy message once the known WebKit one is set aside (477ms)
+  ✓  226 [chromium] › tests/e2e/race.spec.ts:241:1 › REQ-BOOK-009.AC-1, AC-2, S1: both press Confirm together; one is booked, one gets the apology, one appointment is stored; the loser then books a closest time on other resources (999ms)
+  ✓  200 [chromium] › tests/e2e/manage-states.spec.ts:50:5 › at 390 wide › settings: idle, dirty, validation, checking, confirm-flags, saving, saved-with-flags (9.5s)
+  ✓  210 [chromium] › tests/e2e/outbox.spec.ts:183:3 › every outbox state, reached by real use, at 390 wide (7.6s)
+  ✓  227 [chromium] › tests/e2e/race.spec.ts:263:1 › REQ-BOOK-009 (5 runs): the race on a fresh reset of the demo data five times has exactly one winner every time (2.8s)
+  ✓  228 [chromium] › tests/e2e/manage-states.spec.ts:105:5 › at 390 wide › settings: saved, leave-dialog, save-error (1.5s)
+  ✓  230 [chromium] › tests/e2e/race.spec.ts:278:1 › REQ-BOOK-009.AC-5: at a start where two mechanics and two bays are free, both confirmations go through on different technicians and bays (907ms)
+  ✓  231 [chromium] › tests/e2e/manage-states.spec.ts:123:5 › at 390 wide › settings: save-error (943ms)
+  ✓  233 [chromium] › tests/e2e/manage-states.spec.ts:138:5 › at 390 wide › settings: loading (733ms)
+  ✓  232 [chromium] › tests/e2e/race.spec.ts:315:1 › REQ-BOOK-009.AC-3: the second page confirms the same time one second after the first; it gets the same apology and no second appointment exists (2.0s)
+  ✓  234 [chromium] › tests/e2e/manage-states.spec.ts:150:5 › at 390 wide › settings: error (721ms)
+  ✓  235 [chromium] › tests/e2e/race.spec.ts:330:1 › REQ-BOOK-009.AC-4: a double press on Confirm sends one booking request (the page ignores the second press while the first is out) and leaves one appointment (562ms)
+  ✓  213 [chromium] › tests/e2e/demo.spec.ts:609:1 › scenario 5, manager books for a customer (D-0001-53, D-0001-54 B, REQ-BOOK-014): a free gap on the schedule, an existing customer, the booking on the schedule and in the outbox; the Book for a customer button opens the same screen (11.0s)
+  ✓  237 [chromium] › tests/e2e/race.spec.ts:345:1 › REQ-BOOK-009.AC-4, S1: the first confirm is stored but its answer is lost (a 500); Try again with the same Idempotency-Key gets the same appointment back, replayed, and one appointment is stored (667ms)
+  ✓  236 [chromium] › tests/e2e/manage-states.spec.ts:165:5 › at 390 wide › settings and shifts: no-permission, no-permission-dealership, not-found, empty (2.3s)
+  ✓  240 [chromium] › tests/e2e/manage-states.spec.ts:196:5 › at 390 wide › shifts: empty (731ms)
+  ✓  229 [chromium] › tests/e2e/outbox.spec.ts:183:3 › every outbox state, reached by real use, at 1440 wide (7.0s)
+  ✓  242 [chromium] › tests/e2e/outbox.spec.ts:370:1 › after a booking: a confirmation and two reminders, each with links on the app's own origin and nothing else (637ms)
+  ✓  243 [chromium] › tests/e2e/outbox.spec.ts:441:1 › a confirm sent twice with the same Idempotency-Key leaves one confirmation and one set of reminders (492ms)
+  ✓  244 [chromium] › tests/e2e/outbox.spec.ts:476:1 › a move cancels the old reminders, lists the new ones and a Moved message; a cancel keeps the confirmation's state (835ms)
+  ✓  222 [chromium] › tests/e2e/flagged.spec.ts:406:1 › video: open a flagged booking, move it, hit a clash, pick a closest time, then cancel another (14.3s)
+  ✓  245 [chromium] › tests/e2e/outbox.spec.ts:559:3 › after two moves the old times are exact, in the order the messages were made, at 390 wide (D-0001-79) (1.4s)
+  ✓  247 [chromium] › tests/e2e/outbox.spec.ts:559:3 › after two moves the old times are exact, in the order the messages were made, at 1440 wide (D-0001-79) (1.1s)
+  ✓  248 [chromium] › tests/e2e/outbox.spec.ts:614:1 › message times are London time across the clock change (2026-10-24T10:00Z shows 11:00) (407ms)
+  ✓  249 [chromium] › tests/e2e/outbox.spec.ts:650:3 › a first name with HTML in it is shown as text, and no script runs (SEC-11.AC-2): <img (599ms)
+  ✓  250 [chromium] › tests/e2e/outbox.spec.ts:650:3 › a first name with HTML in it is shown as text, and no script runs (SEC-11.AC-2): <img/src=x/onerror=window.__xss=1> (575ms)
+  ✓  251 [chromium] › tests/e2e/outbox.spec.ts:683:1 › a customer or staff member sees no-permission and the outbox is never asked for; another dealership's outbox is a 403 (530ms)
+  ✓  238 [chromium] › tests/e2e/demo.spec.ts:681:1 › scenario 6, roles (REQ-BOOK-005.AC-3, 008.AC-3, 014.AC-5, 012.AC-5): each forbidden page shows no-permission or not-found with none of the other side's data, and no write succeeds (9.7s)
+  ✓  246 [chromium] › tests/e2e/schedule.spec.ts:77:5 › at 390 wide › the day: timeline (desktop) or list (phone), selected, selected-flagged, list, list-bays, bays (4.2s)
+  ✓  252 [chromium] › tests/e2e/outbox.spec.ts:711:1 › 60 messages: no sideways scroll, one list, each appointment's messages in time order (1.1s)
+  ✓  255 [chromium] › tests/e2e/outbox.spec.ts:770:1 › on desktop a row opens the message in the pane, says so to a screen reader, and closes when pressed again (585ms)
+  ✓  256 [chromium] › tests/e2e/outbox.spec.ts:792:1 › a filter chosen for the whole outbox does not carry over to one appointment's messages (682ms)
+  ✓  241 [chromium] › tests/e2e/manage-states.spec.ts:205:5 › at 390 wide › shifts: idle, dirty, validation, checking, confirm-flags, saving, saved-with-flags (9.5s)
+  ✓  239 [chromium] › tests/e2e/race.spec.ts:418:3 › race video 1440 wide per side: both on the booking page, both confirm together, one booked and one apology (12.3s)
+  ✓  254 [chromium] › tests/e2e/schedule.spec.ts:188:5 › at 390 wide › one technician's day and one bay's day (technician, bay-day) (2.6s)
+  ✓  257 [chromium] › tests/e2e/outbox.spec.ts:814:1 › phone and desktop: no sideways scroll at every width, one list below 1024, two panes from 1024 (1.1s)
+  ✓  258 [chromium] › tests/e2e/manage-states.spec.ts:260:5 › at 390 wide › shifts: saved, leave-dialog (1.5s)
+  ✓  261 [chromium] › tests/e2e/outbox.spec.ts:837:1 › on a phone the message opens in a sheet that holds focus and gives it back to the row; the text is at most 65ch (1.1s)
+  ✓  262 [chromium] › tests/e2e/manage-states.spec.ts:282:5 › at 390 wide › shifts: save-error (893ms)
+  ✓  264 [chromium] › tests/e2e/manage-states.spec.ts:296:5 › at 390 wide › shifts: loading (710ms)
+  ✓  265 [chromium] › tests/e2e/manage-states.spec.ts:305:5 › at 390 wide › shifts: error (698ms)
+  ✓  253 [chromium] › tests/e2e/demo.spec.ts:758:1 › scenario 7a, time zones (REQ-BOOK-013.AC-2, S4): a browser in Saigon sees London wall times on the booking page, the schedule and the outbox, with the London note on the schedule and the outbox (7.0s)
+  ✓  260 [chromium] › tests/e2e/schedule.spec.ts:228:5 › at 390 wide › empty-day, closed-day, past-day, and a closed day that still holds bookings (4.3s)
+  ✓  268 [chromium] › tests/e2e/schedule.spec.ts:308:5 › at 390 wide › loading and error (2.2s)
+  ✓  267 [chromium] › tests/e2e/demo.spec.ts:808:1 › scenario 7b, time zones (S4): a browser in London sees Saigon wall times with the Saigon note on the Saigon schedule (3.4s)
+  ✓  259 [chromium] › tests/e2e/race.spec.ts:418:3 › race video 390 wide per side: both on the booking page, both confirm together, one booked and one apology (11.2s)
+  ✓  271 [chromium] › tests/e2e/shell.spec.ts:17:1 › with nobody picked, / says so and the header says Not signed in (240ms)
+  ✓  272 [chromium] › tests/e2e/shell.spec.ts:33:1 › picking each role sends X-Demo-User, lands on the home, and shows the toast (488ms)
+  ✓  266 [chromium] › tests/e2e/manage-states.spec.ts:50:5 › at 1440 wide › settings: idle, dirty, validation, checking, confirm-flags, saving, saved-with-flags (9.3s)
+  ✓  273 [chromium] › tests/e2e/shell.spec.ts:65:1 › a role that may not open a route sees no-permission in place, and Switch role moves focus to the header control (683ms)
+  ✓  269 [chromium] › tests/e2e/schedule.spec.ts:341:5 › at 390 wide › the appointment page: confirmed, flagged, cancelled, not-found, loading, error (6.2s)
+  ✓  275 [chromium] › tests/e2e/shell.spec.ts:113:1 › an unknown route shows not-found with the role's home (406ms)
+  ✓  274 [chromium] › tests/e2e/manage-states.spec.ts:105:5 › at 1440 wide › settings: saved, leave-dialog, save-error (1.5s)
+  ✓  277 [chromium] › tests/e2e/shell.spec.ts:128:3 › at 390 wide: a staff member works at one dealership: no dealership choice, and another dealership is refused (D-0001-89) (1.2s)
+  ✓  270 [chromium] › tests/e2e/demo.spec.ts:848:1 › scenario 7c, the clock change (S4): in a London browser, a 10:00 booking sits at 10:00 on Sat 24 Oct (summer time) and, with the clock on Sun 25 Oct 2026, on Tue 27 Oct (winter time), and the 48-hour reminder shows the right London hour (6.8s)
+  ✓  278 [chromium] › tests/e2e/manage-states.spec.ts:123:5 › at 1440 wide › settings: save-error (907ms)
+  ✓  279 [chromium] › tests/e2e/shell.spec.ts:128:3 › at 1440 wide: a staff member works at one dealership: no dealership choice, and another dealership is refused (D-0001-89) (975ms)
+  ✓  281 [chromium] › tests/e2e/manage-states.spec.ts:138:5 › at 1440 wide › settings: loading (778ms)
+  ✓  263 [chromium] › tests/e2e/outbox.spec.ts:877:1 › the main flow: a manager reads the messages of a booking, then sees them marked Cancelled after a reschedule and a cancel (14.1s)
+  ✓  282 [chromium] › tests/e2e/shell.spec.ts:152:1 › remote proof: page.route does not see calls the service worker answers (D-0001-58) (328ms)
+  ✓  284 [chromium] › tests/e2e/smoke.spec.ts:3:1 › the page opens and says nobody is signed in (272ms)
+  ✓  285 [chromium] › tests/e2e/shell.spec.ts:175:1 › a 500 from the API shows the error words with a reference and a Copy button; no network says the same without a reference (354ms)
+  ✓  276 [chromium] › tests/e2e/schedule.spec.ts:437:5 › at 390 wide › no-permission: a customer on /schedule, and London staff asking for Saigon (3.0s)
+  ✓  283 [chromium] › tests/e2e/manage-states.spec.ts:150:5 › at 1440 wide › settings: error (789ms)
+  ✓  287 [chromium] › tests/e2e/shell.spec.ts:205:1 › a slow answer shows the skeleton only after 200 ms (470ms)
+  ✓  290 [chromium] › tests/e2e/shell.spec.ts:214:1 › the first Tab stop is the skip link, and a page has one h1 and the landmarks (389ms)
+  ✓  291 [chromium] › tests/e2e/shell.spec.ts:230:3 › no sideways scroll and 44px targets at 320 wide (759ms)
+  ✓  292 [chromium] › tests/e2e/shell.spec.ts:230:3 › no sideways scroll and 44px targets at 390 wide (729ms)
+  ✓  289 [chromium] › tests/e2e/manage-states.spec.ts:165:5 › at 1440 wide › settings and shifts: no-permission, no-permission-dealership, not-found, empty (2.3s)
+  ✓  293 [chromium] › tests/e2e/shell.spec.ts:230:3 › no sideways scroll and 44px targets at 768 wide (406ms)
+  ✓  295 [chromium] › tests/e2e/shell.spec.ts:230:3 › no sideways scroll and 44px targets at 1024 wide (384ms)
+  ✓  294 [chromium] › tests/e2e/manage-states.spec.ts:196:5 › at 1440 wide › shifts: empty (752ms)
+  ✓  296 [chromium] › tests/e2e/shell.spec.ts:230:3 › no sideways scroll and 44px targets at 1440 wide (428ms)
+  ✓  288 [chromium] › tests/e2e/schedule.spec.ts:77:5 › at 1440 wide › the day: timeline (desktop) or list (phone), selected, selected-flagged, list, list-bays, bays (5.6s)
+  ✓  286 [chromium] › tests/e2e/staff-book.spec.ts:183:5 › at 390 wide › book-customer: idle, too-short, results, picked, no-results; Continue opens the staff book page with the pick (6.1s)
+  ✓  299 [chromium] › tests/e2e/schedule.spec.ts:188:5 › at 1440 wide › one technician's day and one bay's day (technician, bay-day) (2.3s)
+  ✓  298 [chromium] › tests/e2e/shell.spec.ts:264:3 › axe finds nothing on the shell, the guard states and the component sheet at 390 wide (4.9s)
+  ✓  300 [chromium] › tests/e2e/staff-book.spec.ts:293:5 › at 390 wide › book-customer: searching, search-error and results-capped (4.5s)
+  ✓  280 [chromium] › tests/e2e/demo.spec.ts:916:1 › scenario 8, dev panel (NFR-6): after the race the panel shows the confirmed booking and the 409 with its reason, the 409's reference finds the same line, and Reset demo data returns the schedule to the seed (11.9s)
+  ✓  304 [chromium] › tests/e2e/demo.spec.ts:1024:1 › the customer booking page in a Saigon browser says its times are London time (design.md section 9) (312ms)
+  ✓  301 [chromium] › tests/e2e/schedule.spec.ts:228:5 › at 1440 wide › empty-day, closed-day, past-day, and a closed day that still holds bookings (4.1s)
+  ✓  302 [chromium] › tests/e2e/shell.spec.ts:264:3 › axe finds nothing on the shell, the guard states and the component sheet at 1440 wide (3.9s)
+  ✓  303 [chromium] › tests/e2e/staff-book.spec.ts:327:5 › at 390 wide › book-customer: search-error shows the reference and Try again (1.9s)
+  ✓  297 [chromium] › tests/e2e/manage-states.spec.ts:205:5 › at 1440 wide › shifts: idle, dirty, validation, checking, confirm-flags, saving, saved-with-flags (9.5s)
+  ✓  305 [chromium] › tests/e2e/time-zone-note.spec.ts:155:3 › book: a browser in Saigon says once that the times are London time, and shows London times; no sideways scroll from 320 to 1440, and axe is clean at 390 and 1440 (2.5s)
+  ✓  310 [chromium] › tests/e2e/time-zone-note.spec.ts:174:3 › book: a browser in London shows no time-zone note (294ms)
+  ✓  307 [chromium] › tests/e2e/shell.spec.ts:292:3 › on a phone the role button shows the whole name at 360 wide, and the sheet names the current user (1.6s)
+  ✓  306 [chromium] › tests/e2e/schedule.spec.ts:308:5 › at 1440 wide › loading and error (2.1s)
+  ✓  309 [chromium] › tests/e2e/manage-states.spec.ts:260:5 › at 1440 wide › shifts: saved, leave-dialog (1.5s)
+  ✓  308 [chromium] › tests/e2e/staff-book.spec.ts:351:5 › at 390 wide › book-customer: no-vehicle, and Add another vehicle opens the vehicle group (not in the approved prototype) (2.7s)
+  ✓  314 [chromium] › tests/e2e/manage-states.spec.ts:282:5 › at 1440 wide › shifts: save-error (969ms)
+  ✓  312 [chromium] › tests/e2e/shell.spec.ts:292:3 › on a phone the role button shows the whole name at 390 wide, and the sheet names the current user (1.6s)
+  ✓  311 [chromium] › tests/e2e/time-zone-note.spec.ts:155:3 › book-confirmed: a browser in Saigon says once that the times are London time, and shows London times; no sideways scroll from 320 to 1440, and axe is clean at 390 and 1440 (2.1s)
+  ✓  316 [chromium] › tests/e2e/manage-states.spec.ts:296:5 › at 1440 wide › shifts: loading (726ms)
+  ✓  318 [chromium] › tests/e2e/time-zone-note.spec.ts:174:3 › book-confirmed: a browser in London shows no time-zone note (289ms)
+  ✓  319 [chromium] › tests/e2e/manage-states.spec.ts:305:5 › at 1440 wide › shifts: error (753ms)
+  ✓  317 [chromium] › tests/e2e/whole-app.spec.ts:48:1 › SEC-15.AC-3: the three role journeys on the built app send every request to the app's own origin, with no blocked resource or policy message (2.3s)
+  ✓  321 [chromium] › tests/e2e/manage-states.spec.ts:322:1 › at every width: no sideways scroll; rows stack on a phone, two per line from 640, one line per weekday from 1024; the form is at most 60rem (1.2s)
+  ✓  320 [chromium] › tests/e2e/time-zone-note.spec.ts:155:3 › my-appointments: a browser in Saigon says once that the times are London time, and shows London times; no sideways scroll from 320 to 1440, and axe is clean at 390 and 1440 (2.2s)
+  ✓  315 [chromium] › tests/e2e/staff-book.spec.ts:405:5 › at 390 wide › new-customer, validation and duplicate-hint; nothing is stored until a booking is confirmed (3.3s)
+  ✓  323 [chromium] › tests/e2e/time-zone-note.spec.ts:174:3 › my-appointments: a browser in London shows no time-zone note (280ms)
+  ✓  313 [chromium] › tests/e2e/schedule.spec.ts:341:5 › at 1440 wide › the appointment page: confirmed, flagged, cancelled, not-found, loading, error (6.0s)
+  ✓  325 [chromium] › tests/e2e/time-zone-note.spec.ts:155:3 › appointment: a browser in Saigon says once that the times are London time, and shows London times; no sideways scroll from 320 to 1440, and axe is clean at 390 and 1440 (2.2s)
+  ✓  327 [chromium] › tests/e2e/time-zone-note.spec.ts:174:3 › appointment: a browser in London shows no time-zone note (269ms)
+  ✓  322 [chromium] › tests/e2e/whole-app.spec.ts:205:1 › SEC-11.AC-3: script text stored through the staff booking form is shown as text on the schedule, the search, the appointment page and the outbox; no dialog, no console error, no window.__xss (3.8s)
+  ✓  326 [chromium] › tests/e2e/schedule.spec.ts:437:5 › at 1440 wide › no-permission: a customer on /schedule, and London staff asking for Saigon (2.3s)
+  ✓  329 [chromium] › tests/e2e/whole-app.spec.ts:364:1 › SEC-13.AC-2: after staff load the schedule and a search with results, switching to the customer role leaves no staff name, phone or plate in the page, and the cache holds nothing from before the switch (901ms)
+  ✓  331 [chromium] › tests/e2e/whole-app.spec.ts:457:1 › NFR-4: the route list of the router has an address for every route (0ms)
+  ✓  332 [chromium] › tests/e2e/whole-app.spec.ts:464:1 › NFR-4: every route written straight into the router (not through routeRules) is in the sweep (1ms)
+  ✓  330 [chromium] › tests/e2e/schedule.spec.ts:517:1 › a new booking shows on opening and on reloading the day (REQ-BOOK-004.AC-2) (806ms)
+  ✓  328 [chromium] › tests/e2e/time-zone-note.spec.ts:155:3 › reschedule: a browser in Saigon says once that the times are London time, and shows London times; no sideways scroll from 320 to 1440, and axe is clean at 390 and 1440 (2.2s)
+  ✓  335 [chromium] › tests/e2e/time-zone-note.spec.ts:174:3 › reschedule: a browser in London shows no time-zone note (271ms)
+  ✓  334 [chromium] › tests/e2e/schedule.spec.ts:542:1 › the timeline: shading, break, leave, Now line, gaps, names and Tab order (593ms)
+  ✓  337 [chromium] › tests/e2e/schedule.spec.ts:590:1 › a date that is not a real date opens today, like no date (619ms)
+  ✓  324 [chromium] › tests/e2e/staff-book.spec.ts:528:5 › at 390 wide › staff book: idle, time-chosen, validation, confirming and the staff confirmation (6.2s)
+  ✓  338 [chromium] › tests/e2e/schedule.spec.ts:603:1 › the manager's gaps link to the booking too, and the manager has the top Book button (D-0001-54 B) (578ms)
+  ✓  340 [chromium] › tests/e2e/schedule.spec.ts:623:1 › the built app places blocks and gaps at the right offset and width under its CSP (SEC-15.AC-1) (582ms)
+  ✓  339 [chromium] › tests/e2e/staff-book.spec.ts:626:5 › at 390 wide › a new customer is booked: stored with the vehicle once, found by name, phone and plate (1.4s)
+  ✓  336 [chromium] › tests/e2e/time-zone-note.spec.ts:155:3 › book-staff: a browser in Saigon says once that the times are London time, and shows London times; no sideways scroll from 320 to 1440, and axe is clean at 390 and 1440 (2.5s)
+  ✓  341 [chromium] › tests/e2e/schedule.spec.ts:673:1 › the time-zone note shows only when the viewer's zone differs (design.md 8.3) (836ms)
+  ✓  343 [chromium] › tests/e2e/time-zone-note.spec.ts:174:3 › book-staff: a browser in London shows no time-zone note (318ms)
+  ✓  344 [chromium] › tests/e2e/schedule.spec.ts:692:1 › stored text is shown as text on the schedule and the appointment page (SEC-11.AC-2) (681ms)
+  ✓  346 [chromium] › tests/e2e/schedule.spec.ts:801:3 › a 60-appointment day at 320 wide: no sideways page scroll, 44px targets, the box scrolls on its own (851ms)
+  ✓  345 [chromium] › tests/e2e/time-zone-note.spec.ts:155:3 › book-for-customer: a browser in Saigon says once that the times are London time, and shows London times; no sideways scroll from 320 to 1440, and axe is clean at 390 and 1440 (2.2s)
+  ✓  347 [chromium] › tests/e2e/schedule.spec.ts:801:3 › a 60-appointment day at 390 wide: no sideways page scroll, 44px targets, the box scrolls on its own (818ms)
+  ✓  348 [chromium] › tests/e2e/time-zone-note.spec.ts:174:3 › book-for-customer: a browser in London shows no time-zone note (274ms)
+  ✓  349 [chromium] › tests/e2e/schedule.spec.ts:801:3 › a 60-appointment day at 768 wide: no sideways page scroll, 44px targets, the box scrolls on its own (547ms)
+  ✓  351 [chromium] › tests/e2e/schedule.spec.ts:801:3 › a 60-appointment day at 1024 wide: no sideways page scroll, 44px targets, the box scrolls on its own (563ms)
+  ✓  352 [chromium] › tests/e2e/schedule.spec.ts:801:3 › a 60-appointment day at 1440 wide: no sideways page scroll, 44px targets, the box scrolls on its own (582ms)
+  ✓  342 [chromium] › tests/e2e/staff-book.spec.ts:694:5 › at 390 wide › from a tapped gap: from-gap, from-gap-fits, gap-too-short, No times, and Any technician drops the technician (4.8s)
+  ✓  350 [chromium] › tests/e2e/time-zone-note.spec.ts:155:3 › adjust: a browser in Saigon says once that the times are London time, and shows London times; no sideways scroll from 320 to 1440, and axe is clean at 390 and 1440 (2.2s)
+  ✓  355 [chromium] › tests/e2e/time-zone-note.spec.ts:174:3 › adjust: a browser in London shows no time-zone note (277ms)
+  ✓  356 [chromium] › tests/e2e/time-zone-note.spec.ts:185:1 › my appointments at dealerships in two zones: no page note, and each card in another zone than the browser's says its own (Q-0001-252) (550ms)
+  ✓  354 [chromium] › tests/e2e/staff-book.spec.ts:805:5 › at 390 wide › conflict and conflict-new-customer: everything is kept; after a new time exactly one customer, vehicle and appointment exist (3.5s)
+  ✓  333 [chromium] › tests/e2e/whole-app.spec.ts:485:3 › NFR-4, NFR-7: every route a customer can open has 0 axe violations at 390 and 1440 and no sideways scroll at 320 to 1440 (13.5s)
+  ✓  357 [chromium] › tests/e2e/staff-book.spec.ts:897:5 › at 390 wide › conflict-empty: a fixed technician with no other time says so and offers any technician (2.2s)
+  ✓  353 [chromium] › tests/e2e/schedule.spec.ts:846:1 › video of the main flow: open the day, Technicians and Bays, List, select a block, open the appointment (7.1s)
+  ✓  359 [chromium] › tests/e2e/staff-book.spec.ts:964:5 › at 390 wide › loading, empty-day, error (Try again sends the same key) and forbidden (5.5s)
+  ✓  360 [chromium] › tests/e2e/staff-book.spec.ts:1062:5 › at 390 wide › no-permission: a customer on /book/for-customer and on a staff /book link; the API refuses them (2.4s)
+  ✓  358 [chromium] › tests/e2e/whole-app.spec.ts:485:3 › NFR-4, NFR-7: every route a staff can open has 0 axe violations at 390 and 1440 and no sideways scroll at 320 to 1440 (13.4s)
+  ✓  361 [chromium] › tests/e2e/staff-book.spec.ts:183:5 › at 1440 wide › book-customer: idle, too-short, results, picked, no-results; Continue opens the staff book page with the pick (5.8s)
+  ✓  363 [chromium] › tests/e2e/staff-book.spec.ts:293:5 › at 1440 wide › book-customer: searching, search-error and results-capped (4.2s)
+  ✓  364 [chromium] › tests/e2e/staff-book.spec.ts:327:5 › at 1440 wide › book-customer: search-error shows the reference and Try again (1.5s)
+  ✓  365 [chromium] › tests/e2e/staff-book.spec.ts:351:5 › at 1440 wide › book-customer: no-vehicle, and Add another vehicle opens the vehicle group (not in the approved prototype) (2.4s)
+  ✓  366 [chromium] › tests/e2e/staff-book.spec.ts:405:5 › at 1440 wide › new-customer, validation and duplicate-hint; nothing is stored until a booking is confirmed (2.9s)
+  ✓  367 [chromium] › tests/e2e/staff-book.spec.ts:528:5 › at 1440 wide › staff book: idle, time-chosen, validation, confirming and the staff confirmation (5.9s)
+  ✓  368 [chromium] › tests/e2e/staff-book.spec.ts:626:5 › at 1440 wide › a new customer is booked: stored with the vehicle once, found by name, phone and plate (889ms)
+  ✓  362 [chromium] › tests/e2e/whole-app.spec.ts:485:3 › NFR-4, NFR-7: every route a manager can open has 0 axe violations at 390 and 1440 and no sideways scroll at 320 to 1440 (22.6s)
+  ✓  369 [chromium] › tests/e2e/staff-book.spec.ts:694:5 › at 1440 wide › from a tapped gap: from-gap, from-gap-fits, gap-too-short, No times, and Any technician drops the technician (4.5s)
+  ✓  370 [chromium] › tests/e2e/whole-app.spec.ts:513:1 › SEC-14: a VITE_API_MODE=remote preview has no role switcher, no dev panel link and no X-Demo-User header in any request (3.4s)
+  ✓  371 [chromium] › tests/e2e/staff-book.spec.ts:805:5 › at 1440 wide › conflict and conflict-new-customer: everything is kept; after a new time exactly one customer, vehicle and appointment exist (3.3s)
+  ✓  372 [chromium] › tests/e2e/staff-book.spec.ts:897:5 › at 1440 wide › conflict-empty: a fixed technician with no other time says so and offers any technician (2.0s)
+  ✓  373 [chromium] › tests/e2e/staff-book.spec.ts:964:5 › at 1440 wide › loading, empty-day, error (Try again sends the same key) and forbidden (5.2s)
+  ✓  374 [chromium] › tests/e2e/staff-book.spec.ts:1062:5 › at 1440 wide › no-permission: a customer on /book/for-customer and on a staff /book link; the API refuses them (2.1s)
+  ✓  375 [chromium] › tests/e2e/staff-book.spec.ts:1108:1 › the manager books for a customer from the Schedule button with the same screens; Back to schedule is theirs; another dealership is 403 (1.2s)
+  ✓  376 [chromium] › tests/e2e/staff-book.spec.ts:1167:1 › the manager can open the book-customer screen at 390 wide with the button full width under the title (759ms)
+  ✓  377 [chromium] › tests/e2e/staff-book.spec.ts:1183:1 › D-0001-29 B: Add another vehicle books the new car for the picked customer; no second customer; the car is found next time (1.9s)
+  ✓  378 [chromium] › tests/e2e/staff-book.spec.ts:1234:1 › SEC-10: the search text and phone numbers never appear in the address or in any request address (1.3s)
+  ✓  379 [chromium] › tests/e2e/staff-book.spec.ts:1270:1 › SEC-13.AC-2: the search text, the pick and the new customer's details are gone after the role is switched (996ms)
+  ✓  380 [chromium] › tests/e2e/staff-book.spec.ts:1288:1 › SEC-11.AC-2: a stored customer whose words are script is shown as text in the results and the panel (884ms)
+  ✓  381 [chromium] › tests/e2e/staff-book.spec.ts:1326:1 › NFR-7: no sideways scroll at any width; 56 px rows 8 px apart; two columns from 768; form groups side by side; phone bar and no tab bar (2.9s)
+  ✓  382 [chromium] › tests/e2e/staff-book.spec.ts:1383:3 › Q-0001-247 at 390 wide: when the tapped gap cannot be checked, no times show, Confirm stays off and nothing says Picked for you; Try again brings the technician back (2.2s)
+  ✓  383 [chromium] › tests/e2e/staff-book.spec.ts:1383:3 › Q-0001-247 at 1440 wide: when the tapped gap cannot be checked, no times show, Confirm stays off and nothing says Picked for you; Try again brings the technician back (1.9s)
+  -  384 [chromium] › tests/e2e/staff-book.spec.ts:1454:1 › video: a staff member taps a free gap, finds a customer, picks a car, a service and a time, confirms; then adds a new customer, hits just taken and recovers
+
+  4 skipped
+  380 passed (4.0m)
+[exit 0]
+
+$ npm run check:deps
+
+> keyloop-service-scheduler@0.0.0 check:deps
+> node scripts/check-approved-dependencies.mjs
+
+Every runtime dependency is approved.
+[exit 0]
+
+$ npm run check:remote-build
+
+> keyloop-service-scheduler@0.0.0 check:remote-build
+> node scripts/check-remote-build.mjs
+
+vite v8.3.5 building client environment for production...
+transforming...
+✓ 266 modules transformed.
+rendering chunks...
+computing gzip size...
+../../../../../../../var/folders/kt/dz52y9w50rddwtjqj04r501r0000gn/T/remote-build-1Kzt4Q/index.html                                       0.63 kB │ gzip:   0.36 kB
+../../../../../../../var/folders/kt/dz52y9w50rddwtjqj04r501r0000gn/T/remote-build-1Kzt4Q/assets/plus-jakarta-sans-latin-B2KjpZfh.woff2   27.27 kB
+../../../../../../../var/folders/kt/dz52y9w50rddwtjqj04r501r0000gn/T/remote-build-1Kzt4Q/assets/ibm-plex-sans-latin-BD64o3ke.woff2       40.24 kB
+../../../../../../../var/folders/kt/dz52y9w50rddwtjqj04r501r0000gn/T/remote-build-1Kzt4Q/assets/index-MzVepfhE.css                       42.38 kB │ gzip:   8.96 kB
+../../../../../../../var/folders/kt/dz52y9w50rddwtjqj04r501r0000gn/T/remote-build-1Kzt4Q/assets/_empty-boot-mock-BUMKQ806.js              0.04 kB │ gzip:   0.06 kB
+../../../../../../../var/folders/kt/dz52y9w50rddwtjqj04r501r0000gn/T/remote-build-1Kzt4Q/assets/index-Kt7637fo.js                       733.79 kB │ gzip: 219.41 kB
+
+[33m[MODULE_LEVEL_DIRECTIVE] [0mThe semantics of the module level directive "use client" in "node_modules/react-router/dist/development/index.mjs" may not be preserved when bundling.
+    [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m node_modules/react-router/dist/development/index.mjs:11:1 [38;5;246m][0m
+    [38;5;246m│[0m
+ [38;5;246m11 │[0m "use client";
+ [38;5;240m   │[0m ──────┬──────  
+ [38;5;240m   │[0m       ╰──────── module level directive may not be preserved
+ [38;5;240m   │[0m 
+ [38;5;240m   │[0m [38;5;115mHelp[0m: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[38;5;246m────╯[0m
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[33m[MODULE_LEVEL_DIRECTIVE] [0mThe semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js" may not be preserved when bundling.
+   [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:1:1 [38;5;246m][0m
+   [38;5;246m│[0m
+ [38;5;246m1 │[0m "use client";
+ [38;5;240m  │[0m ──────┬──────  
+ [38;5;240m  │[0m       ╰──────── module level directive may not be preserved
+ [38;5;240m  │[0m 
+ [38;5;240m  │[0m [38;5;115mHelp[0m: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[38;5;246m───╯[0m
+
+[33m[MODULE_LEVEL_DIRECTIVE] [0mThe semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/QueryErrorResetBoundary.js" may not be preserved when bundling.
+   [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m node_modules/@tanstack/react-query/build/modern/QueryErrorResetBoundary.js:1:1 [38;5;246m][0m
+   [38;5;246m│[0m
+ [38;5;246m1 │[0m "use client";
+ [38;5;240m  │[0m ──────┬──────  
+ [38;5;240m  │[0m       ╰──────── module level directive may not be preserved
+ [38;5;240m  │[0m 
+ [38;5;240m  │[0m [38;5;115mHelp[0m: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[38;5;246m───╯[0m
+
+[33m[MODULE_LEVEL_DIRECTIVE] [0mThe semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/IsRestoringProvider.js" may not be preserved when bundling.
+   [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m node_modules/@tanstack/react-query/build/modern/IsRestoringProvider.js:1:1 [38;5;246m][0m
+   [38;5;246m│[0m
+ [38;5;246m1 │[0m "use client";
+ [38;5;240m  │[0m ──────┬──────  
+ [38;5;240m  │[0m       ╰──────── module level directive may not be preserved
+ [38;5;240m  │[0m 
+ [38;5;240m  │[0m [38;5;115mHelp[0m: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[38;5;246m───╯[0m
+
+[33m[MODULE_LEVEL_DIRECTIVE] [0mThe semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/useQuery.js" may not be preserved when bundling.
+   [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m node_modules/@tanstack/react-query/build/modern/useQuery.js:1:1 [38;5;246m][0m
+   [38;5;246m│[0m
+ [38;5;246m1 │[0m "use client";
+ [38;5;240m  │[0m ──────┬──────  
+ [38;5;240m  │[0m       ╰──────── module level directive may not be preserved
+ [38;5;240m  │[0m 
+ [38;5;240m  │[0m [38;5;115mHelp[0m: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[38;5;246m───╯[0m
+
+[33m[MODULE_LEVEL_DIRECTIVE] [0mThe semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/HydrationBoundary.js" may not be preserved when bundling.
+   [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m node_modules/@tanstack/react-query/build/modern/HydrationBoundary.js:1:1 [38;5;246m][0m
+   [38;5;246m│[0m
+ [38;5;246m1 │[0m "use client";
+ [38;5;240m  │[0m ──────┬──────  
+ [38;5;240m  │[0m       ╰──────── module level directive may not be preserved
+ [38;5;240m  │[0m 
+ [38;5;240m  │[0m [38;5;115mHelp[0m: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[38;5;246m───╯[0m
+
+[33m[MODULE_LEVEL_DIRECTIVE] [0mThe semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/useSuspenseInfiniteQuery.js" may not be preserved when bundling.
+   [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m node_modules/@tanstack/react-query/build/modern/useSuspenseInfiniteQuery.js:1:1 [38;5;246m][0m
+   [38;5;246m│[0m
+ [38;5;246m1 │[0m "use client";
+ [38;5;240m  │[0m ──────┬──────  
+ [38;5;240m  │[0m       ╰──────── module level directive may not be preserved
+ [38;5;240m  │[0m 
+ [38;5;240m  │[0m [38;5;115mHelp[0m: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[38;5;246m───╯[0m
+
+[33m[MODULE_LEVEL_DIRECTIVE] [0mThe semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/useSuspenseQueries.js" may not be preserved when bundling.
+   [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m node_modules/@tanstack/react-query/build/modern/useSuspenseQueries.js:1:1 [38;5;246m][0m
+   [38;5;246m│[0m
+ [38;5;246m1 │[0m "use client";
+ [38;5;240m  │[0m ──────┬──────  
+ [38;5;240m  │[0m       ╰──────── module level directive may not be preserved
+ [38;5;240m  │[0m 
+ [38;5;240m  │[0m [38;5;115mHelp[0m: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[38;5;246m───╯[0m
+
+[33m[MODULE_LEVEL_DIRECTIVE] [0mThe semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/useSuspenseQuery.js" may not be preserved when bundling.
+   [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m node_modules/@tanstack/react-query/build/modern/useSuspenseQuery.js:1:1 [38;5;246m][0m
+   [38;5;246m│[0m
+ [38;5;246m1 │[0m "use client";
+ [38;5;240m  │[0m ──────┬──────  
+ [38;5;240m  │[0m       ╰──────── module level directive may not be preserved
+ [38;5;240m  │[0m 
+ [38;5;240m  │[0m [38;5;115mHelp[0m: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[38;5;246m───╯[0m
+
+[33m[MODULE_LEVEL_DIRECTIVE] [0mThe semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/useQueries.js" may not be preserved when bundling.
+   [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m node_modules/@tanstack/react-query/build/modern/useQueries.js:1:1 [38;5;246m][0m
+   [38;5;246m│[0m
+ [38;5;246m1 │[0m "use client";
+ [38;5;240m  │[0m ──────┬──────  
+ [38;5;240m  │[0m       ╰──────── module level directive may not be preserved
+ [38;5;240m  │[0m 
+ [38;5;240m  │[0m [38;5;115mHelp[0m: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[38;5;246m───╯[0m
+
+[33m[MODULE_LEVEL_DIRECTIVE] [0mThe semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/useIsFetching.js" may not be preserved when bundling.
+   [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m node_modules/@tanstack/react-query/build/modern/useIsFetching.js:1:1 [38;5;246m][0m
+   [38;5;246m│[0m
+ [38;5;246m1 │[0m "use client";
+ [38;5;240m  │[0m ──────┬──────  
+ [38;5;240m  │[0m       ╰──────── module level directive may not be preserved
+ [38;5;240m  │[0m 
+ [38;5;240m  │[0m [38;5;115mHelp[0m: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[38;5;246m───╯[0m
+
+[33m[MODULE_LEVEL_DIRECTIVE] [0mThe semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/useMutationState.js" may not be preserved when bundling.
+   [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m node_modules/@tanstack/react-query/build/modern/useMutationState.js:1:1 [38;5;246m][0m
+   [38;5;246m│[0m
+ [38;5;246m1 │[0m "use client";
+ [38;5;240m  │[0m ──────┬──────  
+ [38;5;240m  │[0m       ╰──────── module level directive may not be preserved
+ [38;5;240m  │[0m 
+ [38;5;240m  │[0m [38;5;115mHelp[0m: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[38;5;246m───╯[0m
+
+[33m[MODULE_LEVEL_DIRECTIVE] [0mThe semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/useMutation.js" may not be preserved when bundling.
+   [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m node_modules/@tanstack/react-query/build/modern/useMutation.js:1:1 [38;5;246m][0m
+   [38;5;246m│[0m
+ [38;5;246m1 │[0m "use client";
+ [38;5;240m  │[0m ──────┬──────  
+ [38;5;240m  │[0m       ╰──────── module level directive may not be preserved
+ [38;5;240m  │[0m 
+ [38;5;240m  │[0m [38;5;115mHelp[0m: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[38;5;246m───╯[0m
+
+[33m[MODULE_LEVEL_DIRECTIVE] [0mThe semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/useInfiniteQuery.js" may not be preserved when bundling.
+   [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m node_modules/@tanstack/react-query/build/modern/useInfiniteQuery.js:1:1 [38;5;246m][0m
+   [38;5;246m│[0m
+ [38;5;246m1 │[0m "use client";
+ [38;5;240m  │[0m ──────┬──────  
+ [38;5;240m  │[0m       ╰──────── module level directive may not be preserved
+ [38;5;240m  │[0m 
+ [38;5;240m  │[0m [38;5;115mHelp[0m: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[38;5;246m───╯[0m
+
+[33m[MODULE_LEVEL_DIRECTIVE] [0mThe semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/errorBoundaryUtils.js" may not be preserved when bundling.
+   [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m node_modules/@tanstack/react-query/build/modern/errorBoundaryUtils.js:1:1 [38;5;246m][0m
+   [38;5;246m│[0m
+ [38;5;246m1 │[0m "use client";
+ [38;5;240m  │[0m ──────┬──────  
+ [38;5;240m  │[0m       ╰──────── module level directive may not be preserved
+ [38;5;240m  │[0m 
+ [38;5;240m  │[0m [38;5;115mHelp[0m: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[38;5;246m───╯[0m
+
+[33m[MODULE_LEVEL_DIRECTIVE] [0mThe semantics of the module level directive "use client" in "node_modules/@tanstack/react-query/build/modern/useBaseQuery.js" may not be preserved when bundling.
+   [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m node_modules/@tanstack/react-query/build/modern/useBaseQuery.js:1:1 [38;5;246m][0m
+   [38;5;246m│[0m
+ [38;5;246m1 │[0m "use client";
+ [38;5;240m  │[0m ──────┬──────  
+ [38;5;240m  │[0m       ╰──────── module level directive may not be preserved
+ [38;5;240m  │[0m 
+ [38;5;240m  │[0m [38;5;115mHelp[0m: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[38;5;246m───╯[0m
+
+✓ built in 201ms
+The remote build holds nothing that is only for the demo.
+[exit 0]
+
+$ npm run check:public-docs
+
+> keyloop-service-scheduler@0.0.0 check:public-docs
+> node scripts/check-public-docs.mjs
+
+Public docs are clean: 213 files checked for secrets, local paths, real email addresses and links into references/.
+[exit 0]
+
+$ npx vitest run src/domain src/application
+
+ RUN  v5.0.5 /private/tmp/claude-501/-Users-bason--claude-spares-spare-JQLRSg/e0116503-a2b2-4d39-810f-fca6a3ec2556/scratchpad/clean-clone
+
+searchDay (one day): 6.7 ms (budget 50 ms)
+suggest (14 days): 8.2 ms (budget 200 ms)
+
+ Test Files  15 passed (15)
+      Tests  158 passed (158)
+   Start at  18:08:54
+   Duration  519ms (tests 43%, import 40%, transform 13%, worker 4%)
+
+[exit 0]
+
+Done, 2026-10-29T11:08:55Z
