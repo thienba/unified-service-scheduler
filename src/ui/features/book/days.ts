@@ -56,6 +56,21 @@ export function lastDay(dealership: Dealership, now: number): string {
   );
 }
 
+/**
+ * The first day that may be booked (REQ-BOOK-011.AC-1): the day of now plus the lead time, or the day after
+ * when that moment is already past the day's closing time.
+ */
+export function firstDay(dealership: Dealership, now: number): string {
+  const earliest = now + dealership.policies.leadTimeMinutes * 60_000;
+  const date = localDateIn(earliest, dealership.timeZone);
+  const hours = hoursOn(dealership, date);
+  return hours &&
+    minutesOf(formatTime(earliest, dealership.timeZone)) >=
+      minutesOf(hours.close)
+    ? addDaysToLocalDate(date, 1)
+    : date;
+}
+
 /** The seven dates of the week that starts on `start`. */
 export function weekDates(start: string): string[] {
   return Array.from({ length: 7 }, (_, i) => addDaysToLocalDate(start, i));

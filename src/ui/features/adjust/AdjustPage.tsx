@@ -17,12 +17,10 @@ import {
 } from "../../components/Badge";
 import { Button } from "../../components/Button";
 import { ChangeSummary } from "../../components/ChangeSummary";
-import {
-  DateField,
-  SelectField,
-  TimeField,
-  focusField,
-} from "../../components/Fields";
+import { DatePicker } from "../../components/DatePicker";
+import { focusField } from "../../components/Fields";
+import { Select } from "../../components/Select";
+import { TimeField } from "../../components/TimeField";
 import { PageBack, Plate } from "../../components/Small";
 import { Skeleton, StateBlock } from "../../components/StateBlock";
 import { SuggestionFillGroup } from "../../components/SuggestionFillGroup";
@@ -31,13 +29,18 @@ import { useTaskMode } from "../../components/shell-context";
 import { ProblemState } from "../../app/states";
 import { ApiProblem, call, type Dealership } from "../../data/api-problem";
 import { describeProblem } from "../../data/words";
-import { formatTime, localDateIn } from "../../format/format";
+import {
+  formatDuration,
+  formatLocalDate,
+  formatTime,
+  localDateIn,
+} from "../../format/format";
 import { FormSummary, type FormProblem } from "../../forms/FormSummary";
 import { zodResolver } from "../../forms/resolver";
 import { useDealerships } from "../../session/dealership";
 import { useSession } from "../../session/session";
 import { ZoneTimesNote } from "../../session/TimesNote";
-import { instantAt } from "../book/days";
+import { firstDay, hoursOn, instantAt, lastDay } from "../book/days";
 import { useEarlyCheck } from "../book/early-check";
 import { isCancelled } from "../appointment/AppointmentReadSide";
 import { vehicleText } from "../schedule/schedule-model";
@@ -528,6 +531,43 @@ function AdjustForm({
     now,
   );
 
+  // D-0001-132 A: a booking that is moved keeps the booking limits. Days before the lead time or after the
+  // horizon are crossed out, closed days are hatched, and the times outside the day's hours are crossed out.
+  const dateLimits = dealership
+    ? (() => {
+        const first = firstDay(dealership, now);
+        const last = lastDay(dealership, now);
+        const lead = formatDuration(dealership.policies.leadTimeMinutes);
+        const thisYear = Number(today.slice(0, 4));
+        return {
+          min: first,
+          max: last,
+          closed: (date: string) => hoursOn(dealership, date) === null,
+          limitsText: `Crossed-out days cannot be chosen: bookings need ${lead} notice and open up to ${dealership.policies.horizonDays} days ahead, until ${formatLocalDate(last, thisYear)}.`,
+          tooSoonReason: `Bookings need ${lead} notice.`,
+          tooLateReason: `Bookings open up to ${formatLocalDate(last, thisYear)}.`,
+        };
+      })()
+    : {};
+  const dayHours =
+    dealership && /^\d{4}-\d{2}-\d{2}$/.test(values.date)
+      ? hoursOn(dealership, values.date)
+      : null;
+  // The job must also end by closing time, so the last start is the closing time less the job's length.
+  const lastStart = dayHours
+    ? formatTime(
+        Date.parse(`2000-01-01T${dayHours.close}:00Z`) - minutes * 60_000,
+        "UTC",
+      )
+    : "";
+  const timeLimits = dayHours
+    ? {
+        min: dayHours.open,
+        max: lastStart,
+        disabledReason: `The dealership is closed then (opens ${dayHours.open}, closes ${dayHours.close}). This job takes ${formatDuration(minutes)}, so it must start by ${lastStart}.`,
+      }
+    : {};
+
   const set = (key: keyof AdjustValues, value: string) => {
     // A failed save was about the old values: once the form changes, its Try again would send something else.
     setSaveError(null);
@@ -668,19 +708,23 @@ function AdjustForm({
                 New time and resources
               </legend>
               <div className="grid gap-4 sm:grid-cols-2">
-                <DateField
+                <DatePicker
                   label="Date"
                   name="date"
-                  thisYear={Number(today.slice(0, 4))}
+                  today={today}
                   value={values.date}
-                  onChange={(e) => set("date", e.target.value)}
+                  onChange={(value) => set("date", value)}
+                  loading={!dealership}
+                  disabled={busy}
+                  {...dateLimits}
                   error={problems.find((p) => p.name === "date")?.message}
                 />
                 <TimeField
                   label="Start time"
                   name="time"
                   value={values.time}
-                  onChange={(e) => set("time", e.target.value)}
+                  onChange={(value) => set("time", value)}
+                  {...timeLimits}
                   error={problems.find((p) => p.name === "time")?.message}
                   helper={
                     start
@@ -696,11 +740,11 @@ function AdjustForm({
                 />
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
-                <SelectField
+                <Select
                   label="Technician"
                   name="technicianId"
                   value={values.technicianId}
-                  onChange={(e) => set("technicianId", e.target.value)}
+                  onChange={(value) => set("technicianId", value)}
                   helper={`If ${techName} is busy at the new time, we pick another free technician and tell you.`}
                   options={[
                     { value: "", label: `Same as now (${techName})` },
@@ -710,11 +754,11 @@ function AdjustForm({
                     })),
                   ]}
                 />
-                <SelectField
+                <Select
                   label="Service bay"
                   name="serviceBayId"
                   value={values.serviceBayId}
-                  onChange={(e) => set("serviceBayId", e.target.value)}
+                  onChange={(value) => set("serviceBayId", value)}
                   helper="Same idea: another free bay is picked if this one is busy."
                   options={[
                     { value: "", label: `Same as now (${bayName})` },

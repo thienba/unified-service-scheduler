@@ -9,6 +9,7 @@ import {
 } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { TimesNote } from "../session/TimesNote";
+import "../testing/css-escape";
 import { App } from "./App";
 import { fakeApi, problem } from "./fake-api";
 import { readSavedUser, saveUser } from "../demo/saved-user";
@@ -182,23 +183,28 @@ it("a staff member who opens another dealership sees other-dealership with their
 it("the dealership picker is a select with two dealerships, text with one, and changing it updates ?dealership=", async () => {
   saveUser("u-both");
   open("/schedule");
-  const select = (await screen.findByLabelText(
-    "Dealership",
-  )) as HTMLSelectElement;
-  expect([...select.options].map((o) => o.textContent)).toEqual([
+  const select = await screen.findByRole("button", { name: /^Dealership/ });
+  fireEvent.click(select);
+  const options = within(await screen.findByRole("listbox")).getAllByRole(
+    "option",
+  );
+  expect(options.map((o) => o.textContent)).toEqual([
     "Northgate Motors",
     "Riverside Motors",
   ]);
-  fireEvent.change(select, { target: { value: "d-hcmc" } });
+  fireEvent.click(options[1]!);
   await waitFor(() =>
     expect(
-      (screen.getByLabelText("Dealership") as HTMLSelectElement).value,
+      screen
+        .getByRole("button", { name: /^Dealership/ })
+        .getAttribute("data-value"),
     ).toBe("d-hcmc"),
   );
   cleanup();
   saveUser("u-staff");
   open("/schedule");
   await screen.findByText("Northgate Motors");
+  expect(screen.queryByRole("button", { name: /^Dealership/ })).toBeNull();
   expect(screen.queryByLabelText("Dealership")).toBeNull();
 });
 
