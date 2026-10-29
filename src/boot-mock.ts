@@ -8,7 +8,7 @@ import { createTelemetry } from "./infrastructure/telemetry";
 import { createDexieRepository } from "./infrastructure/storage/dexie/dexie-repository";
 
 export async function bootMock(): Promise<void> {
-  const repository = createDexieRepository("keyloop-scheduler");
+  const repository = createDexieRepository("unified-service-scheduler");
   await loadSeed(repository, Date.now());
   const clock = { now: () => Date.now() };
   const { logger, metrics, reader } = createTelemetry({ now: clock.now });

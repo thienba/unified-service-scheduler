@@ -1,9 +1,9 @@
 openapi: 3.1.0
 info:
-  title: Keyloop Service Scheduler API
+  title: Unified Service Scheduler API
   version: 1.0.0
   contact:
-    name: Keyloop Service Scheduler demo
+    name: Unified Service Scheduler demo
   description: |
     The one contract between the screens and the backend (architecture.md AD-2, section 7.3).
     The mock in this repository and a real backend both answer exactly this file.
