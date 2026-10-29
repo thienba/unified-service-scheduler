@@ -76,7 +76,7 @@ Solid lines are what runs today. Dotted lines are the design for a real backend:
 ```
 src/
   domain/          the scheduling rules: plain TypeScript, no browser, no framework, no clock
-  application/     the commands and queries (book, cancel, reschedule, adjust, hours, shifts) and role checks
+  application/     the booking commands and queries, and role checks
   infrastructure/  storage (in memory and IndexedDB), the sample data, logs and metrics
   api/             the API contract (OpenAPI), the mock server and the typed client
   ui/              the React screens; they reach everything else only through the API client
