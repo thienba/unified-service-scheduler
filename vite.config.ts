@@ -2,16 +2,7 @@ import { readFileSync } from "node:fs";
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig, loadEnv, type Plugin } from "vite";
 
-// The Content Security Policy (D-0000-29, SEC-15.AC-1). It goes into the built
-// page only: the dev server needs inline scripts that this policy would block.
-const contentSecurityPolicy = [
-  "default-src 'self'",
-  "script-src 'self'",
-  "connect-src 'self'",
-  "worker-src 'self'",
-  "object-src 'none'",
-  "base-uri 'none'",
-].join("; ");
+import { contentSecurityPolicy } from "./scripts/content-security-policy.mjs";
 
 function addContentSecurityPolicy(): Plugin {
   return {
