@@ -15,6 +15,7 @@ import {
 export function ManagerAppointmentView(props: AppointmentViewProps) {
   const a = props.appointment;
   const [cancelling, setCancelling] = useState(false);
+  const [cancelledHere, setCancelledHere] = useState(false);
   const cancelled = isCancelled(a);
   const past = Date.parse(a.end) <= props.now;
   const open = !cancelled && !past;
@@ -61,6 +62,7 @@ export function ManagerAppointmentView(props: AppointmentViewProps) {
         audience="garage"
         flagPanel={flagPanel}
         actions={actions}
+        focusCancelled={cancelledHere}
       />
       {/* Mounted only while open: the read side alone needs no session (its tests render it bare). */}
       {cancelling && (
@@ -68,7 +70,10 @@ export function ManagerAppointmentView(props: AppointmentViewProps) {
           appointment={a}
           now={props.now}
           onClose={() => setCancelling(false)}
-          onCancelled={() => setCancelling(false)}
+          onCancelled={() => {
+            setCancelling(false);
+            setCancelledHere(true);
+          }}
         />
       )}
     </>

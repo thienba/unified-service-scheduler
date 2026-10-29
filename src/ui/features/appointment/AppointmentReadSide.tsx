@@ -47,6 +47,7 @@ export function AppointmentReadSide({
   aside,
   flagPanel,
   actions,
+  focusCancelled = false,
 }: AppointmentViewProps & {
   audience: "customer" | "garage";
   aside?: ReactNode;
@@ -54,6 +55,8 @@ export function AppointmentReadSide({
   flagPanel?: ReactNode;
   /** A row of buttons under the details (the manager's Adjust and Cancel). */
   actions?: ReactNode;
+  /** The cancel was made on this page: its button is gone, so the cancelled note takes focus (WCAG 2.4.3). */
+  focusCancelled?: boolean;
 }) {
   const zone = a.timeZone;
   const garage = audience === "garage";
@@ -144,6 +147,7 @@ export function AppointmentReadSide({
       {a.cancelledAt && (
         <Alert
           kind="info"
+          focusTitle={focusCancelled}
           title={`This appointment was cancelled on ${dayAndTime(a.cancelledAt, zone, now)}.`}
         >
           <p>

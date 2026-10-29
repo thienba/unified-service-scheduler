@@ -32,7 +32,7 @@ import { ProblemState } from "../../app/states";
 import { ApiProblem, call, type Dealership } from "../../data/api-problem";
 import { describeProblem } from "../../data/words";
 import { formatTime, localDateIn } from "../../format/format";
-import { FormSummary } from "../../forms/FormSummary";
+import { FormSummary, type FormProblem } from "../../forms/FormSummary";
 import { zodResolver } from "../../forms/resolver";
 import { useDealerships } from "../../session/dealership";
 import { useSession } from "../../session/session";
@@ -132,6 +132,33 @@ export function AdjustPage() {
             It was {dayAndTime(a.start, a.timeZone, now)} with{" "}
             {a.display.technicianName}. The time is free again, so it cannot be
             moved or changed.
+          </p>
+        </Alert>
+      </div>
+    );
+  }
+  if (Date.parse(a.end) <= now) {
+    // A finished job cannot be moved (Q-0001-245): the same rule as the appointment page and the schedule.
+    return (
+      <div className="grid gap-4">
+        <Head appointment={a} />
+        <Alert
+          kind="info"
+          role="status"
+          title="This appointment has ended"
+          actions={
+            <Button
+              variant="primary"
+              to={`/schedule?date=${localDateIn(a.start, a.timeZone)}`}
+            >
+              Back to schedule
+            </Button>
+          }
+        >
+          <p>
+            It was {dayAndTime(a.start, a.timeZone, now)} with{" "}
+            {a.display.technicianName}. A finished appointment cannot be moved
+            or changed.
           </p>
         </Alert>
       </div>
@@ -270,9 +297,7 @@ function AdjustForm({
   const [refusal, setRefusal] = useState<Refusal | null>(null);
   const [saved, setSaved] = useState<Saved | null>(null);
   const [saveError, setSaveError] = useState<unknown>(null);
-  const [serverProblems, setServerProblems] = useState<
-    { name: string; message: string }[]
-  >([]);
+  const [serverProblems, setServerProblems] = useState<FormProblem[]>([]);
   const [cancelling, setCancelling] = useState(false);
 
   const start =
@@ -280,6 +305,8 @@ function AdjustForm({
       ? instantAt(values.date, values.time, zone)
       : null;
   const body = changeOf(a, values, start);
+  // A blank or half-typed date or time: Save stays on, so pressing it names the field ("Choose a date.").
+  const unreadable = start === null;
   const shownDate = start ? values.date : initial.date;
 
   const serviceTypes = useQuery({
@@ -356,7 +383,7 @@ function AdjustForm({
           [...changedQueries, "fits"].includes(String(q.queryKey[0])),
       });
     },
-    onError: (error, change) => {
+    onError: (error) => {
       const code = error instanceof ApiProblem ? error.code : null;
       if (code === "SLOT_UNAVAILABLE" && error instanceof ApiProblem) {
         setRefusal({
@@ -377,14 +404,13 @@ function AdjustForm({
       }
       if (error instanceof ApiProblem && error.status === 422) {
         setServerProblems(
-          (error.problem?.errors ?? []).map((e) => ({
-            name: e.field === "start" ? "time" : "date",
-            message: e.message,
-          })),
+          (error.problem?.errors ?? []).map((e) =>
+            serverProblem(e.field, e.message),
+          ),
         );
         return;
       }
-      setSaveError({ error, change });
+      setSaveError(error);
     },
   });
   const busy = save.isPending;
@@ -437,7 +463,7 @@ function AdjustForm({
       ? `Fix the ${fieldCount === 1 ? "field" : `${fieldCount} fields`} above to save.`
       : refusedNow
         ? "Pick a closest time, or change the form."
-        : body === null
+        : body === null && !unreadable
           ? flagged
             ? "Pick a time that fits, or change the form."
             : "Change the time, technician or bay to save."
@@ -459,8 +485,11 @@ function AdjustForm({
     now,
   );
 
-  const set = (key: keyof AdjustValues, value: string) =>
+  const set = (key: keyof AdjustValues, value: string) => {
+    // A failed save was about the old values: once the form changes, its Try again would send something else.
+    setSaveError(null);
     form.setValue(key, value, { shouldDirty: true, shouldValidate: submitted });
+  };
   const fill = (s: TimeSlot) => {
     set("date", localDateIn(s.start, zone));
     set("time", formatTime(s.start, zone));
@@ -476,8 +505,7 @@ function AdjustForm({
   );
   const label = (instant: string) => dayAndTime(instant, zone, now);
   const endLabel = (instant: string) => formatTime(instant, zone);
-  const failure = saveError as { error: unknown; change: typeof body } | null;
-  const failureWords = failure ? describeProblem(failure.error) : null;
+  const failureWords = saveError ? describeProblem(saveError) : null;
   const summary = [
     ...problems.map((p) => ({ name: p.name, message: p.summary })),
     ...serverProblems,
@@ -530,7 +558,7 @@ function AdjustForm({
           )}
         </Alert>
       )}
-      {failure && failureWords && (
+      {failureWords && (
         <Alert
           kind="danger"
           role={null}
@@ -540,7 +568,9 @@ function AdjustForm({
             <Button
               variant="primary"
               icon="refresh"
-              onClick={() => failure.change && save.mutate(failure.change)}
+              loading={busy}
+              loadingLabel="Checking…"
+              onClick={() => void submit()}
             >
               Try again
             </Button>
@@ -696,7 +726,7 @@ function AdjustForm({
           refusedNow
             ? "Refused. Nothing was changed"
             : (fieldCount > 0 && reason) ||
-              (body === null
+              (body === null && !unreadable
                 ? flagged
                   ? flaggedStatus(a)
                   : "No change yet"
@@ -715,6 +745,17 @@ function AdjustForm({
       />
     </div>
   );
+}
+
+/** A 422 from the API: a field the form has links to it; any other is listed without a link. */
+function serverProblem(field: string, message: string) {
+  const name =
+    field === "start"
+      ? "time"
+      : field === "technicianId" || field === "serviceBayId"
+        ? field
+        : null;
+  return { name: name ?? field, message, link: name !== null };
 }
 
 function FitsList({

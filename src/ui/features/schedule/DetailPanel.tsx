@@ -19,11 +19,14 @@ export function DetailPanel({
   day,
   appointment: a,
   manager = false,
+  now = Date.now(),
 }: {
   day: ScheduleDay;
   appointment: Appointment | null;
   /** The manager also gets Adjust, or Move for a flagged block (manager.md 4.1 `schedule-additions`). */
   manager?: boolean;
+  /** An appointment that has ended cannot be moved, so the manager gets no Adjust or Move for it. */
+  now?: number;
 }) {
   const reason = a ? flagReason(a) : null;
   return (
@@ -75,7 +78,7 @@ export function DetailPanel({
             )}
           </div>
           <div className="flex flex-wrap gap-2">
-            {manager && (
+            {manager && Date.parse(a.end) > now && (
               <Button
                 variant="primary"
                 icon="right"

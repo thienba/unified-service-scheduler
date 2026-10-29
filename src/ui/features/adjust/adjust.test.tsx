@@ -5,6 +5,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { ChangeSummary } from "../../components/ChangeSummary";
 import { SuggestionFillGroup } from "../../components/SuggestionFillGroup";
 import type { Dealership } from "../../data/api-problem";
+import { FormSummary } from "../../forms/FormSummary";
+import { AppointmentReadSide } from "../appointment/AppointmentReadSide";
 import { ManagerAppointmentView } from "../appointment/ManagerAppointmentView";
 import { DetailPanel } from "../schedule/DetailPanel";
 import type { ScheduleDay } from "../schedule/schedule-model";
@@ -413,7 +415,7 @@ describe("the manager's parts of other screens (manager.md 4.1)", () => {
     } as unknown as ScheduleDay;
     const { unmount } = render(
       <MemoryRouter>
-        <DetailPanel day={day} appointment={appointment()} manager />
+        <DetailPanel day={day} appointment={appointment()} manager now={NOW} />
       </MemoryRouter>,
     );
     expect(screen.getByRole("link", { name: "Adjust" })).toBeTruthy();
@@ -421,7 +423,7 @@ describe("the manager's parts of other screens (manager.md 4.1)", () => {
     unmount();
     const { unmount: again } = render(
       <MemoryRouter>
-        <DetailPanel day={day} appointment={flagged()} manager />
+        <DetailPanel day={day} appointment={flagged()} manager now={NOW} />
       </MemoryRouter>,
     );
     expect(screen.getByRole("link", { name: "Move" })).toBeTruthy();
@@ -433,5 +435,82 @@ describe("the manager's parts of other screens (manager.md 4.1)", () => {
     );
     expect(screen.queryByRole("link", { name: "Move" })).toBeNull();
     expect(screen.queryByRole("link", { name: "Adjust" })).toBeNull();
+  });
+
+  it("schedule detail panel: no Adjust or Move once the appointment has ended (Q-0001-245)", () => {
+    const day = {
+      date: "2026-10-30",
+      timeZone: "Europe/London",
+      opening: null,
+      nextOpenDate: null,
+      technicians: [],
+      serviceBays: [],
+      appointments: [],
+    } as unknown as ScheduleDay;
+    const later = Date.parse("2026-10-30T12:15:00Z");
+    const { unmount } = render(
+      <MemoryRouter>
+        <DetailPanel
+          day={day}
+          appointment={appointment()}
+          manager
+          now={later}
+        />
+      </MemoryRouter>,
+    );
+    expect(screen.queryByRole("link", { name: "Adjust" })).toBeNull();
+    expect(screen.getByRole("link", { name: "Open appointment" })).toBeTruthy();
+    unmount();
+    render(
+      <MemoryRouter>
+        <DetailPanel day={day} appointment={flagged()} manager now={later} />
+      </MemoryRouter>,
+    );
+    expect(screen.queryByRole("link", { name: "Move" })).toBeNull();
+  });
+
+  it("the cancelled note takes focus when the cancel was made on the page (WCAG 2.4.3)", () => {
+    render(
+      <MemoryRouter>
+        <AppointmentReadSide
+          appointment={appointment({
+            cancelledAt: "2026-10-28T07:00:00Z",
+            status: "cancelled",
+          })}
+          dealership={dealership}
+          now={NOW}
+          audience="garage"
+          focusCancelled
+        />
+      </MemoryRouter>,
+    );
+    expect(document.activeElement).toBe(
+      screen.getByRole("heading", {
+        name: /^This appointment was cancelled on /,
+      }),
+    );
+  });
+});
+
+describe("FormSummary (design.md 8.6)", () => {
+  it("links a problem to its field, and lists one with no field as text", () => {
+    render(
+      <FormSummary
+        action="check this change"
+        problems={[
+          { name: "technicianId", message: "Choose another technician." },
+          { name: "version", message: "Reload the appointment.", link: false },
+        ]}
+      />,
+    );
+    expect(
+      screen
+        .getByRole("link", { name: "Choose another technician." })
+        .getAttribute("href"),
+    ).toBe("#field-technicianId");
+    expect(screen.getByText("Reload the appointment.")).toBeTruthy();
+    expect(
+      screen.queryByRole("link", { name: "Reload the appointment." }),
+    ).toBeNull();
   });
 });

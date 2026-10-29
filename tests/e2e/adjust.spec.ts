@@ -85,13 +85,14 @@ for (const width of [390, 1440] as const) {
     test("idle, changed, validation, checking, saved (another technician picked)", async ({
       page,
     }) => {
-      await onCall(page, {
-        method: "PATCH",
-        path: "/appointments/",
-        delayMs: 1500,
-      });
       await start(page);
       const id = await marta(page);
+      // The PATCH address ends with the id, so the slow answer is set once the id is known (before the page loads).
+      await onCall(page, {
+        method: "PATCH",
+        path: `/appointments/${id}`,
+        delayMs: 1500,
+      });
       // Birch is busy at the new time, so the move picks another technician (D-0001-33 A).
       await book(page, {
         date: "2026-11-02",
@@ -178,6 +179,11 @@ for (const width of [390, 1440] as const) {
         page.getByText("Appointment moved to Mon 2 Nov, 09:00."),
       ).toBeVisible();
       expect(sent).toEqual([`/api/appointments/${id}`]);
+      // The page stays a task screen after the save: no tab bar below 1024 (Q-0001-242 item 13).
+      if (!wide)
+        await expect(
+          page.getByRole("navigation", { name: "Main" }),
+        ).toHaveCount(0);
       await shot(page, "adjust-saved");
 
       const after = await getAppointment(page, id);
@@ -189,7 +195,13 @@ for (const width of [390, 1440] as const) {
         .first()
         .click();
       await expect(page).toHaveURL(/date=2026-11-02/);
-      await expect(page.getByText("Marta Kowalska").first()).toBeAttached();
+      // Marta's own block on Mon 2 Nov now reads 09:00 to 12:00: a link in the list, a button on the timeline.
+      const block = wide
+        ? page.locator(`button[data-appointment="${id}"]`)
+        : page.locator(`a[href="/appointments/${id}"]`);
+      await expect(block).toHaveAccessibleName(
+        /^09:00 to 12:00,? Full service/,
+      );
     });
 
     test("clash and closest times, then a technician-only change says nobody else was picked", async ({
@@ -365,6 +377,10 @@ for (const width of [390, 1440] as const) {
       await expect(
         page.getByRole("button", { name: "Save change" }),
       ).toHaveCount(0);
+      if (!wide)
+        await expect(
+          page.getByRole("navigation", { name: "Main" }),
+        ).toHaveCount(0);
       await shot(page, "adjust-cancelled-appointment");
       expect((await getAppointment(page, id)).cancelledAt).not.toBeNull();
       // The time is free again for a new booking (REQ-BOOK-012.AC-1).
@@ -522,6 +538,189 @@ for (const width of [390, 1440] as const) {
       expect((still.body as { version: number }).version).toBe(
         (saigon.body as { version: number }).version,
       );
+    });
+
+    test("a failed save: Try again sends the form as it is now, and an edit clears the failure", async ({
+      page,
+    }) => {
+      await start(page);
+      const id = await marta(page);
+      await book(page, {
+        date: "2026-11-02",
+        time: "09:00",
+        technicianId: BIRCH,
+        name: "Tom Hale",
+      });
+      // The first three saves fail with 500; the fourth goes through.
+      await onCall(page, {
+        method: "PATCH",
+        path: `/appointments/${id}`,
+        status: 500,
+        body: problemBody(500, "INTERNAL"),
+        times: 3,
+      });
+      // The 500s are answered inside the page, so the bodies are read there, before `onCall` answers.
+      await page.addInitScript(() => {
+        const sent: unknown[] = [];
+        (window as unknown as { patchBodies: unknown[] }).patchBodies = sent;
+        const next = window.fetch.bind(window);
+        window.fetch = async (input, init) => {
+          const request = input instanceof Request ? input : null;
+          const method = (
+            init?.method ??
+            request?.method ??
+            "GET"
+          ).toUpperCase();
+          if (method === "PATCH")
+            sent.push(
+              JSON.parse(
+                request ? await request.clone().text() : String(init?.body),
+              ),
+            );
+          return next(input, init);
+        };
+      });
+      const bodies = () =>
+        page.evaluate(
+          () => (window as unknown as { patchBodies: unknown[] }).patchBodies,
+        );
+      await openAdjust(page, id);
+      await fill(page, "2026-11-02", "09:00");
+      await save(page).click();
+      const failure = page.getByRole("heading", {
+        name: "Something went wrong on our side.",
+      });
+      await expect(failure).toBeFocused();
+
+      // An edit makes the failure old news: it goes, and the next save sends the new time.
+      await page.getByLabel("Start time").fill("09:15");
+      await expect(failure).toHaveCount(0);
+      await save(page).click();
+      await expect(failure).toBeVisible();
+      expect(await bodies()).toHaveLength(2);
+      expect((await bodies())[1]).toMatchObject({
+        start: "2026-11-02T09:15:00Z",
+      });
+
+      // Try again sends what the form holds, and keeps the "picked" sentence of that answer.
+      await page.getByLabel("Start time").fill("09:00");
+      await save(page).click();
+      await expect(failure).toBeVisible();
+      await page.getByRole("button", { name: "Try again" }).click();
+      await expect(
+        page.getByRole("heading", { name: "Change saved" }),
+      ).toBeVisible();
+      expect(await bodies()).toHaveLength(4);
+      expect((await bodies())[3]).toMatchObject({
+        start: "2026-11-02T09:00:00Z",
+      });
+      await expect(
+        page.getByText(
+          /Demo Tech Birch was busy then, so Demo Tech Ash was picked\./,
+        ),
+      ).toBeVisible();
+    });
+
+    test("a blank date or start time: Save names the field and sends nothing", async ({
+      page,
+    }) => {
+      await start(page);
+      const id = await marta(page);
+      const sent = patches(page);
+      await openAdjust(page, id);
+      await page.getByLabel("Date", { exact: true }).fill("");
+      await expect(
+        page.getByText("Change the time, technician or bay to save."),
+      ).toHaveCount(0);
+      await expect(save(page)).toBeEnabled();
+      await save(page).click();
+      await expect(
+        page.getByText("Choose a date.").filter({ visible: true }).first(),
+      ).toBeVisible();
+      await expect(page.getByLabel("Date", { exact: true })).toBeFocused();
+      await expect(save(page)).toBeDisabled();
+      expect(sent).toEqual([]);
+    });
+
+    test("a 422 on the technician links to the Technician select; another field is listed as text", async ({
+      page,
+    }) => {
+      await start(page);
+      const id = await marta(page);
+      await onCall(page, {
+        method: "PATCH",
+        path: `/appointments/${id}`,
+        status: 422,
+        body: {
+          ...problemBody(422, "VALIDATION_FAILED"),
+          errors: [
+            { field: "technicianId", message: "Choose another technician." },
+            { field: "version", message: "Reload the appointment." },
+          ],
+        },
+      });
+      await openAdjust(page, id);
+      await page.getByLabel("Technician").selectOption(ASH);
+      await save(page).click();
+      const summary = page.getByRole("heading", {
+        name: "2 things need fixing before we can check this change.",
+      });
+      await expect(summary).toBeVisible();
+      await page
+        .getByRole("link", { name: "Choose another technician." })
+        .click();
+      await expect(page.getByLabel("Technician")).toBeFocused();
+      await expect(page.getByText("Reload the appointment.")).toBeVisible();
+      await expect(
+        page.getByRole("link", { name: "Reload the appointment." }),
+      ).toHaveCount(0);
+    });
+
+    test("an appointment that has ended: no Adjust on the schedule, and adjust says it has ended", async ({
+      page,
+    }) => {
+      await start(page);
+      const id = await marta(page);
+      // Saturday: Marta's Friday job is over.
+      await page.clock.setFixedTime(new Date("2026-10-31T09:00:00Z"));
+      await page.goto(`/appointments/${id}/adjust`);
+      await expect(
+        page.getByRole("heading", { name: "This appointment has ended" }),
+      ).toBeVisible();
+      await expect(page.getByLabel("Date", { exact: true })).toHaveCount(0);
+      await expect(
+        page.getByRole("button", { name: "Save change" }),
+      ).toHaveCount(0);
+      await shot(page, "adjust-ended");
+      if (wide) {
+        await page.goto("/schedule?date=2026-10-30");
+        await page.locator(`button[data-appointment="${id}"]`).click();
+        await expect(
+          page.getByRole("link", { name: "Open appointment" }),
+        ).toBeVisible();
+        await expect(
+          page.getByRole("link", { name: /^(Adjust|Move)$/ }),
+        ).toHaveCount(0);
+      }
+    });
+
+    test("a cancel from the appointment page puts focus on the cancelled note", async ({
+      page,
+    }) => {
+      await start(page);
+      const id = await marta(page);
+      await page.goto(`/appointments/${id}`);
+      await page.getByRole("button", { name: "Cancel appointment" }).click();
+      const dialog = page.getByRole("dialog", {
+        name: "Cancel this appointment?",
+      });
+      await dialog.getByRole("button", { name: "Cancel appointment" }).click();
+      await expect(dialog).toHaveCount(0);
+      await expect(
+        page.getByRole("heading", {
+          name: /^This appointment was cancelled on /,
+        }),
+      ).toBeFocused();
     });
 
     test("appointment and appointment-flagged (manager), schedule-additions", async ({

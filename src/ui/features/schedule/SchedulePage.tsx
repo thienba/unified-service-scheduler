@@ -401,7 +401,12 @@ function Day({
               showNow={nowOnAxis !== null}
               showGaps={showGaps}
             />
-            <DetailPanel day={day} appointment={selected} manager={!staff} />
+            <DetailPanel
+              day={day}
+              appointment={selected}
+              manager={!staff}
+              now={now}
+            />
           </div>
         ) : view === "technician" ? (
           <OneDay

@@ -152,19 +152,24 @@ export async function onCall(
     delayMs?: number;
     status?: number;
     body?: unknown;
+    /** Only the first so many matching calls; later ones go through untouched. */
+    times?: number;
   },
 ) {
   await page.addInitScript((r) => {
     const original = window.fetch.bind(window);
+    let left = r.times ?? Infinity;
     window.fetch = async (input, init) => {
       const request = input instanceof Request ? input : null;
       const url = request ? request.url : String(input);
       const method = (init?.method ?? request?.method ?? "GET").toUpperCase();
       if (
         method !== r.method ||
-        !new URL(url, location.href).pathname.endsWith(r.path)
+        !new URL(url, location.href).pathname.endsWith(r.path) ||
+        left <= 0
       )
         return original(input, init);
+      left -= 1;
       if (r.delayMs) await new Promise((done) => setTimeout(done, r.delayMs));
       if (r.status) {
         return new Response(JSON.stringify(r.body ?? {}), {

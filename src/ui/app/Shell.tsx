@@ -1,5 +1,5 @@
 // design.md 8.1. Skip link, header (brand, dealership picker, role switcher), navigation, the page, the footer.
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, Outlet, useLocation } from "react-router";
 import { mockEnabled } from "../../config";
 import { IconSprite } from "../components/Icon";
@@ -16,7 +16,13 @@ export function Shell() {
   const { me, status, switcher } = useSession();
   const lg = useMediaQuery(query.lg);
   const md = useMediaQuery(query.md);
-  const [task, setTask] = useState<{ hideFrom: "md" | "lg" } | null>(null);
+  // Every part that asked for task mode, newest last: the tab bar comes back only when all have let go.
+  const [tasks, setTasks] = useState<{ hideFrom: "md" | "lg" }[]>([]);
+  const task = tasks.at(-1) ?? null;
+  const addTask = useCallback((t: { hideFrom: "md" | "lg" }) => {
+    setTasks((list) => [...list, t]);
+    return () => setTasks((list) => list.filter((x) => x !== t));
+  }, []);
   const [slot, setSlot] = useState<HTMLElement | null>(null);
   const main = useRef<HTMLElement>(null);
   const { pathname } = useLocation();
@@ -50,7 +56,7 @@ export function Shell() {
   const stepsAside = task !== null && !(task.hideFrom === "md" ? md : lg);
   const tabBar = showsNav && !lg && !stepsAside;
   const barShowing = tabBar || task !== null;
-  const shell: ShellValue = { setTask, actionBarSlot: slot, interacted };
+  const shell: ShellValue = { addTask, actionBarSlot: slot, interacted };
 
   return (
     <ShellContext value={shell}>
