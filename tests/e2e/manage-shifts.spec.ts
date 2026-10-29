@@ -56,9 +56,9 @@ test("the technician's weekly pattern comes from the API, with the dealership's 
   await openShifts(page);
   const select = page.getByRole("combobox", { name: "Technician" });
   await expect(select.locator("option")).toHaveText([
-    "Demo Tech Ash · Service, Electric cars",
-    "Demo Tech Birch · Service",
-    "Demo Tech Cedar · Electric cars",
+    "Oliver Hughes · Service, Electric cars",
+    "Amara Okafor · Service",
+    "Tom Fletcher · Electric cars",
   ]);
   await expect(
     page.getByText(
@@ -321,7 +321,7 @@ test("a technician of another dealership is not found, with Show all technicians
   await expect(
     page.getByRole("heading", { name: "We cannot find that technician." }),
   ).toBeVisible();
-  await expect(page.getByText("Demo Tech An")).toHaveCount(0);
+  await expect(page.getByText("Minh Tran")).toHaveCount(0);
   await page.getByRole("link", { name: "Show all technicians" }).click();
   await expect(day(page, "Monday")).toBeVisible();
 });

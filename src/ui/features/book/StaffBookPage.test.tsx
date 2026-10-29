@@ -68,7 +68,7 @@ const schedule = {
   technicians: [
     {
       id: "t-birch",
-      name: "Demo Tech Birch",
+      name: "Amara Okafor",
       free: [{ start: GAP, end: "2026-10-30T15:00:00Z" }],
       appointments: [],
     },
@@ -163,7 +163,7 @@ describe("staff book (C4 review fixes)", () => {
     fireEvent.click(screen.getByRole("button", { name: "Try again" }));
     expect(
       await screen.findByText(
-        "We only show times with Demo Tech Birch. Choose another technician by pressing Any technician.",
+        "We only show times with Amara Okafor. Choose another technician by pressing Any technician.",
       ),
     ).toBeTruthy();
     expect(screen.getByText("From the gap you tapped.")).toBeTruthy();
@@ -233,7 +233,7 @@ describe("staff book (C4 review fixes)", () => {
               serviceTypeName: "Full service",
               vehicle: focus,
               customerName: marta.name,
-              technicianName: "Demo Tech Birch",
+              technicianName: "Amara Okafor",
             },
           },
           201,

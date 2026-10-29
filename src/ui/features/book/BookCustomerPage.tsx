@@ -327,9 +327,8 @@ function FindCustomer({ arrive }: { arrive: RefObject<Arrive> }) {
                               title={`${customer.name} has no vehicle on file.`}
                             >
                               <p>
-                                A booking needs a vehicle. Choose another
-                                customer, or add a new customer with their
-                                vehicle.
+                                A booking needs a vehicle. Add their vehicle
+                                below, or choose another customer.
                               </p>
                             </Alert>
                           )}

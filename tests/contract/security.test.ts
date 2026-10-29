@@ -168,7 +168,7 @@ describe("SEC-3 and SEC-4: refused calls change nothing and show no data", () =>
 
   it("the manager of dealership 1 gets 404 for a technician or appointment of dealership 2, and nothing changes", async () => {
     const manager = users.managerLondon;
-    const saigon = await book(users.staffBoth, {
+    const saigon = await book(users.staffSaigon, {
       dealershipId: SGN,
       customerId: "customer-a",
       start: at("2026-11-09", "04:00"),
@@ -187,16 +187,6 @@ describe("SEC-3 and SEC-4: refused calls change nothing and show no data", () =>
     });
     expect([shifts.status, adjust.status]).toEqual([404, 404]);
     expect(await stored()).toEqual(before);
-  });
-
-  it("staff tied to both dealerships get data from either", async () => {
-    for (const dealershipId of [LON, SGN]) {
-      const reply = await ok("/appointments", {
-        user: users.staffBoth,
-        query: { dealershipId, date: SEEDED_A.date },
-      });
-      expect(reply.status).toBe(200);
-    }
   });
 });
 

@@ -370,6 +370,11 @@ for (const width of [390, 1440]) {
       await expect(
         page.getByText("Ola Kowal has no vehicle on file."),
       ).toBeVisible();
+      await expect(
+        page.getByText(
+          "A booking needs a vehicle. Add their vehicle below, or choose another customer.",
+        ),
+      ).toBeVisible();
       await expect(continueButton(page)).toBeDisabled();
       await expect(
         page.getByText("Choose another customer to continue.").first(),
@@ -703,7 +708,7 @@ for (const width of [390, 1440]) {
       }
       const gap = page
         .getByRole("link", {
-          name: /^Free, .*, Demo Tech Birch\. Book this time\.$/,
+          name: /^Free, .*, Amara Okafor\. Book this time\.$/,
         })
         .first();
       await gap.click();
@@ -713,10 +718,10 @@ for (const width of [390, 1440]) {
       const startAt = new URL(page.url()).searchParams.get("start")!;
       const hhmm = startAt.slice(11, 16);
       await expect(
-        page.getByText(`Booking Demo Tech Birch on Wed 28 Oct, from ${hhmm}.`),
+        page.getByText(`Booking Amara Okafor on Wed 28 Oct, from ${hhmm}.`),
       ).toBeVisible();
       await expect(
-        page.getByText(/Demo Tech Birch is free until 15:\d\d\./),
+        page.getByText(/Amara Okafor is free until 15:\d\d\./),
       ).toBeVisible();
       await shot(page, "book-customer", "from-gap");
 
@@ -735,7 +740,7 @@ for (const width of [390, 1440]) {
       ).toBeChecked();
       await expect(
         page.getByText(
-          "We only show times with Demo Tech Birch. Choose another technician by pressing Any technician.",
+          "We only show times with Amara Okafor. Choose another technician by pressing Any technician.",
         ),
       ).toBeVisible();
       // Birch is on leave on Thursday: with a fixed technician the day reads "No times".
@@ -747,17 +752,17 @@ for (const width of [390, 1440]) {
       await service(page).selectOption("service-full");
       await expect(
         page.getByText(
-          `A full service does not fit at ${hhmm} with Demo Tech Birch.`,
+          `A full service does not fit at ${hhmm} with Amara Okafor.`,
         ),
       ).toBeFocused();
       await expect(
         page.getByText(
-          /^Demo Tech Birch is free for .* and a full service takes about 3 hours\. Pick another service, one of the times below, or any technician\.$/,
+          /^Amara Okafor is free for .* and a full service takes about 3 hours\. Pick another service, one of the times below, or any technician\.$/,
         ),
       ).toBeVisible();
       await expect(
         page.getByRole("radiogroup", {
-          name: "Closest times with Demo Tech Birch",
+          name: "Closest times with Amara Okafor",
         }),
       ).toBeVisible();
       await expect(
@@ -771,7 +776,7 @@ for (const width of [390, 1440]) {
       const bookings = watchBookings(page);
       // Choosing a closest time opens its day with the time chosen.
       await page
-        .getByRole("radiogroup", { name: "Closest times with Demo Tech Birch" })
+        .getByRole("radiogroup", { name: "Closest times with Amara Okafor" })
         .getByRole("radio")
         .first()
         .click();
@@ -947,7 +952,7 @@ for (const width of [390, 1440]) {
       });
       await expect(
         page.getByText(
-          "There are no other times with Demo Tech Birch in the next 14 days. Try any technician, or pick another day.",
+          "There are no other times with Amara Okafor in the next 14 days. Try any technician, or pick another day.",
         ),
       ).toBeVisible();
       await expect(
@@ -1042,8 +1047,8 @@ for (const width of [390, 1440]) {
       ).toBeFocused();
       await expect(
         page.getByText(
-          // The first staff user is linked to both dealerships.
-          "Your account is linked to Fakeford Motors (demo) and Demo Saigon Autos (demo) only. Nothing was booked. Go back to the schedule and carry on from there.",
+          // The first staff user is the London one.
+          "Your account is linked to Fakeford Motors (demo) only. Nothing was booked. Go back to the schedule and carry on from there.",
         ),
       ).toBeVisible();
       const keys = await page.evaluate(
@@ -1471,7 +1476,7 @@ test("video: a staff member taps a free gap, finds a customer, picks a car, a se
   await slow();
   await page
     .getByRole("link", {
-      name: /^Free, .*, Demo Tech Birch\. Book this time\.$/,
+      name: /^Free, .*, Amara Okafor\. Book this time\.$/,
     })
     .first()
     .click();

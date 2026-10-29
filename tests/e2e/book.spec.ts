@@ -273,7 +273,9 @@ for (const width of [390, 1440]) {
       await expect(page.getByText("Service bay")).toHaveCount(0);
       // D-0001-71: the owner sees the technician's name.
       await expect(page.getByText("Technician", { exact: true })).toBeVisible();
-      await expect(page.getByText(/^Demo Tech /)).toBeVisible();
+      await expect(
+        page.getByText(/^(Oliver Hughes|Amara Okafor|Tom Fletcher)$/),
+      ).toBeVisible();
       await expect(
         page.getByText(
           /We will send you a confirmation now, and a reminder on the morning of your appointment, at 08:00 on Fri 30 Oct\./,
@@ -300,7 +302,9 @@ for (const width of [390, 1440]) {
       // D-0001-71: the appointment page has the Technician row too, and still no bay.
       await page.goto(`/appointments/${id}`);
       await expect(page.getByText("Technician", { exact: true })).toBeVisible();
-      await expect(page.getByText(/^Demo Tech /)).toBeVisible();
+      await expect(
+        page.getByText(/^(Oliver Hughes|Amara Okafor|Tom Fletcher)$/),
+      ).toBeVisible();
       await expect(page.getByText("Service bay")).toHaveCount(0);
       await shot(page, "technician-row", "appointment-customer");
     });

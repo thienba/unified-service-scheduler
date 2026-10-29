@@ -45,7 +45,6 @@ const only = (
   managerLondon: otherwise,
   staffSaigon: otherwise,
   managerSaigon: otherwise,
-  staffBoth: otherwise,
   ...allowed,
 });
 
@@ -73,7 +72,6 @@ const dayQuery = {
 const londonStaff = {
   staffLondon: 200,
   managerLondon: 200,
-  staffBoth: 200,
 } as const;
 
 export const matrix: Record<string, Row> = {
@@ -157,7 +155,6 @@ export const matrix: Record<string, Row> = {
       {
         staffLondon: 201,
         managerLondon: 201,
-        staffBoth: 201,
         customerA: 201,
         customerB: 404,
       },

@@ -1,6 +1,6 @@
 // Free start times (REQ-BOOK-001, 002). Both queries use the one availability check of AD-10 and never
 // touch what they read.
-import { servesDealership, type Actor } from "../actor";
+import { canReach, servesDealership, type Actor } from "../actor";
 import { loadSnapshot } from "../load-snapshot";
 import { SUGGEST_WINDOW_DAYS, type TimeSuggestion } from "../commands/shared";
 import {
@@ -25,6 +25,26 @@ function refused(
   return !servesDealership(actor, dealershipId);
 }
 
+/**
+ * Whether the appointment to leave out of a check may be named: it exists in this dealership and the actor
+ * may reach it. Anyone else is told it does not exist (SEC-5, D-0001-101).
+ */
+async function mayLeaveOut(
+  actor: Actor,
+  deps: QueryDeps,
+  dealershipId: string,
+  appointmentId: string,
+): Promise<boolean> {
+  const appointment = await deps.uow.read((stores) =>
+    stores.appointments.get(appointmentId),
+  );
+  return (
+    appointment !== undefined &&
+    appointment.dealershipId === dealershipId &&
+    canReach(actor, appointment)
+  );
+}
+
 export interface DayRequest {
   dealershipId: string;
   serviceTypeId: string;
@@ -32,6 +52,8 @@ export interface DayRequest {
   transport: Transport;
   /** Staff and managers may fix the technician (D-0001-31 A). */
   technicianId?: string;
+  /** An appointment to leave out of the search, for the person moving it (D-0001-101). */
+  appointmentId?: string;
 }
 
 export type DayResult =
@@ -49,9 +71,21 @@ export async function searchAvailability(
   deps: QueryDeps,
   request: DayRequest,
 ): Promise<DayResult> {
-  const { dealershipId, serviceTypeId, date, transport, technicianId } =
-    request;
+  const {
+    dealershipId,
+    serviceTypeId,
+    date,
+    transport,
+    technicianId,
+    appointmentId,
+  } = request;
   if (refused(actor, dealershipId, technicianId)) return { kind: "forbidden" };
+  if (
+    appointmentId !== undefined &&
+    !(await mayLeaveOut(actor, deps, dealershipId, appointmentId))
+  ) {
+    return { kind: "not_found" };
+  }
   if (!isLocalDate(date)) {
     return invalid("date", "Date must be a real date, YYYY-MM-DD.");
   }
@@ -72,7 +106,11 @@ export async function searchAvailability(
   if (!found) return { kind: "not_found" };
   const lengthMs = found.serviceType.durationMinutes * MINUTE_MS;
   const slots = await deps.logger.step("check", async () =>
-    searchDay(found, { date, transport, technicianId }, now).map((start) => ({
+    searchDay(
+      found,
+      { date, transport, technicianId, excludeAppointmentId: appointmentId },
+      now,
+    ).map((start) => ({
       start,
       end: start + lengthMs,
     })),
@@ -100,6 +138,8 @@ export interface CheckQuery {
   start: EpochMs;
   transport: Transport;
   technicianId?: string;
+  /** An appointment to leave out of the check, for the person moving it (D-0001-102). */
+  appointmentId?: string;
 }
 
 /** Never a conflict: a taken time is an answer (REQ-BOOK-002.AC-1). */
@@ -119,10 +159,28 @@ export async function checkAvailability(
   deps: QueryDeps,
   query: CheckQuery,
 ): Promise<CheckQueryResult> {
-  const { dealershipId, serviceTypeId, start, transport, technicianId } = query;
+  const {
+    dealershipId,
+    serviceTypeId,
+    start,
+    transport,
+    technicianId,
+    appointmentId,
+  } = query;
   if (refused(actor, dealershipId, technicianId)) return { kind: "forbidden" };
+  if (
+    appointmentId !== undefined &&
+    !(await mayLeaveOut(actor, deps, dealershipId, appointmentId))
+  ) {
+    return { kind: "not_found" };
+  }
   const now = deps.clock.now();
-  const request: CheckRequest = { start, transport, technicianId };
+  const request: CheckRequest = {
+    start,
+    transport,
+    technicianId,
+    excludeAppointmentId: appointmentId,
+  };
 
   const checked = await deps.uow.read((stores) =>
     deps.logger.step("load", async () => {

@@ -93,24 +93,33 @@ export async function getSchedule(
   );
 }
 
-/** A customer's own appointments from now on, soonest first (the addition to section 7.3). */
+/**
+ * A customer's own appointments from now on, soonest first (the addition to section 7.3).
+ * With `includePast` the ones that have ended follow, newest first (D-0001-94).
+ */
 export async function listMyAppointments(
   actor: Actor,
   deps: QueryDeps,
-  request: { includeCancelled?: boolean } = {},
+  request: { includeCancelled?: boolean; includePast?: boolean } = {},
 ): Promise<AppointmentsResult> {
   if (actor.role !== "customer") return { kind: "forbidden" };
   const now = deps.clock.now();
   return deps.uow.read((stores) =>
     deps.logger.step("load", async (): Promise<AppointmentsResult> => {
       const own = await stores.appointments.listByCustomer(actor.customerId!);
-      const upcoming = own.filter(
-        (a) =>
-          a.end > now && (request.includeCancelled === true || isBlocking(a)),
+      const kept = own.filter(
+        (a) => request.includeCancelled === true || isBlocking(a),
       );
+      const upcoming = kept.filter((a) => a.end > now);
+      const ended = request.includePast
+        ? kept.filter((a) => a.end <= now).reverse()
+        : [];
       return {
         kind: "ok",
-        appointments: await viewAppointmentsIn(actor, stores, upcoming),
+        appointments: await viewAppointmentsIn(actor, stores, [
+          ...upcoming,
+          ...ended,
+        ]),
       };
     }),
   );

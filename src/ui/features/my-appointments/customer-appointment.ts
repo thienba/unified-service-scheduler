@@ -58,7 +58,7 @@ export function dateLine(instant: string, zone: string, now: number): string {
     : day;
 }
 
-/** The customer's own appointments, cancelled ones too (GET /appointments with no date). */
+/** The customer's own appointments, cancelled and past ones too (GET /appointments with no date). */
 export function useMyAppointments() {
   const { client, me } = useSession();
   return useQuery({
@@ -66,7 +66,7 @@ export function useMyAppointments() {
     queryFn: () =>
       call(
         client.GET("/appointments", {
-          params: { query: { includeCancelled: true } },
+          params: { query: { includeCancelled: true, includePast: true } },
         }),
       ),
   });

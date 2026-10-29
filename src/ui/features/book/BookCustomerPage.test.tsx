@@ -141,6 +141,11 @@ describe("book-customer", () => {
     expect(
       await screen.findByText("Marta Kowalska has no vehicle on file."),
     ).toBeTruthy();
+    expect(
+      screen.getByText(
+        "A booking needs a vehicle. Add their vehicle below, or choose another customer.",
+      ),
+    ).toBeTruthy();
     expect(screen.getByText("No vehicle on file")).toBeTruthy();
     expect(
       (screen.getByRole("button", { name: "Continue" }) as HTMLButtonElement)
