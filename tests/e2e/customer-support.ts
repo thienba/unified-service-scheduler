@@ -187,3 +187,44 @@ export async function posts(page: Page, ending: string) {
   );
   return all.filter((p) => p.url.endsWith(ending));
 }
+
+/** Keeps every availability check the page has had answered (D-0001-107: one runs when a time is chosen). */
+export async function recordChecks(page: Page) {
+  await page.addInitScript(() => {
+    const original = window.fetch.bind(window);
+    const answered: { start: string; transport: string }[] = [];
+    (window as unknown as { checks: typeof answered }).checks = answered;
+    window.fetch = async (input, init) => {
+      const request = input instanceof Request ? input : null;
+      const url = new URL(request ? request.url : String(input), location.href);
+      const body = url.pathname.endsWith("/availability-checks")
+        ? await (request ? request.clone().text() : String(init?.body))
+        : null;
+      const response = await original(input, init);
+      if (body !== null) answered.push(JSON.parse(body));
+      return response;
+    };
+  });
+}
+
+/**
+ * Waits until the page's own early check for `start` has been answered (any car choice but the courtesy car,
+ * whose check the booking page also sends for another reason).
+ */
+export async function checkAnswered(page: Page, start: string) {
+  await expect
+    .poll(() =>
+      page.evaluate(
+        (at) =>
+          (
+            window as unknown as {
+              checks: { start: string; transport: string }[];
+            }
+          ).checks.filter(
+            (c) => c.start === at && c.transport !== "courtesy_car",
+          ).length,
+        start,
+      ),
+    )
+    .toBeGreaterThan(0);
+}
