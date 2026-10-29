@@ -17,7 +17,15 @@ import {
   shot,
   start,
 } from "./adjust-support";
-import { expectNoSidewaysScroll, problemBody, widths } from "./support";
+import {
+  expectNoSidewaysScroll,
+  problemBody,
+  widths,
+  chooseOption,
+  dateNamed,
+  selectNamed,
+  typeDate,
+} from "./support";
 
 /** Marta's full service, Fri 30 Oct 09:15 to 12:15 with Birch: the appointment most tests adjust. */
 async function marta(page: Page) {
@@ -62,8 +70,8 @@ const save = (page: Page) =>
   page.getByRole("button", { name: /^(Save change|Checking…)$/ }).first();
 
 async function fill(page: Page, date: string, time: string) {
-  await page.getByLabel("Date", { exact: true }).fill(date);
-  await page.getByLabel("Start time").fill(time);
+  await typeDate(dateNamed(page, "Date"), date);
+  await chooseOption(selectNamed(page, "Start time"), time);
 }
 
 /** PATCH calls the page sends. */
@@ -105,10 +113,13 @@ for (const width of [390, 1440] as const) {
       await expect(
         page.getByText("Full service for Marta Kowalska · Vauxhall Corsa"),
       ).toBeVisible();
-      await expect(page.getByLabel("Technician")).toHaveValue("");
-      await expect(
-        page.getByRole("option", { name: "Same as now (Amara Okafor)" }),
-      ).toBeAttached();
+      await expect(selectNamed(page, "Technician")).toHaveAttribute(
+        "data-value",
+        "",
+      );
+      await expect(selectNamed(page, "Technician")).toHaveText(
+        "Same as now (Amara Okafor)",
+      );
       await expect(
         page.getByText("Ends 12:15. The job takes about 3 hours."),
       ).toBeVisible();
@@ -127,26 +138,34 @@ for (const width of [390, 1440] as const) {
       }
       await shot(page, "adjust-idle");
 
-      await fill(page, "2026-10-27", "09:10");
+      // D-0001-133: the time list holds only quarter hours, so 09:10 cannot be chosen at all.
+      await selectNamed(page, "Start time").click();
+      await expect(
+        page.getByRole("listbox").locator('[data-value="09:10"]'),
+      ).toHaveCount(0);
+      await expect(
+        page.getByRole("listbox").locator('[data-value="09:15"]'),
+      ).toHaveCount(1);
+      await page.keyboard.press("Escape");
+      await typeDate(dateNamed(page, "Date"), "2026-10-27");
       await save(page).click();
       await expect(
         page.getByRole("heading", {
-          name: "2 things need fixing before we can check this change.",
+          name: "1 thing needs fixing before we can check this change.",
         }),
       ).toBeVisible();
       await expect(
         page.getByText("That date has passed. Choose today or a later date."),
       ).toBeVisible();
-      await expect(
-        page.getByText("Use a time on the quarter hour, for example 09:15."),
-      ).toBeVisible();
       await expect(save(page)).toBeDisabled();
       await page
         .getByRole("link", {
-          name: "Start time: use a time on the quarter hour.",
+          name: "Date: choose today or a later date.",
         })
         .click();
-      await expect(page.getByLabel("Start time")).toBeFocused();
+      await expect(
+        dateNamed(page, "Date").getByRole("spinbutton").first(),
+      ).toBeFocused();
       expect(sent).toEqual([]);
       await shot(page, "adjust-validation");
 
@@ -164,7 +183,9 @@ for (const width of [390, 1440] as const) {
       await expect(
         page.getByText("Checking…").filter({ visible: true }).first(),
       ).toBeVisible();
-      await expect(page.getByLabel("Date", { exact: true })).toBeDisabled();
+      await expect(
+        dateNamed(page, "Date").getByRole("spinbutton").first(),
+      ).toBeDisabled();
       await shot(page, "adjust-checking");
 
       await expect(
@@ -240,7 +261,10 @@ for (const width of [390, 1440] as const) {
       ).toBeVisible();
       await expect(page.getByText(/[A-Z]{2,}_[A-Z]{2,}/)).toHaveCount(0);
       await expect(page.getByText("Refused").first()).toBeVisible();
-      await expect(page.getByLabel("Start time")).toHaveValue("13:30");
+      await expect(selectNamed(page, "Start time")).toHaveAttribute(
+        "data-value",
+        "13:30",
+      );
       const chips = page
         .getByRole("group", { name: "Closest times that are free" })
         .getByRole("button");
@@ -270,7 +294,7 @@ for (const width of [390, 1440] as const) {
 
       // A change of bay only: the saved text names nobody as picked, and no message is sent.
       await fill(page, "2026-10-30", "09:15");
-      await page.getByLabel("Service bay").selectOption("bay-lon-2");
+      await chooseOption(selectNamed(page, "Service bay"), "bay-lon-2");
       await save(page).click();
       await expect(
         page.getByRole("heading", { name: "Change saved" }),
@@ -289,7 +313,7 @@ for (const width of [390, 1440] as const) {
       );
       await leaveOn(page, ASH, dates);
       await openAdjust(page, id);
-      await page.getByLabel("Technician").selectOption(ASH);
+      await chooseOption(selectNamed(page, "Technician"), ASH);
       await save(page).click();
       await expect(
         page.getByRole("heading", { name: "That change was not saved." }),
@@ -594,7 +618,7 @@ for (const width of [390, 1440] as const) {
       await expect(failure).toBeFocused();
 
       // An edit makes the failure old news: it goes, and the next save sends the new time.
-      await page.getByLabel("Start time").fill("09:15");
+      await chooseOption(selectNamed(page, "Start time"), "09:15");
       await expect(failure).toHaveCount(0);
       await save(page).click();
       await expect(failure).toBeVisible();
@@ -604,7 +628,7 @@ for (const width of [390, 1440] as const) {
       });
 
       // Try again sends what the form holds, and keeps the "picked" sentence of that answer.
-      await page.getByLabel("Start time").fill("09:00");
+      await chooseOption(selectNamed(page, "Start time"), "09:00");
       await save(page).click();
       await expect(failure).toBeVisible();
       await page.getByRole("button", { name: "Try again" }).click();
@@ -629,7 +653,7 @@ for (const width of [390, 1440] as const) {
       const id = await marta(page);
       const sent = patches(page);
       await openAdjust(page, id);
-      await page.getByLabel("Date", { exact: true }).fill("");
+      await typeDate(dateNamed(page, "Date"), "");
       await expect(
         page.getByText("Change the time, technician or bay to save."),
       ).toHaveCount(0);
@@ -638,7 +662,9 @@ for (const width of [390, 1440] as const) {
       await expect(
         page.getByText("Choose a date.").filter({ visible: true }).first(),
       ).toBeVisible();
-      await expect(page.getByLabel("Date", { exact: true })).toBeFocused();
+      await expect(
+        dateNamed(page, "Date").getByRole("spinbutton").first(),
+      ).toBeFocused();
       await expect(save(page)).toBeDisabled();
       expect(sent).toEqual([]);
     });
@@ -661,7 +687,7 @@ for (const width of [390, 1440] as const) {
         },
       });
       await openAdjust(page, id);
-      await page.getByLabel("Technician").selectOption(ASH);
+      await chooseOption(selectNamed(page, "Technician"), ASH);
       await save(page).click();
       const summary = page.getByRole("heading", {
         name: "2 things need fixing before we can check this change.",
@@ -670,7 +696,7 @@ for (const width of [390, 1440] as const) {
       await page
         .getByRole("link", { name: "Choose another technician." })
         .click();
-      await expect(page.getByLabel("Technician")).toBeFocused();
+      await expect(selectNamed(page, "Technician")).toBeFocused();
       await expect(page.getByText("Reload the appointment.")).toBeVisible();
       await expect(
         page.getByRole("link", { name: "Reload the appointment." }),
@@ -688,7 +714,7 @@ for (const width of [390, 1440] as const) {
       await expect(
         page.getByRole("heading", { name: "This appointment has ended" }),
       ).toBeVisible();
-      await expect(page.getByLabel("Date", { exact: true })).toHaveCount(0);
+      await expect(dateNamed(page, "Date")).toHaveCount(0);
       await expect(
         page.getByRole("button", { name: "Save change" }),
       ).toHaveCount(0);

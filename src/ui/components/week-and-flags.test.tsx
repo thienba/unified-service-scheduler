@@ -1,4 +1,5 @@
 // design.md 8.23 to 8.25: WeekPatternEditor, DateExceptionList and FlagImpactDialog in their states.
+import "../testing/css-escape";
 import {
   cleanup,
   fireEvent,
@@ -31,7 +32,7 @@ it("WeekPatternEditor: a group per weekday, Closed disables the times, the row e
     />,
   );
   const monday = screen.getByRole("group", { name: "Monday" });
-  const close = within(monday).getByLabelText("Closes");
+  const close = within(monday).getByRole("button", { name: /^Closes/ });
   expect(close.getAttribute("aria-invalid")).toBe("true");
   const describedBy = close.getAttribute("aria-describedby")!;
   expect(document.getElementById(describedBy)?.textContent).toContain(
@@ -39,7 +40,11 @@ it("WeekPatternEditor: a group per weekday, Closed disables the times, the row e
   );
   const sunday = screen.getByRole("group", { name: "Sunday" });
   expect(
-    (within(sunday).getByLabelText("Opens") as HTMLInputElement).disabled,
+    (
+      within(sunday).getByRole("button", {
+        name: /^Opens/,
+      }) as HTMLButtonElement
+    ).disabled,
   ).toBe(true);
   fireEvent.click(within(monday).getByLabelText("Closed"));
   expect(onChange).toHaveBeenCalledWith(0, { off: true });
@@ -62,12 +67,73 @@ it("WeekPatternEditor: shift mode has Day off and four time fields", () => {
   );
   const monday = screen.getByRole("group", { name: "Monday" });
   expect(within(monday).getByLabelText("Day off")).toBeTruthy();
-  expect(within(monday).getAllByDisplayValue(/./)).toHaveLength(3);
+  // Three fields show a value: Starts, Ends and the Day off box; the two break times read "Not set".
+  const times = within(monday).getAllByRole("button", {
+    name: /^(Starts|Ends|Break)/,
+  });
+  expect(times.map((t) => t.getAttribute("data-value"))).toEqual([
+    "08:00",
+    "16:30",
+    "",
+    "",
+  ]);
+  expect(times[2]!.textContent).toBe("Not set");
   expect(
     within(monday).getByText("Dealership open 08:00 to 18:00"),
   ).toBeTruthy();
-  expect(within(monday).getByLabelText("Break ends (optional)")).toBeTruthy();
+  expect(
+    within(monday).getByRole("button", { name: /^Break ends \(optional\)/ }),
+  ).toBeTruthy();
 });
+
+// design.md 8.30 ("Ends"): an end time crosses out the times up to its start, and says why once at the top.
+for (const [mode, key, label, times, reason] of [
+  [
+    "hours",
+    "close",
+    "Closes",
+    { open: "09:00", close: "18:00" },
+    "Not up to 09:00: this must close after it opens at 09:00.",
+  ],
+  [
+    "shift",
+    "end",
+    "Ends",
+    { start: "09:00", end: "16:30", breakStart: "", breakEnd: "" },
+    "Not up to 09:00: this must end after it starts at 09:00.",
+  ],
+] as const) {
+  it(`WeekPatternEditor: ${label} crosses out the times up to the start, with the reason`, async () => {
+    const onChange = vi.fn();
+    render(
+      <WeekPatternEditor
+        mode={mode}
+        onChange={onChange}
+        days={[{ label: "Monday", off: false, times }]}
+      />,
+    );
+    const monday = screen.getByRole("group", { name: "Monday" });
+    fireEvent.click(
+      within(monday).getByRole("button", { name: new RegExp(`^${label}`) }),
+    );
+    const list = await screen.findByRole("listbox");
+    expect(
+      document.getElementById(list.getAttribute("aria-describedby")!)
+        ?.textContent,
+    ).toBe(reason);
+    const option = (value: string) =>
+      within(list)
+        .getAllByRole("option")
+        .find((o) => o.getAttribute("data-value") === value)!;
+    expect(option("08:00").getAttribute("aria-disabled")).toBe("true");
+    expect(option("09:00").getAttribute("aria-disabled")).toBe("true");
+    expect(option("09:15").getAttribute("aria-disabled")).toBeNull();
+    fireEvent.click(option("09:00"));
+    expect(onChange).not.toHaveBeenCalled();
+    fireEvent.click(option("09:15"));
+    expect(onChange).toHaveBeenCalledWith(0, { key, value: "09:15" });
+  });
+}
 
 it("DateExceptionList: empty text, new badge, remove named by its date, and the line that adding does not save", () => {
   const onRemove = vi.fn();

@@ -185,6 +185,8 @@
   --size-hatch: 0.4rem;        /* spacing of the off-shift hatching */
   --size-sheet-max: 90dvh;     /* tallest bottom sheet */
   --size-form: 60rem;          /* B4: widest settings form (hours, shifts), so lines stay short */
+  --size-calendar: 21.25rem;   /* D-0001-131: the calendar popover, seven 44 px days and 16 px each side */
+  --size-listbox: 20.625rem;   /* D-0001-131: the tallest open list, seven and a half 44 px rows */
 
   /* Line widths */
   --border-width: 1px;         /* every panel, field and block edge */
