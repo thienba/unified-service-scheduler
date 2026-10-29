@@ -109,8 +109,8 @@ export function SchedulePage() {
           <h1 className="text-2xl lg:text-3xl">Schedule</h1>
           <TimesNote />
         </div>
-        {/* Staff only: the manager's way to book waits on D-0001-54 (the staff-booking ticket). */}
-        {staff && (
+        {/* Staff and the manager: the manager starts here too (D-0001-53, D-0001-54 B). */}
+        {canBook && (
           <span className={wide ? undefined : "w-full"}>
             <Button
               variant="primary"

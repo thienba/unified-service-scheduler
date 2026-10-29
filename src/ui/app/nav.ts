@@ -8,6 +8,8 @@ export interface NavItem {
   icon: IconName;
   /** The current item is this path only, not the pages below it. */
   exact?: boolean;
+  /** Other paths where this item is the current one (the staff `/book` page belongs to Book for a customer). */
+  also?: readonly string[];
   /** The manager's Flagged tab carries the number of flagged bookings. */
   flagged?: boolean;
 }
@@ -23,6 +25,7 @@ export const navItems: Record<Role, readonly NavItem[]> = {
       to: "/book/for-customer",
       label: "Book for a customer",
       icon: "plus",
+      also: ["/book"],
     },
   ],
   manager: [

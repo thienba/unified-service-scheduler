@@ -595,7 +595,7 @@ test("a date that is not a real date opens today, like no date", async ({
   ).toBeVisible();
 });
 
-test("the manager's gaps link to the booking too, and the manager has no top Book button (D-0001-54)", async ({
+test("the manager's gaps link to the booking too, and the manager has the top Book button (D-0001-54 B)", async ({
   page,
 }) => {
   await seedBusyDay(page);
@@ -609,9 +609,10 @@ test("the manager's gaps link to the booking too, and the manager has no top Boo
     "href",
     /^\/book\/for-customer\?start=[^&]+&technicianId=tech-lon-[a-z]+$/,
   );
+  // D-0001-54 decided B: the manager books from a button on the schedule (the staff-booking ticket).
   await expect(
     page.getByRole("main").getByRole("link", { name: "Book for a customer" }),
-  ).toHaveCount(0);
+  ).toHaveCount(1);
 });
 
 test("the built app places blocks and gaps at the right offset and width under its CSP (SEC-15.AC-1)", async ({
