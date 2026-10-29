@@ -65,10 +65,11 @@ export interface Context {
   idempotencyKey: string | undefined;
   /** The origin the request was sent to, for the links in outbox messages. */
   origin: string;
-  /** What the two `_demo` operations need. */
+  /** What the `_demo` operations need. */
   demo: {
     telemetry: TelemetryReader;
     resetData: () => Promise<void>;
+    listUsers: () => Promise<DemoUser[]>;
     bayUtilisation: () => Promise<GaugeSample[]>;
   };
 }
@@ -140,7 +141,27 @@ async function flaggedReply(
   return ok({ flagged: views.map((v) => appointmentToWire(v)) });
 }
 
-export const handlers: Record<keyof operations, Handler> = {
+/**
+ * The operations that name `security: []` in the contract: nobody is picked yet, so there is no user, no
+ * actor and no role to check (D-0001-57). Only `GET /_demo/users` is one.
+ */
+export const openHandlers = {
+  // Only what the switcher shows: never the customer id (SEC-9, SEC-10).
+  getDemoUsers: async ({ demo }: Pick<Context, "demo">): Promise<Reply> =>
+    ok(
+      (await demo.listUsers()).map(({ id, name, role, dealershipIds }) => ({
+        id,
+        name,
+        role,
+        dealershipIds,
+      })),
+    ),
+} satisfies Partial<Record<keyof operations, unknown>>;
+
+export const handlers: Record<
+  Exclude<keyof operations, keyof typeof openHandlers>,
+  Handler
+> = {
   getDemoTelemetry: async ({ demo }) =>
     ok({
       logs: demo.telemetry.lines(),

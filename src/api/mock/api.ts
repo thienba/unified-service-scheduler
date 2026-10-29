@@ -20,7 +20,7 @@ import {
 import { actorOf } from "./actor";
 import { DEMO_USER_HEADER } from "./demo-user";
 import { bayUtilisation } from "../../application/utilisation";
-import { handlers, type Reply } from "./operations";
+import { handlers, openHandlers, type Reply } from "./operations";
 import { problemResponse, type ProblemSpec } from "./problems";
 import { traceIdOf } from "./trace";
 
@@ -96,12 +96,15 @@ export function createApi(
       const { operation, pathParams } = matched;
       route = `${operation.method.toUpperCase()} ${operation.path}`;
 
+      // The contract says `security: []` for the one operation that needs no user (D-0001-57).
+      const security = operation.node.security;
+      const needsNoUser = Array.isArray(security) && security.length === 0;
       const userId = request.headers.get(DEMO_USER_HEADER);
       const users = await repository.listDemoUsers();
       const user = users.find((u) => u.id === userId);
-      if (!user) return { problem: { code: "UNKNOWN_USER" } };
-      const actor = actorOf(user);
-      actorRole = actor.role;
+      if (!user && !needsNoUser) return { problem: { code: "UNKNOWN_USER" } };
+      const actor = user && actorOf(user);
+      actorRole = actor?.role;
 
       const checked = validateRequest(operation, {
         query: url.searchParams,
@@ -135,6 +138,19 @@ export function createApi(
         dealershipId = named;
       }
 
+      const demo = {
+        telemetry: services.telemetry,
+        resetData: services.resetData,
+        listUsers: () => repository.listDemoUsers(),
+        bayUtilisation: () => bayUtilisation({ uow: repository, clock }),
+      };
+      if (needsNoUser) {
+        return openHandlers[operation.id as keyof typeof openHandlers]({
+          demo,
+        });
+      }
+      if (!user || !actor) return { problem: { code: "UNKNOWN_USER" } };
+
       const deps: CommandDeps = {
         uow: repository,
         clock,
@@ -151,11 +167,7 @@ export function createApi(
         body: checked.body,
         idempotencyKey: request.headers.get("Idempotency-Key") ?? undefined,
         origin: url.origin,
-        demo: {
-          telemetry: services.telemetry,
-          resetData: services.resetData,
-          bayUtilisation: () => bayUtilisation({ uow: repository, clock }),
-        },
+        demo,
       });
     };
 

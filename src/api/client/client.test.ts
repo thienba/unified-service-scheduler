@@ -40,6 +40,14 @@ describe("the typed client (AD-5, AD-12)", () => {
     expect([...none.seen[0]!.headers.keys()].sort()).toEqual(["traceparent"]);
   });
 
+  it("has a typed call for the demo users list, and a client with no headers sends no X-Demo-User for it", async () => {
+    const { client, seen } = catching();
+    const reply = await client.GET("/_demo/users");
+    expect(reply.response.ok).toBe(true);
+    expect(seen[0]!.url).toBe("https://one.test/api/_demo/users");
+    expect(seen[0]!.headers.has("X-Demo-User")).toBe(false);
+  });
+
   it("makes one key per Confirm press and reuses it on a retry of that press", async () => {
     const press = startConfirmPress();
     expect(press.key).toMatch(
