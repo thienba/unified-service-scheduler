@@ -1,0 +1,11 @@
+
+> keyloop-service-scheduler@0.0.0 lint
+> eslint . && prettier --check . && npm run lint:contract
+
+Checking formatting...
+All matched files use Prettier code style!
+
+> keyloop-service-scheduler@0.0.0 lint:contract
+> spectral lint src/api/contract/openapi.yaml --ruleset .spectral.mjs --fail-severity=warn
+
+No results with a severity of 'warn' or higher found!
