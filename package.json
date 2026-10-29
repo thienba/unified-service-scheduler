@@ -19,6 +19,7 @@
     "test:tz": "TZ=UTC vitest run --project node && TZ=Pacific/Kiritimati vitest run --project node",
     "e2e": "playwright test --project=chromium",
     "e2e:other": "playwright test --project=firefox --project=webkit --output=test-results/other",
+    "e2e:media": "node scripts/e2e-media.mjs",
     "check:deps": "node scripts/check-approved-dependencies.mjs",
     "check:remote-build": "node scripts/check-remote-build.mjs",
     "check:workflows": "node scripts/check-workflows.mjs"
