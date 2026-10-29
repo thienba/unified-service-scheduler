@@ -120,7 +120,7 @@ export function describeOutboxContract(
       ]);
     });
 
-    it("REQ-BOOK-013.AC-3: a cancel marks the pending reminders cancelled and queues a cancellation", async () => {
+    it("REQ-BOOK-013.AC-3, D-0001-50: a cancel marks the pending reminders cancelled, leaves the confirmation as it was, and queues a cancellation", async () => {
       const ctx = await setup();
       const appt = await book(ctx, at("10:00", NOV_5));
       const result = await cancelAppointment(
@@ -132,7 +132,7 @@ export function describeOutboxContract(
       const list = await rows(ctx.repo);
       expect(summary(list)).toEqual([
         "cancellation:pending:2",
-        "confirmation:cancelled:1",
+        "confirmation:pending:1",
         "reminder_48h:cancelled:1",
         "reminder_morning:cancelled:1",
       ]);
@@ -168,8 +168,12 @@ export function describeOutboxContract(
         }),
       ]);
       expect(
-        list.filter((m) => m.dedupeKey.endsWith(":1")).map((m) => m.status),
-      ).not.toContain("pending");
+        list
+          .filter((m) => m.kind.startsWith("rem") && m.dedupeKey.endsWith(":1"))
+          .map((m) => m.status),
+      ).toEqual(["cancelled", "cancelled"]);
+      // D-0001-50: the confirmation keeps its status.
+      expect(summary(list)).toContain("confirmation:pending:1");
       expect(summary(list)).toContain("moved:pending:2");
     });
 
@@ -343,9 +347,20 @@ export function describeOutboxContract(
       ]);
       expect(
         (await rows(ctx.repo))
-          .filter((m) => m.dedupeKey.includes(":1"))
+          .filter((m) => m.kind.startsWith("rem") && m.dedupeKey.includes(":1"))
           .map((m) => m.status),
-      ).not.toContain("pending");
+      ).toEqual(["cancelled", "cancelled"]);
+      // D-0001-50: the confirmation keeps its status.
+      expect(summary(await rows(ctx.repo))).toContain("confirmation:pending:1");
+
+      // A second move: the earlier "moved" message keeps its status too.
+      const second = await adjustAppointment(manager, ctx.deps, appt.id, {
+        start: at("13:00", NOV_5),
+      });
+      expect(second.kind).toBe("ok");
+      const after = summary(await rows(ctx.repo));
+      expect(after).toContain(`moved:pending:${version}`);
+      expect(after).toContain("confirmation:pending:1");
     });
   });
 }

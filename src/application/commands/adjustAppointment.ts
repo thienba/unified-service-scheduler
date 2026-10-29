@@ -11,7 +11,7 @@ import type {
   SchedulingSnapshot,
 } from "../../domain/availability";
 import type { Appointment, EpochMs } from "../../domain/model";
-import { messagesForMove } from "../../domain/outbox";
+import { REMINDER_KINDS, messagesForMove } from "../../domain/outbox";
 import { MINUTE_MS } from "../../domain/time";
 import type { FieldError } from "../../domain/validation/new-customer";
 import {
@@ -126,6 +126,16 @@ async function adjust(
     );
     if (!loaded.ok) return loaded;
     const { current, snapshot } = loaded.value;
+    // D-0001-48 g: nothing named differs from what is stored and no flag would be cleared, so
+    // nothing is written (no version bump, no new `updatedAt`, no messages).
+    if (
+      (request.start ?? current.start) === current.start &&
+      (request.technicianId ?? current.technicianId) === current.technicianId &&
+      (request.serviceBayId ?? current.serviceBayId) === current.serviceBayId &&
+      current.flags.length === 0
+    ) {
+      return { ok: true, value: { appointment: current, picked: {} } };
+    }
 
     const start = request.start ?? current.start;
     // What is named is a must. What is not named is first kept as it is, then left to the rule.
@@ -186,7 +196,7 @@ async function adjust(
       // Only a new start changes what the customer was told; a new technician or bay queues nothing
       // (Q-0001-123 g: nothing changed, nothing to queue).
       if (moved.start !== current.start) {
-        await stores.outbox.cancelPending(moved.id);
+        await stores.outbox.cancelPending(moved.id, REMINDER_KINDS);
         await stores.outbox.add(outboxRows(deps, messagesForMove(moved, now)));
       }
     });
