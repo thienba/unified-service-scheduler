@@ -12,7 +12,7 @@ import { Dialog } from "../../components/Dialog";
 import { TextField, focusField } from "../../components/Fields";
 import { DatePicker } from "../../components/DatePicker";
 import { Select } from "../../components/Select";
-import { TimeField } from "../../components/TimeField";
+import { afterStart, TimeField } from "../../components/TimeField";
 import { FlagImpactDialog } from "../../components/FlagImpactDialog";
 import { useToast } from "../../components/Toast";
 import { WeekPatternEditor } from "../../components/WeekPatternEditor";
@@ -393,6 +393,7 @@ function SettingsForm({ dealership }: { dealership: Dealership }) {
                       <TimeField
                         label="Closes"
                         error={problemAt(shown, "add.close")}
+                        {...afterStart(add.open, "close after it opens")}
                         {...field}
                       />
                     )}

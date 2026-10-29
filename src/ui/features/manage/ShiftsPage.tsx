@@ -15,7 +15,7 @@ import { Dialog } from "../../components/Dialog";
 import { focusField } from "../../components/Fields";
 import { DatePicker } from "../../components/DatePicker";
 import { Select } from "../../components/Select";
-import { TimeField } from "../../components/TimeField";
+import { afterStart, TimeField } from "../../components/TimeField";
 import { FlagImpactDialog } from "../../components/FlagImpactDialog";
 import { StateBlock } from "../../components/StateBlock";
 import { useToast } from "../../components/Toast";
@@ -441,6 +441,9 @@ function ShiftsForm({
           label={label}
           optional={label.endsWith("(optional)")}
           error={problemAt(shown, `add.${key}`)}
+          {...(key === "end"
+            ? afterStart(add.start, "end after it starts")
+            : {})}
           {...field}
         />
       )}

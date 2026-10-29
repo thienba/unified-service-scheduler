@@ -259,7 +259,11 @@ for (const width of widths) {
             !e.matches(".sr-only, [class*='sr-only']") &&
             // React Aria's Select keeps a 1px native select for autofill: hidden from sight and from screen
             // readers, and out of the tab order, so no one can reach it (Q-0001-265).
-            !(e.closest('[aria-hidden="true"]') && e.tabIndex < 0) &&
+            !(
+              e.matches("select") &&
+              e.closest('[aria-hidden="true"]') &&
+              e.tabIndex < 0
+            ) &&
             (r.width < 43.5 || r.height < 43.5)
           );
         })

@@ -553,14 +553,18 @@ function AdjustForm({
     dealership && /^\d{4}-\d{2}-\d{2}$/.test(values.date)
       ? hoursOn(dealership, values.date)
       : null;
+  // The job must also end by closing time, so the last start is the closing time less the job's length.
+  const lastStart = dayHours
+    ? formatTime(
+        Date.parse(`2000-01-01T${dayHours.close}:00Z`) - minutes * 60_000,
+        "UTC",
+      )
+    : "";
   const timeLimits = dayHours
     ? {
         min: dayHours.open,
-        max: formatTime(
-          Date.parse(`2000-01-01T${dayHours.close}:00Z`) - grid * 60_000,
-          "UTC",
-        ),
-        disabledReason: `The dealership is closed then (opens ${dayHours.open}, closes ${dayHours.close}).`,
+        max: lastStart,
+        disabledReason: `The dealership is closed then (opens ${dayHours.open}, closes ${dayHours.close}). This job takes ${formatDuration(minutes)}, so it must start by ${lastStart}.`,
       }
     : {};
 

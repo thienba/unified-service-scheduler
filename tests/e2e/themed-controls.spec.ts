@@ -209,9 +209,21 @@ for (const width of [390, 1440] as const) {
         "aria-disabled",
         "true",
       );
+      // A 3-hour job must also end by closing time, so the last start is 15:00 (review finding 4).
+      await expect(list.locator('[data-value="15:00"]')).not.toHaveAttribute(
+        "aria-disabled",
+        "true",
+      );
+      for (const late of ["15:15", "17:45"]) {
+        await expect(list.locator(`[data-value="${late}"]`)).toHaveAttribute(
+          "aria-disabled",
+          "true",
+        );
+      }
       await expect(
         page.getByText(
-          "The dealership is closed then (opens 08:00, closes 18:00).",
+          "The dealership is closed then (opens 08:00, closes 18:00). This job takes 3 hours, so it must start by 15:00.",
+          { exact: true },
         ),
       ).toBeVisible();
       await expectTargets(options);

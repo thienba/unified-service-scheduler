@@ -131,7 +131,10 @@ test("six wrong values each show their own message, the summary links to each, a
   await page.getByRole("button", { name: "Add this date" }).click();
   await typeDate(dateNamed(page, "Date"), taken);
 
-  await chooseOption(selectNamed(day(page, "Monday"), "Closes"), "07:00");
+  // design.md 8.30: Closes crosses out the times up to Opens, so Monday's wrong pair is made by moving Opens
+  // past the closing time.
+  await chooseOption(selectNamed(day(page, "Monday"), "Closes"), "09:00");
+  await chooseOption(selectNamed(day(page, "Monday"), "Opens"), "10:00");
   // D-0001-133: a time off the quarter hour cannot be chosen any more, so Tuesday's wrong value is an
   // opening time equal to its closing time.
   await chooseOption(selectNamed(day(page, "Tuesday"), "Opens"), "18:00");
@@ -150,7 +153,7 @@ test("six wrong values each show their own message, the summary links to each, a
   await expect(selectNamed(day(page, "Monday"), "Closes")).toBeFocused();
   await expect(
     page.getByText(
-      "Monday closes at 07:00, before it opens at 08:00. Choose a closing time after 08:00.",
+      "Monday closes at 09:00, before it opens at 10:00. Choose a closing time after 10:00.",
     ),
   ).toBeVisible();
   await expect(
@@ -177,7 +180,7 @@ test("six wrong values each show their own message, the summary links to each, a
   const described = await mondayClose.getAttribute("aria-describedby");
   expect(described).toBeTruthy();
   await expect(page.locator(`[id="${described}"]`)).toContainText(
-    "Monday closes at 07:00",
+    "Monday closes at 09:00",
   );
 
   // Each summary item moves focus to its row.

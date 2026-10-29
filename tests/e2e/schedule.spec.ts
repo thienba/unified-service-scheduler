@@ -459,27 +459,23 @@ for (const width of [390, 1440]) {
       expect(asked).toEqual([]);
 
       await signIn(page, "Staff");
-      if (wide) {
-        await chooseOption(selectNamed(page, "Who"), {
-          label: "Demo Staff London",
-        });
-      } else {
+      // Demo Staff London is the first staff user and already chosen, and a themed list sends no change for
+      // the option already chosen. So Who switches to Saigon and back, and each switch shows its toast.
+      if (!wide) {
         await page.getByRole("button", { name: /^Viewing as/ }).click();
-        await chooseOption(
-          selectNamed(page.getByRole("dialog", { name: "Viewing as" }), "Who"),
-          { label: "Demo Staff London" },
+      }
+      const who = () =>
+        selectNamed(
+          wide ? page : page.getByRole("dialog", { name: "Viewing as" }),
+          "Who",
         );
-        await page.keyboard.press("Escape");
-      }
-      // Demo Staff London is the first staff user, so choosing them again changes nothing: a themed list,
-      // unlike the native one, sends no change for the option already chosen, and so shows no toast.
-      if (wide) {
-        await expect(selectNamed(page, "Who")).toHaveText("Demo Staff London");
-      } else {
+      for (const name of ["Demo Staff Saigon", "Demo Staff London"]) {
+        await chooseOption(who(), { label: name });
         await expect(
-          page.getByRole("button", { name: /^Viewing as/ }),
-        ).toContainText("Staff · Demo Staff London");
+          page.getByText(`Now viewing as Staff, ${name}`),
+        ).toBeVisible();
       }
+      if (!wide) await page.keyboard.press("Escape");
       asked.length = 0;
       await page.goto("/schedule?dealership=dealership-saigon");
       await expect(
