@@ -1,0 +1,46 @@
+
+ RUN  v5.0.5 /Users/bason/Documents/thienba/keyloop-service-scheduler-vtc/.state/2026-10-28-system-design-document-final-pass
+
+ ↓ |node| src/infrastructure/telemetry/telemetry.test.ts > the logger (NFR-6, AD-12) > writes only the allowed fields: a name, phone, email, registration and note are dropped
+ ↓ |node| src/infrastructure/telemetry/telemetry.test.ts > the logger (NFR-6, AD-12) > can write every allowed field, in a fixed order after ts, level and msg
+ ↓ |node| src/infrastructure/telemetry/telemetry.test.ts > the logger (NFR-6, AD-12) > writes ts as a UTC instant and level error for error()
+ ↓ |node| src/infrastructure/telemetry/telemetry.test.ts > the logger (NFR-6, AD-12) > keeps the newest 500 lines: after 501 the first is gone and the 501st is present
+ ↓ |node| src/infrastructure/telemetry/telemetry.test.ts > the logger (NFR-6, AD-12) > withTrace puts the trace id on every line and shares the buffer
+ ↓ |node| src/infrastructure/telemetry/telemetry.test.ts > the logger (NFR-6, AD-12) > step logs a child line with the same trace id and its own duration, and returns the result
+ ↓ |node| src/infrastructure/telemetry/telemetry.test.ts > the logger (NFR-6, AD-12) > step logs the line and passes the error on when the work fails
+ ↓ |node| src/infrastructure/telemetry/telemetry.test.ts > the console sink > writes one JSON line to console.info, and errors to console.error
+ ↓ |node| src/infrastructure/telemetry/telemetry.test.ts > the metrics (section 7.7) > counts by name and labels
+ ↓ |node| src/infrastructure/telemetry/telemetry.test.ts > the metrics (section 7.7) > drops a label that is not on the list
+ ↓ |node| src/infrastructure/telemetry/telemetry.test.ts > the metrics (section 7.7) > a histogram reports count, sum, p50, p95 and max
+ ↓ |node| src/infrastructure/telemetry/telemetry.test.ts > the metrics (section 7.7) > keeps count, sum and max for every value but percentiles for the newest window
+ ↓ |node| tests/contract/telemetry.test.ts > trace ids (AD-12) > the traceparent of the client is the trace id of every line and of X-Trace-Id
+ ↓ |node| tests/contract/telemetry.test.ts > trace ids (AD-12) > a request with no traceparent gets a new trace id, used in the lines and the header
+ ↓ |node| tests/contract/telemetry.test.ts > log lines > every line is valid JSON; each request line has the trace id of its response, the dealership and the outcome
+ ↓ |node| tests/contract/telemetry.test.ts > log lines > the route is the path template and the query string is never recorded
+ ↓ |node| tests/contract/telemetry.test.ts > log lines > a 409 booking logs one appointment.book line with the status, the outcome, the reasons and the route
+ ↓ |node| tests/contract/telemetry.test.ts > log lines > a confirmed booking logs outcome confirmed with the appointment, technician and bay
+ ↓ |node| tests/contract/telemetry.test.ts > log lines > the steps of a booking are child lines with the same trace id and their own duration
+ ↓ |node| tests/contract/telemetry.test.ts > log lines > a 409 also logs the suggest step
+ ↓ |node| tests/contract/telemetry.test.ts > log lines > a forced 500 is logged at level error with fixed words
+ ↓ |node| tests/contract/telemetry.test.ts > metrics (NFR-6) > a booking counts one confirmed appointment and a 201 request
+ ↓ |node| tests/contract/telemetry.test.ts > metrics (NFR-6) > a 409 counts a conflict with the first reason, and its duration is under outcome ok
+ ↓ |node| tests/contract/telemetry.test.ts > metrics (NFR-6) > a 500 is recorded under outcome failed
+ ↓ |node| tests/contract/telemetry.test.ts > metrics (NFR-6) > a day with no free time counts an empty search, and every search records its duration
+ ↓ |node| tests/contract/telemetry.test.ts > metrics (NFR-6) > a replayed request counts one replay, and a cancel is counted once only
+ ↓ |node| tests/contract/telemetry.test.ts > the demo endpoints (AD-2, AD-17) > GET /_demo/telemetry answers 200 with the lines and the metrics, and an X-Trace-Id
+ ↓ |node| tests/contract/telemetry.test.ts > the demo endpoints (AD-2, AD-17) > POST /_demo/reset answers 204, the booking is gone and the seeded appointments are back
+ ↓ |node| tests/contract/telemetry.test.ts > the demo endpoints (AD-2, AD-17) > every operation under /_demo/ has the tag demo-only, and no other operation has it
+ ↓ |node| tests/contract/telemetry.test.ts > the demo endpoints (AD-2, AD-17) > GET /_demo/users answers 200 with no X-Demo-User: the six users, each id, name, role and dealershipIds only
+ ↓ |node| tests/contract/telemetry.test.ts > the demo endpoints (AD-2, AD-17) > the contract check fails when the body holds customerId or any other field
+ ↓ |node| tests/contract/telemetry.test.ts > the demo endpoints (AD-2, AD-17) > after POST /_demo/reset the same six users are returned
+ ✓ |node| tests/contract/telemetry.test.ts > no personal data in telemetry (SEC-10, S6) > the canary flow leaves no canary in a log line, the buffer, a metric, the telemetry answer, a Problem body or an idempotency row 56ms
+ ↓ |node| tests/contract/telemetry.test.ts > no personal data in telemetry (SEC-10, S6) > whole-run output holds no seeded name, phone, email or registration
+ ↓ |node| tests/contract/telemetry.test.ts > an unknown dealership id is not logged (SEC-10) > digits typed as a dealership id appear in no line and no metric label, and the answer is 404
+ ↓ |node| tests/contract/telemetry.test.ts > reset leaves the five tables equal to the seed (SEC-13.AC-4) > customers, vehicles, appointments, outbox rows and idempotency records are the seed again
+
+ Test Files  1 passed | 1 skipped (2)
+      Tests  1 passed | 35 skipped (36)
+   Start at  17:30:16
+   Duration  371ms (import 58%, transform 21%, tests 20%, worker 2%)
+
+exit 0
