@@ -22,10 +22,12 @@ import {
   answerFrom,
   api,
   bookAs,
+  checkAnswered,
   cancelAs,
   mine,
   posts,
   read,
+  recordChecks,
   recordPosts,
   start,
   switchToB,
@@ -526,11 +528,14 @@ test.describe("reschedule", () => {
   }) => {
     await start(page, 1440, "/appointments");
     const fri = await bookAs(page, A, FRI_10);
+    await recordChecks(page);
     await page.goto(`/appointments/${fri.id}/reschedule`);
     await page.getByRole("radio", { name: /^Mon 2 Nov,/ }).check();
     await page
       .getByRole("radio", { name: "13:00 to 16:00", exact: true })
       .check();
+    // The early check for the chosen time (D-0001-107) answers first, so B takes the time between it and Confirm.
+    await checkAnswered(page, "2026-11-02T13:00:00Z");
     await bookAs(page, B, "2026-11-02T13:00:00Z");
     await button(page, "Confirm new time").click();
     const sorry = page.getByRole("heading", {

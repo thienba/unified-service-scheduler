@@ -38,6 +38,7 @@ import { useDealerships } from "../../session/dealership";
 import { useSession } from "../../session/session";
 import { ZoneTimesNote } from "../../session/TimesNote";
 import { instantAt } from "../book/days";
+import { useEarlyCheck } from "../book/early-check";
 import { isCancelled } from "../appointment/AppointmentReadSide";
 import { vehicleText } from "../schedule/schedule-model";
 import {
@@ -66,6 +67,8 @@ const SAME_NOTE =
   "The customer is sent a message about the new time. Their reminders move with it.";
 const CLOCK = /^([01]\d|2[0-3]):[0-5]\d$/;
 
+/** An early clash comes before Save is pressed, so it must not say a change was not saved (D-0001-111). */
+const earlyClashTitle = "That time is no longer free.";
 export function AdjustPage() {
   const { appointmentId = "" } = useParams();
   const { client } = useSession();
@@ -251,6 +254,8 @@ interface Refusal {
   values: AdjustValues;
   reasons: string[];
   suggestions: TimeSlot[];
+  /** Found by the early check before Save (D-0001-107 C): focus stays put and a polite live region speaks. */
+  early: boolean;
 }
 
 interface Saved {
@@ -396,6 +401,7 @@ function AdjustForm({
           suggestions: (error.problem?.suggestions ?? []).filter(
             (t) => Date.parse(t.start) !== Date.parse(a.start),
           ),
+          early: false,
         });
         return;
       }
@@ -417,6 +423,36 @@ function AdjustForm({
     },
   });
   const busy = save.isPending;
+
+  // Warn early (D-0001-107 C): a new start in the form is checked again now and every 30 seconds while it stays.
+  // A form that Save would refuse for its own fields (a past date, a time off the grid) is not checked.
+  useEarlyCheck(
+    body?.start && fieldProblems(values, today, grid).length === 0
+      ? {
+          dealershipId: a.dealershipId,
+          serviceTypeId: a.serviceTypeId,
+          start: body.start,
+          transport: a.transport,
+          appointmentId: a.id,
+          ...(body.technicianId ? { technicianId: body.technicianId } : {}),
+        }
+      : null,
+    (answer) => {
+      // While Save is on its way its own answer decides, and a refusal from Save is not replaced by a warning.
+      if (answer.available || save.isPending) return;
+      const current = form.getValues();
+      if (refusal && !refusal.early && sameValues(refusal.values, current))
+        return;
+      setRefusal({
+        values: current,
+        reasons: answer.reasons,
+        suggestions: answer.suggestions.filter(
+          (t) => Date.parse(t.start) !== Date.parse(a.start),
+        ),
+        early: true,
+      });
+    },
+  );
 
   if (saved) {
     const picked = saved.after.picked;
@@ -458,7 +494,11 @@ function AdjustForm({
     );
   }
 
-  const refusedNow = refusal !== null && sameValues(refusal.values, values);
+  const sameAsRefused = refusal !== null && sameValues(refusal.values, values);
+  // Only a refusal from Save turns Save off; one found early is a warning, and Save still checks for itself.
+  const refusedNow = sameAsRefused && !refusal.early;
+  // A refusal found early is about the values in the form then; once they change it no longer stands.
+  const shown = refusal && (!refusal.early || sameAsRefused) ? refusal : null;
   const fieldCount = problems.length;
   const reason = busy
     ? null
@@ -535,16 +575,16 @@ function AdjustForm({
       {summary.length > 0 && (
         <FormSummary problems={summary} action="check this change" />
       )}
-      {refusal && (
+      {shown && (
         <Alert
-          key={JSON.stringify(refusal.values)}
+          key={JSON.stringify(shown.values)}
           kind="danger"
           role={null}
-          focusTitle
-          title="That change was not saved."
+          focusTitle={!shown.early}
+          title={shown.early ? earlyClashTitle : "That change was not saved."}
         >
-          <p>{clashText(refusal.reasons, a, dealership)}</p>
-          {refusal.suggestions.length === 0 ? (
+          <p>{clashText(shown.reasons, a, dealership)}</p>
+          {shown.suggestions.length === 0 ? (
             <p>
               <b>There are no other times in the next 14 days.</b> Try another
               date, or leave the appointment where it is.
@@ -552,7 +592,7 @@ function AdjustForm({
           ) : (
             <SuggestionFillGroup
               title="Closest times that are free"
-              items={refusal.suggestions.slice(0, 5)}
+              items={shown.suggestions.slice(0, 5)}
               pressed={start}
               onPick={fill}
               startLabel={label}
@@ -582,7 +622,7 @@ function AdjustForm({
           <p>{failureWords.body}</p>
         </Alert>
       )}
-      {flagged && !refusal && (
+      {flagged && !shown && (
         <Alert kind="warning" role={null} title="This booking no longer fits">
           <p>
             {flagSentences(a)} It is still booked and keeps its technician and
@@ -723,6 +763,11 @@ function AdjustForm({
           </section>
         </div>
       </div>
+      <p role="status" className="sr-only">
+        {shown?.early
+          ? `${earlyClashTitle} ${clashText(shown.reasons, a, dealership)}`
+          : ""}
+      </p>
       <ActionBar
         title={start ? label(start) : label(a.start)}
         status={

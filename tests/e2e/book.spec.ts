@@ -415,6 +415,19 @@ for (const width of [390, 1440]) {
           ],
         },
       });
+      // The calls after the empty day's look-up are the early check of the chosen suggestion (D-0001-107): it is
+      // free, as the suggestion said.
+      await answerFrom(page, {
+        path: "/availability-checks",
+        from: 2,
+        status: 200,
+        body: {
+          available: true,
+          technicianId: "tech-lon-ash",
+          serviceBayId: "bay-lon-1",
+          courtesyCarId: null,
+        },
+      });
       await start(page, width, DEEP);
       await expect(day(page, "Fri 30 Oct")).toHaveAccessibleName(/times$/);
       // A click, not check(): the fresh answer turns the day Fully booked (not checked), and check() fails

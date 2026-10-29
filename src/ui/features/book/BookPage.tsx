@@ -67,6 +67,7 @@ import {
 } from "./days";
 import { phoneEnding, useStaffMemory } from "./staff-memory";
 import { useGapFromAddress, type Gap } from "./staff-queries";
+import { useEarlyCheck, useFocusKept, type CheckRequest } from "./early-check";
 import { useStaffWho, whoBody, type StaffWho } from "./staff-who";
 import { searchAddress } from "./staff-words";
 import {
@@ -140,6 +141,8 @@ interface Conflict {
   start: string;
   end: string;
   suggestions: TimeSlot[];
+  /** Found by the early check before Confirm (D-0001-107 C): focus stays put and a polite live region speaks. */
+  early: boolean;
 }
 
 interface Pending {
@@ -470,6 +473,78 @@ function Booking({ who }: { who: Who }) {
     }
   }
 
+  /** A time that is not free any more: from a 409 at Confirm, or from the early check before it. */
+  function showConflict(
+    at: string,
+    reasons: readonly string[],
+    suggestions: TimeSlot[],
+    early: boolean,
+  ) {
+    if (reasons.length > 0 && reasons.every((r) => r === "COURTESY_CAR_BUSY")) {
+      // The time is still free to wait or drop off: it stays chosen, the car choice is cleared, and
+      // the closest times with a courtesy car are offered (`conflict-courtesy`, REQ-BOOK-009.AC-2).
+      setConflict({
+        kind: "courtesy",
+        start: at,
+        end: addMinutes(at, minutes),
+        suggestions: suggestions.slice(0, 5),
+        early,
+      });
+      setValue("transport", "");
+      setMessage((n) => n + 1);
+      void queryClient.invalidateQueries({ queryKey: ["availability"] });
+      void queryClient.invalidateQueries({
+        queryKey: ["courtesy-check"],
+      });
+      return;
+    }
+    const kind = reasons.includes("TOO_SOON")
+      ? "too-soon"
+      : reasons.includes("BEYOND_HORIZON")
+        ? "too-far"
+        : "taken";
+    setConflict({
+      kind,
+      start: at,
+      end: addMinutes(at, minutes),
+      // Up to five closest times (REQ-BOOK-009.AC-2); the API sends five at most today.
+      suggestions: suggestions.slice(0, 5),
+      early,
+    });
+    setValue("start", "");
+    setMessage((n) => n + 1);
+    void queryClient.invalidateQueries({ queryKey: ["availability"] });
+    if (kind === "too-far")
+      void queryClient.invalidateQueries({ queryKey: ["dealerships"] });
+  }
+
+  const keepFocus = useFocusKept("times-title");
+  // Warn early (D-0001-107 C): the chosen time is checked again now and every 30 seconds while it stays chosen.
+  const earlyRequest: CheckRequest | null =
+    start && dealership && service && !gapBlocked
+      ? {
+          dealershipId: dealership.id,
+          serviceTypeId: service.id,
+          start,
+          transport: queryTransport,
+          ...(technicianId ? { technicianId } : {}),
+        }
+      : null;
+  useEarlyCheck(earlyRequest, (answer, asked) => {
+    // While Confirm is on its way its own answer decides (it may be our own booking that took the time).
+    if (answer.available || busy.current) return;
+    const carOnly = answer.reasons.every((r) => r === "COURTESY_CAR_BUSY");
+    // A courtesy car that was not free when it was chosen is the `courtesy-cleared` note's job (D-0001-104 3);
+    // the early check speaks only when the car was free then and has gone since.
+    if (
+      carOnly &&
+      (asked.transport !== "courtesy_car" || courtesy.data?.available !== true)
+    )
+      return;
+    keepFocus();
+    showConflict(asked.start, answer.reasons, answer.suggestions, true);
+  });
+
   const booking = useMutation({
     mutationFn: ({ body, key }: Pending) =>
       call(
@@ -509,43 +584,12 @@ function Booking({ who }: { who: Who }) {
           error instanceof ApiProblem ? error : new ApiProblem(0, null, null);
         if (problem.code === "SLOT_UNAVAILABLE") {
           pending.current = null;
-          const reasons = problem.problem?.reasons ?? [];
-          if (
-            reasons.length > 0 &&
-            reasons.every((r) => r === "COURTESY_CAR_BUSY")
-          ) {
-            // The time is still free to wait or drop off: it stays chosen, the car choice is cleared, and
-            // the closest times with a courtesy car are offered (`conflict-courtesy`, REQ-BOOK-009.AC-2).
-            setConflict({
-              kind: "courtesy",
-              start: press.body.start!,
-              end: addMinutes(press.body.start!, minutes),
-              suggestions: (problem.problem?.suggestions ?? []).slice(0, 5),
-            });
-            setValue("transport", "");
-            setMessage((n) => n + 1);
-            void queryClient.invalidateQueries({ queryKey: ["availability"] });
-            void queryClient.invalidateQueries({
-              queryKey: ["courtesy-check"],
-            });
-            return;
-          }
-          const kind = reasons.includes("TOO_SOON")
-            ? "too-soon"
-            : reasons.includes("BEYOND_HORIZON")
-              ? "too-far"
-              : "taken";
-          setConflict({
-            kind,
-            start: press.body.start!,
-            end: addMinutes(press.body.start!, minutes),
-            suggestions: problem.problem?.suggestions ?? [],
-          });
-          setValue("start", "");
-          setMessage((n) => n + 1);
-          void queryClient.invalidateQueries({ queryKey: ["availability"] });
-          if (kind === "too-far")
-            void queryClient.invalidateQueries({ queryKey: ["dealerships"] });
+          showConflict(
+            press.body.start!,
+            problem.problem?.reasons ?? [],
+            problem.problem?.suggestions ?? [],
+            false,
+          );
           return;
         }
         if (problem.status === 403) {
@@ -1236,7 +1280,11 @@ function Booking({ who }: { who: Who }) {
         </div>
       </div>
       <p role="status" className="sr-only">
-        {confirming ? "Confirming your booking" : ""}
+        {confirming
+          ? "Confirming your booking"
+          : conflict?.early
+            ? conflictTitle(conflict, zone, now)
+            : ""}
       </p>
       {staff ? (
         <ActionBar
@@ -1658,7 +1706,6 @@ function ConflictAlert({
     | undefined;
 }) {
   const zone = dealership.timeZone;
-  const at = `${formatTime(conflict.start, zone)} on ${formatDay(conflict.start, zone, now)}`;
   const conflictDay = localDateIn(conflict.start, zone);
   const label = (instant: string) => formatTime(instant, zone);
   const toItem = (s: TimeSlot): SuggestedTime => ({
@@ -1682,14 +1729,13 @@ function ConflictAlert({
     ? ` ${staff.newCustomerName} is not saved yet. We kept the details you entered. They are saved when you confirm a time.`
     : "";
   if (conflict.kind === "courtesy") {
-    const range = formatTimeRange(conflict.start, conflict.end, zone);
     const time = formatTime(conflict.start, zone);
     return (
       <Alert
         kind="warning"
         role={null}
-        focusTitle
-        title={`Sorry, no courtesy car is free from ${range} any more.`}
+        focusTitle={!conflict.early}
+        title={conflictTitle(conflict, zone, now)}
       >
         <p>
           {staff
@@ -1716,12 +1762,6 @@ function ConflictAlert({
       </Alert>
     );
   }
-  const title =
-    conflict.kind === "too-soon"
-      ? `Sorry, ${at} is too soon to book.`
-      : conflict.kind === "too-far"
-        ? `Sorry, ${formatDay(conflict.start, zone, now)} is further ahead than we can book.`
-        : `Sorry, ${at} was just taken.`;
   const body =
     conflict.kind === "too-soon"
       ? `Bookings need at least ${lead}' notice, and that time is now less than ${lead} away. ${kept} time.`
@@ -1731,8 +1771,14 @@ function ConflictAlert({
           ? `Someone else confirmed that time a moment before you did. ${kept} time.`
           : `Another customer confirmed that time a moment before you. ${kept} time.`;
   return (
-    // Focus moves to the heading, which announces it; a live role as well would read it twice.
-    <Alert kind="warning" role={null} focusTitle title={title}>
+    // After Confirm, focus moves to the heading, which announces it; a live role as well would read it twice.
+    // Found early, focus stays where the customer is and the page's polite live region says the title.
+    <Alert
+      kind="warning"
+      role={null}
+      focusTitle={!conflict.early}
+      title={conflictTitle(conflict, zone, now)}
+    >
       <p>
         {body}
         {notSaved}
@@ -1791,6 +1837,21 @@ function ConflictAlert({
       )}
     </Alert>
   );
+}
+
+/** The apology's title, also said by the live region when the early check finds the time gone. */
+function conflictTitle(conflict: Conflict, zone: string, now: number): string {
+  const at = `${formatTime(conflict.start, zone)} on ${formatDay(conflict.start, zone, now)}`;
+  switch (conflict.kind) {
+    case "courtesy":
+      return `Sorry, no courtesy car is free from ${formatTimeRange(conflict.start, conflict.end, zone)} any more.`;
+    case "too-soon":
+      return `Sorry, ${at} is too soon to book.`;
+    case "too-far":
+      return `Sorry, ${formatDay(conflict.start, zone, now)} is further ahead than we can book.`;
+    case "taken":
+      return `Sorry, ${at} was just taken.`;
+  }
 }
 
 /** A link pointed at a day that cannot be booked (`closed-day`, `day-too-soon`, `day-too-far`). */
