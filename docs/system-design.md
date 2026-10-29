@@ -937,7 +937,7 @@ Decided later, while the screens were designed and built (the latest decisions a
 - D-0001-111 C (answers Q-0001-255): on `adjust`, an early clash is titled "That time is no longer free."
 - D-0001-112 (answers Q-0001-256): the thirteen first-day questions are confirmed as option A (D-0001-117 to D-0001-129, see the table above).
 - D-0001-113 A with B (answers Q-0001-257): the timing numbers stay as measured on the Mac, labelled as single runs, and the CI timings are added from the GitHub Actions run.
-- D-0001-114 A (answers Q-0001-258): in the public copies the local folder path is left out and the placeholder `.state/<id>` is allowed; the index says so.
+- D-0001-114 (answers Q-0001-258): in the public copies the local folder path is left out, the placeholder `.state/<id>` is allowed, the Vietnamese quotes and the org name are kept, and the index says what was changed; the copy script is kept in the work repo.
 - D-0001-115 B (answers Q-0001-259): the README shows a fresh phone shot of `shifts`.
 - D-0001-116 A (answers Q-0001-260): the public copies stay as the originals; the index says links to files that were not copied do not open.
 
