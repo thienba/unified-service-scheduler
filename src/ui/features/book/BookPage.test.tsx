@@ -1,0 +1,592 @@
+// The customer's booking screen against a fake API (C2; REQ-BOOK-001, 009, 010, SEC-6, SEC-12).
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { App } from "../../app/App";
+import { fakeApi, json, problem, type FakeHandler } from "../../app/fake-api";
+import { saveUser } from "../../demo/saved-user";
+
+const base = "https://api.test/api";
+// Wed 28 Oct 2026, 10:40 in Leeds.
+const NOW = new Date("2026-10-28T10:40:00Z");
+
+const leeds = {
+  id: "d-leeds",
+  name: "Northgate Motors",
+  timeZone: "Europe/London",
+  phone: "+44 113 496 0123",
+  weeklyHours: {
+    1: { open: "08:00", close: "18:00" },
+    2: { open: "08:00", close: "18:00" },
+    3: { open: "08:00", close: "18:00" },
+    4: { open: "08:00", close: "18:00" },
+    5: { open: "08:00", close: "18:00" },
+    6: { open: "09:00", close: "16:00" },
+  },
+  dateOverrides: {},
+  policies: {
+    leadTimeMinutes: 120,
+    horizonDays: 30,
+    breakMinutes: 15,
+    gridMinutes: 15,
+  },
+};
+const fullService = {
+  id: "s-full",
+  name: "Full service",
+  durationMinutes: 180,
+  requiredSkill: "mechanic",
+};
+const focus = {
+  id: "v-focus",
+  customerId: "c-aisha",
+  registration: "AB12 CDE",
+  make: "Ford",
+  model: "Focus",
+};
+
+const at = (date: string, hhmm: string) => `${date}T${hhmm}:00Z`;
+const slotsOn = (date: string) =>
+  ["09:00", "10:00", "13:00"].map((t) => {
+    const start = at(date, t);
+    return {
+      start,
+      end: new Date(Date.parse(start) + 3 * 3_600_000)
+        .toISOString()
+        .replace(".000Z", "Z"),
+    };
+  });
+
+function bookingApi(
+  extra: Record<string, FakeHandler> = {},
+  vehicles = [focus],
+) {
+  return fakeApi({
+    "GET /me": () =>
+      json({
+        userId: "u-customer",
+        name: "Aisha Rahman",
+        role: "customer",
+        customerId: "c-aisha",
+        dealershipIds: [],
+      }),
+    "GET /dealerships": () => json([leeds]),
+    "GET /service-types": () => json([fullService]),
+    "GET /customers/c-aisha/vehicles": () => json(vehicles),
+    "GET /dealerships/d-leeds/availability": (request) => {
+      const date = new URL(request.url).searchParams.get("date")!;
+      return json({
+        date,
+        timeZone: "Europe/London",
+        gridMinutes: 15,
+        // Today has only the afternoon left (the notice time).
+        slots: date === "2026-10-28" ? slotsOn(date).slice(2) : slotsOn(date),
+      });
+    },
+    ...extra,
+  });
+}
+
+function open(path: string, api = bookingApi()) {
+  render(<App baseUrl={base} fetch={api.fetcher} initialEntries={[path]} />);
+  return api;
+}
+
+const deepLink = "/book?dealership=d-leeds&service=s-full";
+const posts = (api: ReturnType<typeof fakeApi>) =>
+  api.calls.filter(
+    (c) => c.method === "POST" && c.url.endsWith("/appointments"),
+  );
+
+async function chooseTime(name: string) {
+  fireEvent.click(await screen.findByRole("radio", { name }));
+}
+async function chooseCar() {
+  await screen.findByRole("option", { name: "Ford Focus, AB12 CDE" });
+  fireEvent.change(await screen.findByRole("combobox", { name: /^Car/ }), {
+    target: { value: "v-focus" },
+  });
+}
+const confirmButton = () =>
+  screen.getByRole("button", { name: "Confirm booking" });
+
+beforeEach(() => {
+  saveUser("u-customer");
+  vi.useFakeTimers({ toFake: ["Date"] });
+  vi.setSystemTime(NOW);
+});
+afterEach(() => {
+  cleanup();
+  vi.useRealTimers();
+});
+
+describe("book", () => {
+  it("idle: the title reads Book a service and the three fields say (required)", async () => {
+    open("/book");
+    await screen.findByRole("heading", { level: 1, name: "Book a service" });
+    for (const label of ["Dealership", "Car", "Service"]) {
+      expect(
+        await screen.findByText(`${label} (required)`, { exact: false }),
+      ).toBeTruthy();
+    }
+    expect(
+      screen.getByText(
+        "Pick a dealership, a car and a service above. Then we show which days have room.",
+      ),
+    ).toBeTruthy();
+    expect(
+      screen.getAllByRole("button", { name: "Pick a time to confirm" }).length,
+    ).toBe(1);
+  });
+
+  it("deep-link: fills both fields, says so, titles the service and selects the first day with times", async () => {
+    open(deepLink);
+    await screen.findByRole("heading", {
+      level: 1,
+      name: "Choose a time for your full service",
+    });
+    expect(
+      screen.getByText(
+        "The dealership and the service were filled in from the dealer's website. Change them if you need to.",
+      ),
+    ).toBeTruthy();
+    const today = await screen.findByRole("radio", {
+      name: "Wed 28 Oct, 1 time",
+    });
+    await waitFor(() => expect((today as HTMLInputElement).checked).toBe(true));
+    expect(
+      screen.getByRole("radio", { name: "Sun 1 Nov, Closed" }),
+    ).toHaveProperty("disabled", true);
+    expect(screen.getByText("1 time on Wed 28 Oct")).toBeTruthy();
+    expect(screen.getByRole("radio", { name: "13:00 to 16:00" })).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Previous week" }),
+    ).toHaveProperty("title", "You cannot book a day that has passed");
+    const previous = screen.getByRole("button", { name: "Previous week" });
+    expect(
+      document.getElementById(previous.getAttribute("aria-describedby") ?? "")
+        ?.textContent,
+    ).toBe("You cannot book a day that has passed");
+  });
+
+  it("SEC-12.AC-1: an unknown dealership or service in the link is ignored and never shown", async () => {
+    const raw = "<script>x</script>";
+    open(`/book?dealership=${encodeURIComponent(raw)}&service=nope`);
+    await screen.findByRole("heading", { level: 1, name: "Book a service" });
+    await screen.findByRole("option", { name: "Northgate Motors" });
+    const dealership = screen.getByRole("combobox", {
+      name: /^Dealership/,
+    }) as HTMLSelectElement;
+    const service = screen.getByRole("combobox", {
+      name: /^Service/,
+    }) as HTMLSelectElement;
+    expect(dealership.value).toBe("");
+    expect(service.value).toBe("");
+    expect(document.body.textContent).not.toContain("script");
+    expect(new XMLSerializer().serializeToString(document.body)).not.toContain(
+      "script>x",
+    );
+    expect(document.title).not.toContain("script");
+    expect(
+      screen.queryByText(/filled in from the dealer's website/),
+    ).toBeNull();
+  });
+
+  it("REQ-BOOK-001.AC-1, SEC-7.AC-1: Confirm sends one POST with exactly the five fields and an Idempotency-Key; a second press is ignored", async () => {
+    let answer: (r: Response) => void = () => {};
+    const api = open(
+      deepLink,
+      bookingApi({
+        "POST /appointments": () =>
+          new Promise<Response>((done) => (answer = done)),
+      }),
+    );
+    await chooseCar();
+    fireEvent.click(await screen.findByRole("radio", { name: /^Fri 30 Oct/ }));
+    await chooseTime("10:00 to 13:00");
+    fireEvent.click(screen.getByRole("radio", { name: "Drop it off" }));
+    expect(
+      screen.getAllByText("Fri 30 Oct, 10:00 to 13:00").length,
+    ).toBeGreaterThan(0);
+    fireEvent.click(confirmButton());
+    await waitFor(() => expect(posts(api)).toHaveLength(1));
+    const button = screen.getByRole("button", { name: /Confirming…/ });
+    fireEvent.click(button);
+    fireEvent.click(button);
+    const request = posts(api)[0]!;
+    expect(await request.clone().json()).toEqual({
+      dealershipId: "d-leeds",
+      serviceTypeId: "s-full",
+      vehicleId: "v-focus",
+      start: "2026-10-30T10:00:00Z",
+      transport: "drop_off",
+    });
+    expect(request.headers.get("Idempotency-Key")).toMatch(/^[0-9a-f-]{36}$/);
+    await act(async () => answer(problem(500, "INTERNAL")));
+    expect(posts(api)).toHaveLength(1);
+  });
+
+  it("REQ-BOOK-001.AC-2: a missing car and car choice send nothing, list both as links and move focus to the Alert", async () => {
+    const api = open(deepLink);
+    await chooseTime("13:00 to 16:00");
+    fireEvent.click(confirmButton());
+    const heading = await screen.findByText(
+      "2 things need fixing before we can book this.",
+    );
+    await waitFor(() => expect(document.activeElement).toBe(heading));
+    expect(
+      screen.getByRole("link", { name: "Car: choose which car is coming in." }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("link", {
+        name: "What you will do with the car: choose one.",
+      }),
+    ).toBeTruthy();
+    expect(
+      screen.getByText("Car is missing. Choose which car is coming in."),
+    ).toBeTruthy();
+    expect(
+      screen.getByText("Choose what you will do with the car."),
+    ).toBeTruthy();
+    expect(posts(api)).toHaveLength(0);
+    // The typed choices are kept.
+    expect(
+      (
+        screen.getByRole("radio", {
+          name: "13:00 to 16:00",
+        }) as HTMLInputElement
+      ).checked,
+    ).toBe(true);
+    fireEvent.click(
+      screen.getByRole("link", { name: "Car: choose which car is coming in." }),
+    );
+    expect(document.activeElement).toBe(
+      screen.getByRole("combobox", { name: /^Car/ }),
+    );
+  });
+
+  it("REQ-BOOK-010.AC-1: the car choice has no default", async () => {
+    open(deepLink);
+    for (const name of ["Wait on site", "Drop it off"]) {
+      expect(
+        ((await screen.findByRole("radio", { name })) as HTMLInputElement)
+          .checked,
+      ).toBe(false);
+    }
+  });
+
+  it("REQ-BOOK-009.AC-2: a 409 keeps every choice, apologises with the real time, strikes the chip and offers the closest times; a suggestion books nothing", async () => {
+    const api = open(
+      deepLink,
+      bookingApi({
+        "POST /appointments": () =>
+          problem(409, "SLOT_UNAVAILABLE", {
+            reasons: ["TECHNICIAN_BUSY"],
+            suggestions: [
+              {
+                start: at("2026-10-30", "10:15"),
+                end: at("2026-10-30", "13:15"),
+              },
+              {
+                start: at("2026-10-31", "10:00"),
+                end: at("2026-10-31", "13:00"),
+              },
+            ],
+          }),
+      }),
+    );
+    await chooseCar();
+    fireEvent.click(await screen.findByRole("radio", { name: /^Fri 30 Oct/ }));
+    await chooseTime("10:00 to 13:00");
+    fireEvent.click(screen.getByRole("radio", { name: "Wait on site" }));
+    fireEvent.click(confirmButton());
+    const heading = await screen.findByText(
+      "Sorry, 10:00 on Fri 30 Oct was just taken.",
+    );
+    await waitFor(() => expect(document.activeElement).toBe(heading));
+    expect(
+      screen.getByText(
+        "Another customer confirmed that time a moment before you. Nothing was booked for you. We kept your car, service and choice, so you only need a new time.",
+      ),
+    ).toBeTruthy();
+    expect(document.body.textContent).not.toContain("TECHNICIAN_BUSY");
+    expect(
+      screen.getByRole("radio", { name: "10:00, just taken" }),
+    ).toHaveProperty("disabled", true);
+    expect(screen.getByText("Just taken")).toBeTruthy();
+    expect(
+      screen.getAllByRole("button", { name: "Pick a new time to confirm" }),
+    ).toHaveLength(1);
+    expect(
+      (screen.getByRole("combobox", { name: /^Car/ }) as HTMLSelectElement)
+        .value,
+    ).toBe("v-focus");
+    expect(
+      (screen.getByRole("radio", { name: "Wait on site" }) as HTMLInputElement)
+        .checked,
+    ).toBe(true);
+    const closest = screen.getByRole("radiogroup", {
+      name: "Closest to your time",
+    });
+    expect(within(closest).getByText("ends 13:15")).toBeTruthy();
+    const same = screen.getByRole("radiogroup", {
+      name: "Same time, another day",
+    });
+    expect(within(same).getByText("Sat 31 Oct · ends 13:00")).toBeTruthy();
+    // Each group is its own native radio group: its own Tab stop, arrows stay inside it.
+    const groupName = (group: HTMLElement) =>
+      within(group).getAllByRole("radio")[0]!.getAttribute("name");
+    expect(groupName(closest)).not.toBe(groupName(same));
+    // The heading takes focus and so is announced once; the Alert is not also a live region.
+    expect(heading.closest("[role=alert], [role=status]")).toBeNull();
+
+    fireEvent.click(
+      within(closest).getByRole("radio", { name: "10:15 to 13:15" }),
+    );
+    expect(
+      screen.getAllByText("Fri 30 Oct, 10:15 to 13:15").length,
+    ).toBeGreaterThan(0);
+    expect(confirmButton()).toHaveProperty("disabled", false);
+    expect(posts(api)).toHaveLength(1);
+  });
+
+  it("conflict-empty: with no suggestions the page says so and gives the dealership's phone", async () => {
+    open(
+      deepLink,
+      bookingApi({
+        "POST /appointments": () =>
+          problem(409, "SLOT_UNAVAILABLE", {
+            reasons: ["BAY_BUSY"],
+            suggestions: [],
+          }),
+      }),
+    );
+    await chooseCar();
+    await chooseTime("13:00 to 16:00");
+    fireEvent.click(screen.getByRole("radio", { name: "Wait on site" }));
+    fireEvent.click(confirmButton());
+    await screen.findByText("There are no other times in the next 14 days.");
+    expect(
+      screen.getByText("Try another day, or contact Northgate Motors."),
+    ).toBeTruthy();
+    expect(
+      screen
+        .getAllByRole("link", { name: /\+44 113 496 0123/ })[0]!
+        .getAttribute("href"),
+    ).toMatch(/^tel:/);
+  });
+
+  it("conflict-too-soon: a 409 TOO_SOON says the time is too soon and the chip says Too soon", async () => {
+    open(
+      deepLink,
+      bookingApi({
+        "POST /appointments": () =>
+          problem(409, "SLOT_UNAVAILABLE", {
+            reasons: ["TOO_SOON"],
+            suggestions: [],
+          }),
+      }),
+    );
+    await chooseCar();
+    await chooseTime("13:00 to 16:00");
+    fireEvent.click(screen.getByRole("radio", { name: "Wait on site" }));
+    fireEvent.click(confirmButton());
+    await screen.findByText("Sorry, 13:00 on Wed 28 Oct is too soon to book.");
+    expect(screen.getByRole("radio", { name: "13:00, too soon" })).toBeTruthy();
+  });
+
+  it("REQ-BOOK-009.AC-4, AD-5: after a 500, Try again sends the same Idempotency-Key and the choices stay", async () => {
+    let first = true;
+    const api = open(
+      deepLink,
+      bookingApi({
+        "POST /appointments": () => {
+          if (first) {
+            first = false;
+            return problem(500, "INTERNAL");
+          }
+          return problem(503, "INTERNAL");
+        },
+      }),
+    );
+    await chooseCar();
+    await chooseTime("13:00 to 16:00");
+    fireEvent.click(screen.getByRole("radio", { name: "Wait on site" }));
+    fireEvent.click(confirmButton());
+    await screen.findByText("Something went wrong on our side.");
+    expect(
+      screen.getByText(
+        "Nothing was booked. Your choices are still here. Try again; if it keeps happening, quote reference 4bf92f35.",
+      ),
+    ).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+    await waitFor(() => expect(posts(api)).toHaveLength(2));
+    const [a, b] = posts(api);
+    expect(b!.headers.get("Idempotency-Key")).toBe(
+      a!.headers.get("Idempotency-Key"),
+    );
+  });
+
+  it("no network: the title says we could not reach the booking service", async () => {
+    open(
+      deepLink,
+      bookingApi({
+        "POST /appointments": () => {
+          throw new TypeError("Failed to fetch");
+        },
+      }),
+    );
+    await chooseCar();
+    await chooseTime("13:00 to 16:00");
+    fireEvent.click(screen.getByRole("radio", { name: "Wait on site" }));
+    fireEvent.click(confirmButton());
+    await screen.findByText("We could not reach the booking service.");
+    expect(
+      screen.getByText(
+        "Nothing was booked. Check your connection and try again. Your choices are still here.",
+      ),
+    ).toBeTruthy();
+  });
+
+  it("SEC-6.AC-3: a customer with no car sees the info Alert with the phone, and no strip", async () => {
+    open(deepLink, bookingApi({}, []));
+    await screen.findByText("There is no car on your account yet.");
+    expect(
+      screen.getAllByRole("link", { name: /\+44 113 496 0123/ }).length,
+    ).toBeGreaterThan(0);
+    expect(
+      screen.queryByRole("radiogroup", { name: "Choose a day" }),
+    ).toBeNull();
+  });
+
+  it("SEC-6.AC-1: a booking link for another customer shows the customer no-permission block", async () => {
+    open("/book?customerId=c-someone-else");
+    await screen.findByRole("heading", {
+      name: "You cannot do that as Customer.",
+    });
+    expect(screen.getByRole("link", { name: "Book for myself" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Switch role" })).toBeTruthy();
+  });
+
+  it("days-error: a failed day check replaces the strip with what failed and the reference", async () => {
+    open(
+      deepLink,
+      bookingApi({
+        "GET /dealerships/d-leeds/availability": () => problem(500, "INTERNAL"),
+      }),
+    );
+    await screen.findByText("We could not check the days.");
+    expect(screen.getByText(/Nothing was changed\./)).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Try again" })).toBeTruthy();
+    expect(screen.getAllByText(/4bf92f35/).length).toBeGreaterThan(0);
+  });
+});
+
+describe("book-confirmed", () => {
+  const appointment = {
+    id: "ap-1",
+    dealershipId: "d-leeds",
+    timeZone: "Europe/London",
+    customerId: "c-aisha",
+    vehicleId: "v-focus",
+    serviceTypeId: "s-full",
+    technicianId: "t-1",
+    serviceBayId: "b-1",
+    courtesyCarId: null,
+    transport: "drop_off",
+    start: "2026-10-30T10:00:00Z",
+    end: "2026-10-30T13:00:00Z",
+    status: "confirmed",
+    flags: [],
+    version: 1,
+    createdAt: "2026-10-28T10:40:00Z",
+    updatedAt: "2026-10-28T10:40:00Z",
+    cancelledAt: null,
+    display: {
+      serviceTypeName: "Full service",
+      vehicle: { registration: "AB12 CDE", make: "Ford", model: "Focus" },
+    },
+  };
+
+  it("REQ-BOOK-003.AC-1, 010.AC-1, 013.AC-1: says You are booked with the time, the facts, the car choice and what happens next, and no bay", async () => {
+    open(
+      "/book/confirmed/ap-1",
+      bookingApi({ "GET /appointments/ap-1": () => json(appointment) }),
+    );
+    await screen.findByRole("heading", { level: 1, name: "You are booked" });
+    expect(screen.getByText("Fri 30 Oct, 10:00 to 13:00")).toBeTruthy();
+    expect(screen.getByText("You will drop it off")).toBeTruthy();
+    expect(screen.getByText("Full service, about 3 hours")).toBeTruthy();
+    expect(screen.queryByText("Service bay")).toBeNull();
+    expect(
+      screen.getByText(
+        /We will send you a confirmation now, and a reminder on the morning of your appointment, at 08:00 on Fri 30 Oct\./,
+      ),
+    ).toBeTruthy();
+    expect(
+      screen.getByText(
+        /online until 08:00 on Fri 30 Oct, which is 2 hours before it starts/,
+      ),
+    ).toBeTruthy();
+    expect(
+      screen
+        .getAllByRole("link", { name: /\+44 113 496 0123/ })[0]!
+        .getAttribute("href"),
+    ).toMatch(/^tel:/);
+  });
+
+  it("D-0001-26 C: shows a Technician row only when the API sends the name (it hides it from customers until Q-0001-208 is answered)", async () => {
+    open(
+      "/book/confirmed/ap-1",
+      bookingApi({ "GET /appointments/ap-1": () => json(appointment) }),
+    );
+    await screen.findByRole("heading", { level: 1, name: "You are booked" });
+    expect(screen.queryByText("Technician")).toBeNull();
+    cleanup();
+    open(
+      "/book/confirmed/ap-1",
+      bookingApi({
+        "GET /appointments/ap-1": () =>
+          json({
+            ...appointment,
+            display: { ...appointment.display, technicianName: "Sam Patel" },
+          }),
+      }),
+    );
+    await screen.findByRole("heading", { level: 1, name: "You are booked" });
+    expect(screen.getByText("Technician")).toBeTruthy();
+    expect(screen.getByText("Sam Patel")).toBeTruthy();
+    expect(screen.queryByText("Service bay")).toBeNull();
+  });
+
+  it("not-found and error states", async () => {
+    open(
+      "/book/confirmed/nope",
+      bookingApi({ "GET /appointments/nope": () => problem(404, "NOT_FOUND") }),
+    );
+    await screen.findByRole("heading", {
+      name: "We cannot find that appointment.",
+    });
+    cleanup();
+    open(
+      "/book/confirmed/ap-2",
+      bookingApi({ "GET /appointments/ap-2": () => problem(500, "INTERNAL") }),
+    );
+    await screen.findByRole("heading", {
+      name: "We could not show your confirmation.",
+    });
+    const buttons = screen
+      .getAllByRole("link")
+      .concat(screen.getAllByRole("button"));
+    expect(buttons.map((b) => b.textContent)).toEqual(
+      expect.arrayContaining(["Open my appointments", "Try again"]),
+    );
+  });
+});
