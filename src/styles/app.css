@@ -1,2 +1,138 @@
 @import "tailwindcss";
 @import "./tokens.css";
+
+/* Browser surfaces and the few things Tailwind classes cannot say (design.md section 7).
+   Every value comes from tokens.css. */
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    scrollbar-color: var(--color-slate-tech) var(--color-surface-page);
+  }
+  body {
+    margin: 0;
+    @apply font-sans;
+    font-size: var(--text-base);
+    line-height: var(--leading-body);
+    color: var(--color-text);
+    background: var(--color-surface-page);
+    caret-color: var(--color-text);
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-heading font-bold;
+    line-height: var(--leading-heading);
+    text-wrap: balance;
+  }
+  a {
+    color: var(--color-text-link);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+  button,
+  [role="button"],
+  summary,
+  select,
+  label[for] {
+    cursor: pointer;
+  }
+  button:disabled,
+  input:disabled,
+  select:disabled {
+    cursor: not-allowed;
+  }
+  :focus-visible {
+    outline: var(--focus-ring-width) solid var(--color-focus-ring);
+    outline-offset: var(--focus-ring-offset);
+  }
+  ::selection {
+    background: var(--color-signal);
+    color: var(--color-carbon);
+  }
+}
+
+@layer components {
+  .num {
+    font-variant-numeric: tabular-nums;
+  }
+  .icon {
+    width: var(--size-icon);
+    height: var(--size-icon);
+    flex: none;
+    fill: none;
+    stroke: currentcolor;
+    stroke-width: 1.75;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .icon-lg {
+    width: var(--size-icon-lg);
+    height: var(--size-icon-lg);
+  }
+  .spin {
+    animation: spin calc(var(--duration-slow) * 4) linear infinite;
+  }
+  .skeleton {
+    display: block;
+    min-height: var(--space-4);
+    background: var(--color-surface-sunken);
+    border-radius: var(--radius-control);
+    animation: pulse calc(var(--duration-slow) * 6) ease-in-out infinite;
+  }
+  .sheet-rise {
+    animation: rise var(--duration-slow) var(--ease-out) both;
+  }
+  .dialog-in {
+    animation: fade var(--duration-slow) var(--ease-out) both;
+  }
+  /* The bar sits above the browser's safe area (design.md section 3, rule 4). */
+  .safe-bottom {
+    padding-bottom: calc(var(--space-3) + env(safe-area-inset-bottom));
+  }
+  /* A narrow first column that fits its content, then the rest (an alert's icon and heading, a facts list). */
+  .cols-icon-text {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .safe-inset-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .hatched {
+    background-color: var(--color-off-shift-bg);
+    background-image: repeating-linear-gradient(
+      135deg,
+      var(--color-off-shift-line) 0 var(--border-width),
+      transparent var(--border-width) var(--size-hatch)
+    );
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+@keyframes pulse {
+  50% {
+    opacity: 0.55;
+  }
+}
+@keyframes rise {
+  from {
+    transform: translateY(100%);
+  }
+}
+@keyframes fade {
+  from {
+    opacity: 0;
+    transform: translateY(var(--space-2));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

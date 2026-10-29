@@ -6,6 +6,10 @@
     "@js-temporal/polyfill": "D-0000-31",
     "dexie": "D-0000-8",
     "msw": "D-0000-3",
-    "openapi-fetch": "D-0000-24"
+    "openapi-fetch": "D-0000-24",
+    "react-router": "D-0000-19",
+    "@tanstack/react-query": "D-0000-20",
+    "react-hook-form": "D-0000-21",
+    "zod": "D-0000-21"
   }
 }

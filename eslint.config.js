@@ -35,6 +35,21 @@ const htmlSinkProperties = [
   },
 ];
 
+// ---------------------------------------------------------------------------
+// SEC-13.AC-1, SEC-10.AC-4: browser storage is used in one module only (src/ui/demo/saved-user.ts)
+// ---------------------------------------------------------------------------
+const storageMessage =
+  "Browser storage is used in one module only: src/ui/demo/saved-user.ts (SEC-13.AC-1).";
+const storageGlobals = ["localStorage", "sessionStorage"].map((name) => ({
+  name,
+  message: storageMessage,
+}));
+const storageProperties = [
+  { property: "localStorage", message: storageMessage },
+  { property: "sessionStorage", message: storageMessage },
+  { object: "document", property: "cookie", message: storageMessage },
+];
+
 const dangerousSyntax = [
   {
     selector: "JSXIdentifier[name='dangerouslySetInnerHTML']",
@@ -162,6 +177,18 @@ const webAddressSyntax = [
 const rawColourPattern =
   "#[0-9a-fA-F]{3,8}\\b|\\b(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch)\\(";
 const arbitraryValuePattern = "[A-Za-z0-9]-\\[(?!var\\(--)";
+const rawSizeAndFontSyntax = [
+  {
+    selector: "Literal[value=/^-?[0-9.]+(px|rem|em)$/]",
+    message:
+      "No raw sizes. Use a token class, or var(--token) (AD-16, D-0000-12).",
+  },
+  {
+    selector: "Property[key.name=/^(fontFamily|fontSize)$/]",
+    message:
+      "No raw fonts or font sizes. Use a token class such as font-heading or text-lg (AD-16).",
+  },
+];
 const rawColourSyntax = ["Literal", "TemplateElement"].flatMap((type) => {
   const field = type === "Literal" ? "value" : "value.raw";
   return [
@@ -188,14 +215,24 @@ function ruleSet({
   globals = [],
   console = true,
   webAddress = true,
+  storage = true,
 }) {
   return {
     "no-eval": "error",
     "no-implied-eval": "error",
     "no-new-func": "error",
     "no-console": console ? "error" : "off",
-    "no-restricted-properties": ["error", ...htmlSinkProperties, ...properties],
-    "no-restricted-globals": ["error", ...globals],
+    "no-restricted-properties": [
+      "error",
+      ...htmlSinkProperties,
+      ...(storage ? storageProperties : []),
+      ...properties,
+    ],
+    // A rule given only a severity keeps the options of an earlier set, so an empty list turns it off.
+    "no-restricted-globals":
+      !storage && globals.length === 0
+        ? "off"
+        : ["error", ...(storage ? storageGlobals : []), ...globals],
     "no-restricted-syntax": [
       "error",
       ...dangerousSyntax,
@@ -408,5 +445,13 @@ export default defineConfig(
   }),
   ...scope("src/config", { webAddress: false }),
   ...scope("src/infrastructure/telemetry", { console: false }),
-  ...scope("src/ui", { syntax: rawColourSyntax }),
+  ...scope("src/ui", { syntax: [...rawColourSyntax, ...rawSizeAndFontSyntax] }),
+  // The one module that may use browser storage: it saves the picked user id and nothing else.
+  {
+    files: ["src/ui/demo/saved-user.ts"],
+    rules: ruleSet({
+      syntax: [...rawColourSyntax, ...rawSizeAndFontSyntax],
+      storage: false,
+    }),
+  },
 );
