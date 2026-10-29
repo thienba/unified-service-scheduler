@@ -11,6 +11,7 @@
     "@tanstack/react-query": "D-0000-20",
     "react-hook-form": "D-0000-21",
     "zod": "D-0000-21",
-    "react-aria-components": "D-0000-39"
+    "react-aria-components": "D-0000-39",
+    "@internationalized/date": "D-0001-135"
   }
 }
