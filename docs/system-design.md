@@ -788,6 +788,8 @@ Every number here was re-run for this pass on `main` at commit `a4f4c24` (all 30
 
 The search times were measured on this Mac, not on the CI machine, so they show the size of the margin rather than a server figure. Each was a single timed run. The human kept these Mac numbers, labelled as single runs (D-0001-113 A).
 
+The same timed test also ran on the CI machine (GitHub Actions, `ubuntu-latest`) in [run 40870236665](https://github.com/thienba/keyloop-service-scheduler/actions/runs/40870236665), on the branch of #33, which has the same code as `main` plus the CI split. One day's search took 36.0 ms (`TZ=UTC`), 13.1 ms (`TZ=Pacific/Kiritimati`) and 15.1 ms (with coverage). The 14-day suggestions took 16.7 ms, 12.1 ms and 19.4 ms. All are under the budget, again as single runs (D-0001-113 B).
+
 ## Pull requests
 
 All in `thienba/keyloop-service-scheduler`. Every one is merged into `main` with a merge commit.
@@ -934,8 +936,8 @@ Decided later, while the screens were designed and built (the latest decisions a
 - D-0001-109 and D-0001-110 (answers Q-0001-253 and Q-0001-254): the two known browser messages under the Content Security Policy.
 - D-0001-111 C (answers Q-0001-255): on `adjust`, an early clash is titled "That time is no longer free."
 - D-0001-112 (answers Q-0001-256): the thirteen first-day questions are confirmed as option A (D-0001-117 to D-0001-129, see the table above).
-- D-0001-113 A (answers Q-0001-257): the timing numbers stay as measured on the Mac, labelled as single runs.
-- D-0001-114 A (answers Q-0001-258): in the public copies the local folder path is left out and the placeholder `.state/<id>` is allowed; the index says so.
+- D-0001-113 A with B (answers Q-0001-257): the timing numbers stay as measured on the Mac, labelled as single runs, and the CI timings are added from the GitHub Actions run.
+- D-0001-114 (answers Q-0001-258): in the public copies the local folder path is left out, the placeholder `.state/<id>` is allowed, the Vietnamese quotes and the org name are kept, and the index says what was changed; the copy script is kept in the work repo.
 - D-0001-115 B (answers Q-0001-259): the README shows a fresh phone shot of `shifts`.
 - D-0001-116 A (answers Q-0001-260): the public copies stay as the originals; the index says links to files that were not copied do not open.
 
