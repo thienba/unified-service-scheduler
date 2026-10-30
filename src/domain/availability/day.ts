@@ -135,14 +135,25 @@ export function policyReasons(
   return reasons;
 }
 
-/** Steps 1 and 3 to 7 of section 7.4 for one start on the context's date. */
-export function evaluateStart(day: DayContext, start: EpochMs): CheckResult {
+/**
+ * Steps 1 and 3 to 7 of section 7.4 for one start on the context's date. A start that is not a
+ * whole number of grid steps after the opening instant is refused (D-0001-147).
+ */
+export function evaluateStart(
+  day: DayContext,
+  start: EpochMs,
+  checkGrid = true,
+): CheckResult {
   const job: Interval = { start, end: start + day.durationMs };
   if (day.window === null) {
     return { available: false, reasons: ["DEALERSHIP_CLOSED"] };
   }
   if (!contains(day.window, job)) {
     return { available: false, reasons: ["OUTSIDE_OPENING_HOURS"] };
+  }
+  const gridMs = day.snapshot.dealership.policies.gridMinutes * MINUTE_MS;
+  if (checkGrid && (start - day.window.start) % gridMs !== 0) {
+    return { available: false, reasons: ["NOT_ON_GRID"] };
   }
   const reasons: UnavailableReason[] = [];
   const breakMinutes = day.snapshot.dealership.policies.breakMinutes;

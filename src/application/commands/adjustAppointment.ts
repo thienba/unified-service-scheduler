@@ -154,6 +154,7 @@ async function adjust(
         excludeAppointmentId: current.id,
         technicianId,
         serviceBayId,
+        keepsStoredStart: start === current.start,
       })),
     );
     let checked = await runCheck(deps, snapshot, attempts[0]!, now);
