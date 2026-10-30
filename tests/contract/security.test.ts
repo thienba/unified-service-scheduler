@@ -744,7 +744,7 @@ describe("traceparent (AD-12, SEC-9.AC-3)", () => {
     const lines = world.logger.calls.flatMap((c) =>
       c.kind === "info" ? [c.fields] : [],
     );
-    const http = lines.find((f) => f.route);
+    const http = lines.find((f) => f.status !== undefined);
     expect(http).toMatchObject({
       traceId: TRACE,
       route: "GET /appointments",

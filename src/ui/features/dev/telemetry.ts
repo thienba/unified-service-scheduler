@@ -105,7 +105,8 @@ export function numbersOf(telemetry: Telemetry): Numbers {
     searches,
     confirmed: { total, byCustomers, byStaff: total - byCustomers },
     refused: {
-      total: sum([...reasons.values()]),
+      // A 409 can have several reasons, so the total is its own counter, not the sum of the reasons.
+      total: sum(counters("appointments_refused_total").map((c) => c.value)),
       reasons: [...reasons.entries()]
         .map(([words, count]) => ({ words, count }))
         .sort((a, b) => b.count - a.count),
