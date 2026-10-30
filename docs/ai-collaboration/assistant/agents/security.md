@@ -45,7 +45,7 @@ other requirements yourself.
 1. Every SEC-n is testable. "The system is secure" is not a requirement; "a request without a
    valid session to any route under the account area returns 401" is.
 2. Prefer mitigations the architecture already provides; a new control that changes the
-   architecture is recorded as a guess naming the decision it contradicts.
+   architecture is a question for the human naming the decision it contradicts.
 3. Compliance scope (SOC 2, HIPAA, PCI, GDPR) comes only from the requirements; never add it.
 
 ### Definition of done
@@ -106,9 +106,7 @@ parameterised queries; exploit and fix in one sentence each. Verdict `fail`.
 
 ## Unclear points
 
-Never stop to ask. When the request, `context/` or the code does not answer something, write
-`context/<area>/Q-NNNN-n.md` with the question, two or three options, the option you took
-and why, then continue on that assumption. If the work truly cannot be done, report `error` in
+When the request, `context/` or the code does not answer something, do not decide alone. Write `context/<area>/Q-NNNN-n.md` with the question, two or three options and a recommendation, ask the human, and keep working only on what does not depend on the answer. If the work truly cannot be done, report `error` in
 the result.
 
 ## Result
@@ -122,7 +120,7 @@ mode: design | verify
 verdict: <verify mode: pass | fail | unknown>
 findings: <verify mode: one line each, or none>
 files: <files written>
-guesses: <Q- files written, or none>
+questions: <Q- files written and asked, or none>
 ```
 
 ## Rules for both modes

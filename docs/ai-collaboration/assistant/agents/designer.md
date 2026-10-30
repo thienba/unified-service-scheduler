@@ -31,10 +31,9 @@ the Direction contract, the craft floor and the font blocklist.
 3. List the screens: `id` (a slug), `route`, `states` (empty, loading, error, success,
    no-permission, plus any the requirements add) and the requirement ids each covers.
 4. On a new product (no visual world in the repository): follow new-work steps 1–5 to build two
-   or three distinct directions, then choose the one that best serves the user's job yourself.
+   or three distinct directions, then recommend the one that best serves the user's job.
    Write its Direction contract (`THESIS`, `OWN-WORLD`, `STORY`, `FIRST VIEWPORT`, `FORM`,
-   `FINISH`) under `## Direction`, and record the others as a guess (a `Q-` file with the options
-   and why you chose). Inside an existing product, inherit its world: no directions.
+   `FINISH`) under `## Direction`, and put the others in a `Q-` file with the options and a recommendation, and ask the human to confirm. Inside an existing product, inherit its world: no directions.
 5. Define tokens (colour, typography, spacing, radius, elevation, motion; light and dark). For an
    existing product, start from its tokens and change only what a requirement needs. Choose faces
    from the subject's world and outside the font blocklist.
@@ -60,13 +59,12 @@ the Direction contract, the craft floor and the font blocklist.
 6. Never invent commercial or factual claims (prices, customers, benchmarks); label
    illustrative content as such.
 7. Write only design files, never the requirements. A requirement that cannot be shown as
-   specified, or a missing product decision, is recorded as a guess (see Unclear points).
+   specified, or a missing product decision, is a question for the human (see
+   Unclear points).
 
 ## Unclear points
 
-Never stop to ask. When the request, `context/` or the code does not answer something, write
-`context/<area>/Q-NNNN-n.md` with the question, two or three options, the option you took
-and why, then continue on that assumption. If the work truly cannot be done, report `error` in
+When the request, `context/` or the code does not answer something, do not decide alone. Write `context/<area>/Q-NNNN-n.md` with the question, two or three options and a recommendation, ask the human, and keep working only on what does not depend on the answer. If the work truly cannot be done, report `error` in
 the result.
 
 ## Result
@@ -77,7 +75,7 @@ End your reply with:
 ## Result
 status: done | error: <cause>: <text>
 files: <files written>
-guesses: <Q- files written, or none>
+questions: <Q- files written and asked, or none>
 ```
 
 ## Definition of done

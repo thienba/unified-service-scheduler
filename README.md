@@ -4,7 +4,7 @@
 
 This is my submission for a technical assessment, Scenario A, "Unified Service Scheduler". It is a React and TypeScript app. There is no real server: the backend is **mocked inside the browser**, behind a written API contract, so a real backend can take its place later.
 
-**Try it now: [unified-service-scheduler.vercel.app](https://unified-service-scheduler.vercel.app)**. No sign-in is needed. Use **Viewing as** at the top of the page to switch between the three roles.
+**Try it now: [unified-service-scheduler.vercel.app](https://unified-service-scheduler.vercel.app)**. No sign-in is needed: the first time you open it, you are Demo Customer A and you land on the booking page. Use **Viewing as** at the top of the page to switch between the three roles.
 
 ![A customer books a full service: pick a day, pick a time, confirm, and see the booking.](docs/images/hero-booking.gif)
 
@@ -48,6 +48,7 @@ On a phone, the same manager screens fit a narrow page:
 ## Why it is interesting
 
 - **The first Confirm wins.** Two people pressing Confirm for the same last time get one booking. The other person gets an apology and the closest free times. The page also warns you early if the time you chose has been taken while you were filling in the form.
+- **One car, one appointment at a time.** The same car cannot hold two overlapping bookings, at any dealership. Once the car is known, the times it is busy are left out of the lists, and a confirm that would overlap is refused with the closest free times.
 - **Time zones and clock changes.** Times are always shown in the dealership's own clock (London and Saigon in the demo), and the page tells you when your browser is in another zone. The tests cover the days when the clocks change.
 - **Shifts, breaks and lead time.** A technician's shift, leave and the rest break after each job decide which times can be offered. There is a minimum notice before a booking, and a limit on how far ahead one can be made.
 - **Flags when hours change.** Shortening a day or changing a shift never deletes a booking. It flags the ones that no longer fit.
@@ -135,7 +136,7 @@ Open the address that `npm run dev` prints. **Reload once after you pull or buil
 
 ### Demo users
 
-There is no password: this is a demo. Pick who you are with **Viewing as** at the top (on a phone, the button at the top opens the same choice). Your choice is kept in your browser.
+There is no password: this is a demo. Pick who you are with **Viewing as** at the top (on a phone, the button at the top opens the same choice). Your choice is kept in your browser. A browser with no choice yet opens as Demo Customer A.
 
 | User                | Role     | Dealership |
 | ------------------- | -------- | ---------- |
@@ -145,6 +146,8 @@ There is no password: this is a demo. Pick who you are with **Viewing as** at th
 | Demo Manager London | manager  | London     |
 | Demo Staff Saigon   | staff    | Saigon     |
 | Demo Manager Saigon | manager  | Saigon     |
+
+Every customer can be picked, not only the first two. **Viewing as** lists all of them by name: the two above, the others in the sample data (for example Demo Walk-in Carol), and each customer that staff add, from the moment their booking is confirmed. Picking one shows the app as that customer: **My appointments** lists their bookings, and booking books for them.
 
 All people, cars and contact details in the sample data are made up.
 
@@ -160,7 +163,7 @@ To see the race yourself, open the app in two tabs as Demo Customer A and Demo C
 
 ### Start again
 
-Your bookings live in your browser (IndexedDB), so they survive a reload. To go back to the sample data, open the **Dev panel** (the link at the bottom of every page, or `/dev`) and press **Reset demo data**. Other browsers are not touched.
+Your bookings live in your browser (IndexedDB), so they survive a reload. To go back to the sample data, open the **Dev panel** (the link at the bottom of every page, or `/dev`) and press **Reset demo data**. Other browsers are not touched. The panel's logs and numbers live in the page, so a reload clears them. Typing `/dev` in the address bar loads the page again, so it starts the logs from empty; the link at the bottom of a page does not.
 
 ## Tests
 
@@ -174,7 +177,7 @@ The scheduling rules are plain TypeScript with no React and no browser, so they 
 - that every page each role can open passes the accessibility checks, at phone and desktop width;
 - that no name, phone number or email ends up in a log line.
 
-The numbers come from the [Results](docs/system-design.md#results) of the System Design Document: **more than 1300 unit, component and contract tests**, and **about 380 end-to-end tests** in Chromium, all passing. Coverage of the scheduling rules is above 99% of lines.
+The numbers come from the [Results](docs/system-design.md#results) of the System Design Document: **1489 unit, component and contract tests**, and **410 end-to-end tests** in Chromium (7 more are skipped on purpose, because they need a setting or a live site), all passing, in a run on 2026-10-30. Coverage of the scheduling rules is above 99% of lines.
 
 ```sh
 npm run lint                # ESLint, Prettier and a lint of the API contract
@@ -183,7 +186,7 @@ npm test                    # all unit, component and contract tests
 npm run test:tz             # the tests that draw no screens, in UTC and in Pacific/Kiritimati
 npm run test:coverage       # all tests, with a coverage report in coverage/
 npx playwright install chromium   # once, to get the browser
-npm run e2e                 # end-to-end tests in Chromium, against the built app (about 380 tests)
+npm run e2e                 # end-to-end tests in Chromium, against the built app (410 tests)
 npm run check:deps          # every runtime library is on the approved list
 npm run check:remote-build  # a build for a real backend holds no demo-only code
 npm run check:public-docs   # this README and docs/ai-collaboration hold no secrets, local paths or reference codes
@@ -204,7 +207,7 @@ I used AI agents for most of the typing and kept the decisions, the checking and
 
 ### How I checked and improved what it gave me
 
-Each example says what I asked, what came back, how I checked it, and whether I kept, changed or dropped it. The first five are from my [AI collaboration log](docs/ai-collaboration/context/ai-collaboration-log.md); the last three come from the screen phase.
+Each example says what I asked, what came back, how I checked it, and whether I kept, changed or dropped it. The first five are from my [AI collaboration log](docs/ai-collaboration/context/ai-collaboration-log.md); the next three come from the screen phase, and the last one from the final check.
 
 1. **Who uses the app (2026-10-28).** I described the problem: customers book, staff check the schedule, the manager adjusts it. The AI wrote the requirements but had assumed only a service advisor uses the app. I read them against the brief and told it that was wrong. **Changed** by me: three kinds of user.
 2. **One garage (2026-10-28).** I asked for technician shifts and opening hours. The AI had assumed one garage with fixed hours. **Changed** by me: several dealerships, hours each one sets, and a change for a single day.
@@ -214,6 +217,7 @@ Each example says what I asked, what came back, how I checked it, and whether I 
 6. **The manager books for a customer (2026-10-28, prototype review).** The approved design gave "Book for a customer" to staff only. I said the manager must be able to book too, for example when a customer phones in. The AI then asked where the button goes, and I took its recommendation. **Changed** by me: a "Book for a customer" button on the schedule ([built here](https://github.com/thienba/unified-service-scheduler/commit/f0dcdefd3c732f7138e7d13dfcc3501cf6c05704), checked by an end-to-end scenario in [this merged change](https://github.com/thienba/unified-service-scheduler/commit/2d590664e2aea4c4eb16c7d07a3bacead51cd4aa)).
 7. **A staff member at two dealerships (2026-10-29).** While building the staff booking screens, the AI found that a staff user linked to two dealerships booked at the wrong one from a free gap. The AI offered three fixes, each keeping that user. I read them and chose none: each staff member works at one dealership only. **Changed** by me: the two-site user removed ([the merged change](https://github.com/thienba/unified-service-scheduler/commit/e53ceb2ac83909756078398c56d1d094a78f9d7b)).
 8. **Holding a time (2026-10-29).** I asked whether a time can be held while the customer fills in the form. The AI wrote three options with their costs: no hold, a 5-minute hold, or no hold with an early warning. I weighed the costs and took the early warning. **Kept** the recommendation; the hold is written down as a considered extension ([the merged change](https://github.com/thienba/unified-service-scheduler/commit/b20423ca30c452f1cdf7ccaf43e50acf969c0870)).
+9. **An independent check against the brief (2026-10-30).** I asked for a check of the finished code against the brief, by someone who had not built it. It found that the API accepted start times off the 15-minute grid (10:07 and 14:07:33), and that one car could hold two bays at the same time. I decided the rule: one car has one appointment at a time, at any dealership, with its busy times hidden too, and old demo data is reset. A fresh reviewer then found that an adjust that kept its start was refused, and a test turned out to depend on which of two confirms made at the same moment finished first. **Changed** by me: the car rule; both findings and the test are fixed ([the start-times change](https://github.com/thienba/unified-service-scheduler/pull/5), [the one-car change](https://github.com/thienba/unified-service-scheduler/pull/6) and [the test fix](https://github.com/thienba/unified-service-scheduler/pull/8), open when this is written).
 
 ### How I made sure the final quality was good
 
@@ -221,7 +225,7 @@ Each example says what I asked, what came back, how I checked it, and whether I 
 - **A reviewer in a fresh context for every ticket.** It checks the diff against the criteria with no memory of the build ([reviewer instructions](docs/ai-collaboration/assistant/agents/reviewer.md)). It found a real bug the builder had only worked around: the browser database closed a read early after a few lookups; a new test now fails without the fix ([the merged change](https://github.com/thienba/unified-service-scheduler/commit/58a80426589d9efa62d8e93edd206073b66504cc)). On the staff booking screens, the first review asked for changes, a fix round added a test for each finding, and a second fresh review passed.
 - **Evidence in every pull request.** Screenshots of every state at phone and desktop width, test and coverage screenshots, and videos. For example the screens in [this merged change](https://github.com/thienba/unified-service-scheduler/commit/02bc83d6914d620d6a21b2e62fef30d32c4fea62), and the two-tab race video in [this one](https://github.com/thienba/unified-service-scheduler/commit/2d590664e2aea4c4eb16c7d07a3bacead51cd4aa).
 - **Claims marked unverified until a test settles them.** The research and the architecture marked every claim they could not check. Example 4 shows two that a test settled; the rest are listed in the System Design Document under [Claims marked unverified](docs/system-design.md#claims-marked-unverified).
-- **The cost log.** Every run's tokens and price are written down ([cost log](docs/ai-collaboration/cost.md)). On 2026-10-29, after its last row, the total was **566,550,105 tokens, about 213.46 USD** at API prices, over 8 runs.
+- **The cost log.** Every run's tokens and price are written down ([cost log](docs/ai-collaboration/cost.md)). On 2026-10-30 the log held 18 rows, and their total was **976,536,693 tokens, about 340.45 USD** at API prices. Every run adds a row, so the total grows; the log is the current figure.
 
 ## Documents
 
@@ -233,9 +237,9 @@ Each example says what I asked, what came back, how I checked it, and whether I 
 ## Known limits
 
 - **It is a demo with a mock server.** The "server" runs in your own browser, so the role and dealership checks show the rules and make them testable, but they protect nothing: anyone can change the role or edit the stored data. The [security section](docs/system-design.md#security-and-privacy) of the System Design Document says what a real backend must do instead.
-- **One car can have two appointments at the same time.** Nothing checks the car, only the bay, the technician and the courtesy car. It was left out for the deadline.
+- **One booking holds one service.** A customer who wants two services makes two bookings, and the two must not overlap, because one car has one appointment at a time.
 - **No time is held** while you fill in the form. The page checks your chosen time again every 30 seconds and warns you early if it was taken. A short hold is a considered extension.
-- **Firefox and WebKit are only partly covered.** The full end-to-end run there is a warning-only job with known failures, mostly focus and visibility checks in WebKit. Only the race and the security-policy tests are claimed for those two browsers, and two browser messages are set aside in those tests.
+- **Firefox and WebKit are a warning-only check.** The full end-to-end run in those two browsers cannot fail a pull request. In the latest `main` run on GitHub (run 41031271319, after pull request #4) all six parts passed, but the two `main` runs before it each had a failed part in Firefox or WebKit, so I do not call them steady. Only the race and the security-policy tests are claimed for those two browsers, and two browser messages are set aside in those tests.
 - **Some claims are still unverified**, such as whether one Safari message also appears in real Safari. The list, with what is settled, is in the System Design Document under [Claims marked unverified](docs/system-design.md#claims-marked-unverified).
 - **The live demo is deployed by hand.** It is not linked to the repository, so a push does not update it.
 - **Sample data only.** All people, cars and numbers are made up.

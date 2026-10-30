@@ -14,3 +14,7 @@
 | 2026-10-29 | Open list as wide as its control | 2026-10-30-open-list-as-wide-as-its-control | 3641237 | 1.2871 | assistant |
 | 2026-10-30 | List width merge, live service list check, README reload note | 2026-10-30-readme-reload-note | 10510890 | 3.0785 | assistant |
 | 2026-10-30 | Live load errors root cause and self-heal; every customer in Viewing as; AI tool credit removed | 2026-10-30-mock-worker-self-heal, 2026-10-30-every-customer-in-viewing-as | 34533703 | 9.7668 | assistant |
+| 2026-10-30 | CI test steadied; no AI tool name in the public project | 2026-10-30-steady-self-heal-test, 2026-10-30-no-ai-tool-name | 6900714 | 1.9483 | assistant |
+| 2026-10-30 | Firefox and WebKit runs green; repo recreated without the AI tool as contributor | 2026-10-30-firefox-and-webkit-green | 30687239 | 10.9474 | assistant |
+| 2026-10-30 | Verify the current code against the challenge PDF and report | none | 4049904 | 3.0408 | assistant |
+| 2026-10-30 | CI failures: root causes in Firefox and WebKit; CI split per pull request | 2026-10-30-firefox-and-webkit-green, 2026-10-30-ci-chromium-per-pr | 49272537 | 16.2738 | assistant |

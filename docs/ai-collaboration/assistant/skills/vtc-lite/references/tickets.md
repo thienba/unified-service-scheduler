@@ -32,9 +32,9 @@ updated: 2026-10-21T08:49:25Z
 
 - [ ] <observable outcome with concrete values> (REQ-NEWS-036)
 
-## Guesses
+## Questions
 
-<Q- files this ticket raised, or none>
+<Q- files this ticket raised and asked, or none>
 
 ## Evidence
 

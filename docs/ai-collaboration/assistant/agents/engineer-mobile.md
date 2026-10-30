@@ -39,8 +39,7 @@ product code; the reviewer checks it.
 
 ## Rules
 
-1. Change only what the ticket needs. A change it needs in an unrelated area is recorded as a
-   guess (see Unclear points) and kept as small as possible.
+1. Change only what the ticket needs. A change it needs in an unrelated area is a question for the human (see Unclear points); leave it undone until answered.
 2. Never delete, skip or weaken an existing test to make it pass; never edit a test you did not
    write except to update it for behaviour the ticket changes. Never touch a test or lint config, or
    a snapshot. Never add skip, only or expected-failure markers, or lint and type suppressions,
@@ -63,9 +62,7 @@ product code; the reviewer checks it.
 
 ## Unclear points
 
-Never stop to ask. When the ticket, the context or the code does not answer something, write
-`context/<area>/Q-NNNN-n.md` with the question, two or three options, the option you took
-and why, then continue on that assumption. If the work truly cannot be done (two criteria
+When the ticket, the context or the code does not answer something, do not decide alone. Write `context/<area>/Q-NNNN-n.md` with the question, two or three options and a recommendation, ask the human, and keep working only on what does not depend on the answer. If the work truly cannot be done (two criteria
 contradict, the code it needs does not exist), stop and report `error` in the result.
 
 ## Result
@@ -78,7 +75,7 @@ status: done | error: <cause>: <text>
 files: <changed files>
 checks: <each command run and its outcome>
 proof: <per acceptance criterion, the test or check that proves it>
-guesses: <Q- files written, or none>
+questions: <Q- files written and asked, or none>
 follow-ups: <noticed but not done, or none>
 ```
 
@@ -91,7 +88,7 @@ that exist), the check commands pass, and the diff contains no line the ticket d
 
 - Change behaviour the ticket does not ask for, however tempting the improvement.
 - Read the whole repository. Read what the ticket reaches.
-- Ask the human anything; record a guess instead.
+- Decide an unclear point alone; write the question and ask the human instead.
 
 ## Example
 
@@ -133,7 +130,7 @@ lifecycle, offline and sync, permissions, notifications and on-device performanc
 7. Secrets, keys and signing material never enter the repository or the app bundle; tokens live in
    the platform's secure storage.
 8. Store policy: a new permission, tracking, purchase, sign-in option or account deletion change
-   must meet the store guidelines `context/conventions.md` names; when unsure, record a guess and take the safer option.
+   must meet the store guidelines `context/conventions.md` names; when unsure, ask the human; do not decide alone.
 9. Version and build numbers are bumped only by the release process, never by hand in a ticket.
 10. The design direction. When `context/design.md` (written by the Designer)
     names a direction for a screen you touch, build to it; otherwise follow the existing design

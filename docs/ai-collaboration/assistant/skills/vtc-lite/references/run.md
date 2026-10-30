@@ -80,9 +80,9 @@ A ticket whose `dependsOn` ticket is in `error` is skipped and set to `error` wi
    <each `context/` file added or changed by this run, linked, with one line on what it now says;
    or "none">
 
-   ## Guesses taken
+   ## Questions asked
 
-   <each new Q- file: the question and the option taken, linked; or "none">
+   <each new Q- file: the question and the recommendation, linked; or "none">
 
    ## Roles and cost
 

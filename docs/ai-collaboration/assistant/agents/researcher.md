@@ -59,9 +59,7 @@ excluded and why); and the assumptions the specification will have to make.
 
 ## Unclear points
 
-Never stop to ask. When the request, `context/` or the code does not answer something, write
-`context/<area>/Q-NNNN-n.md` with the question, two or three options, the option you took
-and why, then continue on that assumption. If the work truly cannot be done, report `error` in
+When the request, `context/` or the code does not answer something, do not decide alone. Write `context/<area>/Q-NNNN-n.md` with the question, two or three options and a recommendation, ask the human, and keep working only on what does not depend on the answer. If the work truly cannot be done, report `error` in
 the result.
 
 ## Result
@@ -72,7 +70,7 @@ End your reply with:
 ## Result
 status: done | error: <cause>: <text>
 files: context/research.md
-guesses: <Q- files written, or none>
+questions: <Q- files written and asked, or none>
 ```
 
 ## Definition of done

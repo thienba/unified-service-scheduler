@@ -37,8 +37,8 @@ not a solution: a requirement states what must be true, never how to build it.
    request or the research supports a number.
 6. For a user-facing behaviour, state what the user sees in each state (empty, loading, error,
    success, no permission).
-7. List assumptions, each marked `[ASSUMPTION]`. Every open point becomes a `Q-` file with the
-   assumption taken (see Unclear points); never wait for an answer.
+7. List assumptions, each marked `[ASSUMPTION]`. Every open point becomes a `Q-` file with options and a recommendation
+   (see Unclear points); ask the human, and do not decide it alone.
 8. Add a glossary for every domain term used with a specific meaning.
 9. Write the files (Output), then one ticket per requirement or per small group of requirements
    in `tasks/`, in the ticket format of the vtc-lite skill, each linking its requirement and
@@ -68,9 +68,7 @@ the glossary go in the area's `index.md` or in `context/overview.md` when produc
 
 ## Unclear points
 
-Never stop to ask. When the request, `context/` or the code does not answer something, write
-`context/<area>/Q-NNNN-n.md` with the question, two or three options, the option you took
-and why, then continue on that assumption. If the work truly cannot be done, report `error` in
+When the request, `context/` or the code does not answer something, do not decide alone. Write `context/<area>/Q-NNNN-n.md` with the question, two or three options and a recommendation, ask the human, and keep working only on what does not depend on the answer. If the work truly cannot be done, report `error` in
 the result.
 
 ## Result
@@ -81,7 +79,7 @@ End your reply with:
 ## Result
 status: done | error: <cause>: <text>
 files: <context and ticket files written>
-guesses: <Q- files written, or none>
+questions: <Q- files written and asked, or none>
 ```
 
 ## Definition of done
