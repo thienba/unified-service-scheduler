@@ -138,7 +138,7 @@ const SUGGESTED = "suggested-start";
 
 interface Conflict {
   /** `courtesy`: the time is still free, but the last courtesy car went first (409 COURTESY_CAR_BUSY). */
-  kind: "taken" | "too-soon" | "too-far" | "courtesy";
+  kind: "taken" | "too-soon" | "too-far" | "courtesy" | "vehicle";
   start: string;
   end: string;
   suggestions: TimeSlot[];
@@ -270,6 +270,8 @@ function Booking({ who }: { who: Who }) {
     name: ["vehicleId", "start", "transport"],
   });
 
+  // Once the car is known, the times it is busy are left out (D-0001-146). A new car has no appointments.
+  const knownVehicle = vehicleId && vehicleId !== "new" ? vehicleId : undefined;
   const [weekStart, setWeekStart] = useState<string | null>(null);
   const [day, setDay] = useState<string | null>(null);
   const [linkDismissed, setLinkDismissed] = useState(false);
@@ -311,6 +313,8 @@ function Booking({ who }: { who: Who }) {
     fetchDates,
     queryTransport,
     technicianId,
+    undefined,
+    knownVehicle,
   );
   const byDate = new Map(fetchDates.map((d, i) => [d, results[i]!]));
   const stripLoading = fetchDates.some((d) => byDate.get(d)!.isPending);
@@ -342,6 +346,7 @@ function Booking({ who }: { who: Who }) {
       service?.id,
       gap?.start,
       technicianId,
+      knownVehicle,
     ],
     queryFn: () =>
       call(
@@ -352,6 +357,7 @@ function Booking({ who }: { who: Who }) {
             start: gap!.start,
             transport: "wait",
             technicianId: gap!.technicianId,
+            ...(knownVehicle ? { vehicleId: knownVehicle } : {}),
           },
         }),
       ),
@@ -407,6 +413,7 @@ function Booking({ who }: { who: Who }) {
       service?.id,
       start,
       technicianId,
+      knownVehicle,
     ],
     queryFn: () =>
       call(
@@ -417,6 +424,7 @@ function Booking({ who }: { who: Who }) {
             start,
             transport: "courtesy_car",
             ...(technicianId ? { technicianId } : {}),
+            ...(knownVehicle ? { vehicleId: knownVehicle } : {}),
           },
         }),
       ),
@@ -460,6 +468,8 @@ function Booking({ who }: { who: Who }) {
           date,
           queryTransport,
           technicianId,
+          undefined,
+          knownVehicle,
         ),
       });
     }
@@ -503,7 +513,9 @@ function Booking({ who }: { who: Who }) {
       ? "too-soon"
       : reasons.includes("BEYOND_HORIZON")
         ? "too-far"
-        : "taken";
+        : reasons.includes("VEHICLE_BUSY")
+          ? "vehicle"
+          : "taken";
     setConflict({
       kind,
       start: at,
@@ -529,6 +541,7 @@ function Booking({ who }: { who: Who }) {
           start,
           transport: queryTransport,
           ...(technicianId ? { technicianId } : {}),
+          ...(knownVehicle ? { vehicleId: knownVehicle } : {}),
         }
       : null;
   useEarlyCheck(earlyRequest, (answer, asked) => {
@@ -1526,6 +1539,7 @@ function Times({
     conflict &&
     conflict.kind !== "too-far" &&
     conflict.kind !== "courtesy" &&
+    conflict.kind !== "vehicle" &&
     localDateIn(conflict.start, zone) === day
       ? conflict
       : null;
@@ -1774,9 +1788,11 @@ function ConflictAlert({
       ? `Bookings need at least ${lead}' notice, and that time is now less than ${lead} away. ${kept} time.`
       : conflict.kind === "too-far"
         ? `Bookings now open up to ${dealership.policies.horizonDays} days ahead, which is ${formatLocalDate(lastDay(dealership, now), thisYear)}. ${kept} day.`
-        : staff
-          ? `Someone else confirmed that time a moment before you did. ${kept} time.`
-          : `Another customer confirmed that time a moment before you. ${kept} time.`;
+        : conflict.kind === "vehicle"
+          ? `${kept} time.`
+          : staff
+            ? `Someone else confirmed that time a moment before you did. ${kept} time.`
+            : `Another customer confirmed that time a moment before you. ${kept} time.`;
   return (
     // After Confirm, focus moves to the heading, which announces it; a live role as well would read it twice.
     // Found early, focus stays where the customer is and the page's polite live region says the title.
@@ -1856,6 +1872,8 @@ function conflictTitle(conflict: Conflict, zone: string, now: number): string {
       return `Sorry, ${at} is too soon to book.`;
     case "too-far":
       return `Sorry, ${formatDay(conflict.start, zone, now)} is further ahead than we can book.`;
+    case "vehicle":
+      return "This car already has an appointment at that time.";
     case "taken":
       return `Sorry, ${at} was just taken.`;
   }

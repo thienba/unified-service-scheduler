@@ -47,6 +47,7 @@ const reasonWords: Record<string, string> = {
     "no technician who can do this job is working then",
   BAY_BUSY: "every service bay is in use then",
   COURTESY_CAR_BUSY: "no courtesy car is free then",
+  VEHICLE_BUSY: "this car already has an appointment at that time",
   OUTSIDE_OPENING_HOURS: "the dealership is closed at that time",
   DEALERSHIP_CLOSED: "the dealership is closed that day",
   NOT_ON_GRID: "that time is not on the 15-minute grid",
@@ -136,6 +137,18 @@ export function describeProblem(
         ? `It starts in less than ${context.cutoffHours} hours. Contact ${who} to change it.`
         : `It starts too soon to change online. Contact ${who} to change it.`,
       problem,
+    );
+  }
+  if (
+    code === "SLOT_UNAVAILABLE" &&
+    problem.problem?.reasons?.includes("VEHICLE_BUSY")
+  ) {
+    return make(
+      "conflict",
+      "This car already has an appointment at that time.",
+      "Nothing was booked. We kept what you entered, so you only need a new time.",
+      problem,
+      { reasons: (problem.problem?.reasons ?? []).map(reasonInWords) },
     );
   }
   if (code === "SLOT_UNAVAILABLE") {

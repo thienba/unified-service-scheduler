@@ -12,6 +12,7 @@ import {
   NOW,
   answerFrom,
   bookAs,
+  bookForSomeoneNew,
   cancelAs,
   mine,
   shot,
@@ -314,8 +315,8 @@ for (const width of [390, 1440]) {
       ).toBeVisible();
       await shot(page, "reschedule", "time-chosen");
 
-      // Customer B takes 13:00 on Mon 2 Nov first: the last bay free then (B's own 14:00 has the other).
-      await bookAs(page, B, MON_13);
+      // Someone else takes 13:00 on Mon 2 Nov first: the last bay free then (B's own 14:00 has the other).
+      await bookForSomeoneNew(page, MON_13);
       await button(page, "Confirm new time").click();
       await expect(
         page.getByRole("heading", {

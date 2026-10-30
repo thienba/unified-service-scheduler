@@ -363,6 +363,7 @@ function AdjustForm({
             start: a.start,
             transport: a.transport,
             appointmentId: a.id,
+            vehicleId: a.vehicleId,
           },
         }),
       ),
@@ -437,6 +438,7 @@ function AdjustForm({
           start: body.start,
           transport: a.transport,
           appointmentId: a.id,
+          vehicleId: a.vehicleId,
           ...(body.technicianId ? { technicianId: body.technicianId } : {}),
         }
       : null,

@@ -54,6 +54,16 @@ const book = (
     },
   });
 
+/** Takes a technician at `start` with a car of its own: customer A's seeded car is already busy then (D-0001-146). */
+const takeSecondTechnician = (start: string) =>
+  book(users.staffLondon, {
+    customerId: "customer-a",
+    vehicleId: undefined,
+    newVehicle: { registration: "TT01 AAA", make: "Make", model: "Model" },
+    serviceTypeId: EV,
+    start,
+  });
+
 /** Everything the stores hold that a request could change. */
 const stored = () =>
   world.repository.read(async (s) => ({
@@ -273,7 +283,7 @@ describe("SEC-5: a customer cannot tell another customer's record from a missing
       "serviceBayId",
       "technicianId",
     ]);
-    await book(users.customerA, { serviceTypeId: EV, start: SEEDED_A.start });
+    await takeSecondTechnician(SEEDED_A.start);
     const lost = await book(users.customerB, {
       serviceTypeId: EV,
       start: SEEDED_A.start,
@@ -560,7 +570,7 @@ describe("SEC-8: the Idempotency-Key", () => {
   });
 
   it("a failed request can be sent again with the same key and runs fresh", async () => {
-    await book(users.customerA, { serviceTypeId: EV, start: SEEDED_A.start });
+    await takeSecondTechnician(SEEDED_A.start);
     const taken = await book(
       users.customerB,
       { serviceTypeId: EV, start: SEEDED_A.start, vehicleId: "vehicle-b" },

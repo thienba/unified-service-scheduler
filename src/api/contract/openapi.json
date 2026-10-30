@@ -330,7 +330,7 @@
         "operationId": "searchAvailability",
         "tags": ["availability"],
         "summary": "Free start times on one local date",
-        "description": "Every role. `technicianId` is for staff and managers only; a customer who sends it is refused.\nStaff and managers ask about their own dealerships. `appointmentId` leaves that appointment out of\nthe search, for the person moving it; only its owner, or staff or a manager of its dealership, may send\nit, and anyone else gets the same 404 as for a missing appointment.\n",
+        "description": "Every role. `technicianId` is for staff and managers only; a customer who sends it is refused.\nStaff and managers ask about their own dealerships. `appointmentId` leaves that appointment out of\nthe search, for the person moving it; only its owner, or staff or a manager of its dealership, may send\nit, and anyone else gets the same 404 as for a missing appointment.\n`vehicleId` leaves out the times that car is already booked, at any dealership (`VEHICLE_BUSY`); a\ncustomer who names a car they do not own gets the same 404 as for a missing car.\n",
         "parameters": [
           { "$ref": "#/components/parameters/Traceparent" },
           { "$ref": "#/components/parameters/DealershipId" },
@@ -363,6 +363,12 @@
             "in": "query",
             "required": false,
             "schema": { "$ref": "#/components/schemas/Id" }
+          },
+          {
+            "name": "vehicleId",
+            "in": "query",
+            "required": false,
+            "schema": { "$ref": "#/components/schemas/Id" }
           }
         ],
         "responses": {
@@ -390,7 +396,7 @@
         "operationId": "checkAvailability",
         "tags": ["availability"],
         "summary": "Check one start time",
-        "description": "Says whether one start time is free. It never answers 409: a taken time is a normal answer\n(`available: false`, with reasons and suggested times). `technicianId` is for staff and managers only.\n`appointmentId` leaves that appointment out of the check, for the person moving it; only its owner, or\nstaff or a manager of its dealership, may send it, and anyone else gets the same 404 as for a missing\nappointment.\n",
+        "description": "Says whether one start time is free. It never answers 409: a taken time is a normal answer\n(`available: false`, with reasons and suggested times). `technicianId` is for staff and managers only.\n`appointmentId` leaves that appointment out of the check, for the person moving it; only its owner, or\nstaff or a manager of its dealership, may send it, and anyone else gets the same 404 as for a missing\nappointment. `vehicleId` counts the car's own appointments at any dealership as busy times\n(`VEHICLE_BUSY`); a customer who names a car they do not own gets the same 404 as for a missing car.\n",
         "parameters": [{ "$ref": "#/components/parameters/Traceparent" }],
         "requestBody": {
           "required": true,
@@ -1047,6 +1053,7 @@
           "NO_QUALIFIED_TECHNICIAN_ON_SHIFT",
           "BAY_BUSY",
           "COURTESY_CAR_BUSY",
+          "VEHICLE_BUSY",
           "OUTSIDE_OPENING_HOURS",
           "DEALERSHIP_CLOSED",
           "NOT_ON_GRID",
@@ -1737,7 +1744,8 @@
           "start": { "$ref": "#/components/schemas/Instant" },
           "transport": { "$ref": "#/components/schemas/Transport" },
           "technicianId": { "$ref": "#/components/schemas/Id" },
-          "appointmentId": { "$ref": "#/components/schemas/Id" }
+          "appointmentId": { "$ref": "#/components/schemas/Id" },
+          "vehicleId": { "$ref": "#/components/schemas/Id" }
         }
       },
       "RescheduleRequest": {

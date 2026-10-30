@@ -87,6 +87,9 @@ function api(
         headers: {
           "X-Demo-User": user,
           ...(body ? { "Content-Type": "application/json" } : {}),
+          ...(method === "POST"
+            ? { "Idempotency-Key": crypto.randomUUID() }
+            : {}),
         },
         body: body ? JSON.stringify(body) : undefined,
       });
@@ -538,13 +541,33 @@ for (const width of [390, 1440]) {
       await other.setViewportSize({ width, height: 900 });
       await other.clock.setFixedTime(NOW);
       await other.goto(DEEP);
-      await chooseAll(page);
       await chooseAll(other);
       const before = await day(other, "Fri 30 Oct").getAttribute("aria-label");
-      await confirm(page).click();
-      await expect(
-        page.getByRole("heading", { level: 1, name: "You are booked" }),
-      ).toBeVisible();
+      // Someone else confirms 10:00 first. It is a new customer with a new car, because customer A's own car
+      // cannot have two appointments at once.
+      const rival = await api(
+        page,
+        "/appointments",
+        "user-staff-london",
+        "POST",
+        {
+          dealershipId: LONDON,
+          serviceTypeId: "service-full",
+          start: fri("10:00"),
+          transport: "wait",
+          newCustomer: {
+            name: "Ravi Menon",
+            phone: "0161 496 0456",
+            email: "ravi@example.com",
+          },
+          newVehicle: {
+            registration: "GH78 MNO",
+            make: "Skoda",
+            model: "Octavia",
+          },
+        },
+      );
+      expect(rival.status).toBe(201);
 
       await confirm(other).click();
       const heading = other.getByText(
@@ -591,9 +614,13 @@ for (const width of [390, 1440]) {
       await items.first().check();
       await expect(confirm(other)).toBeEnabled();
       await shot(other, "conflict-suggestion-chosen");
-      const mine = await api(other, "/appointments", "user-customer-a");
+      const day30 = await api(
+        other,
+        `/appointments?dealershipId=${LONDON}&date=2026-10-30`,
+        "user-staff-london",
+      );
       expect(
-        mine.body.filter((a: { start: string }) => a.start === fri("10:00")),
+        day30.body.filter((a: { start: string }) => a.start === fri("10:00")),
       ).toHaveLength(1);
     });
 

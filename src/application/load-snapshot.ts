@@ -10,6 +10,8 @@ export interface SnapshotRequest {
   around: EpochMs;
   /** How many more local dates either side to cover (0 for a check, the window for suggestions). */
   daysEitherSide: number;
+  /** The car being booked: its blocking appointments at any dealership are loaded too (D-0001-146). */
+  vehicleId?: string;
 }
 
 /**
@@ -47,5 +49,14 @@ export async function loadSnapshot(
       first.start - margin,
       last.end + margin,
     ),
+    ...(request.vehicleId === undefined
+      ? {}
+      : {
+          vehicleAppointments: await scheduling.listBlockingByVehicle(
+            request.vehicleId,
+            first.start,
+            last.end,
+          ),
+        }),
   };
 }

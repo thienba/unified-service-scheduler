@@ -9,14 +9,13 @@ BEGIN;
 
 SELECT 'PostgreSQL version: ' || version();
 
--- Test data: one dealership, one customer and vehicle, and numbered bays, technicians and cars.
+-- Test data: two dealerships, one customer, and numbered bays, technicians, cars and vehicles.
 INSERT INTO dealership (id, name, time_zone)
-  VALUES ('00000000-0000-0000-0000-00000000d001', 'Test dealership', 'Europe/London');
+  VALUES ('00000000-0000-0000-0000-00000000d001', 'Test dealership', 'Europe/London'),
+         ('00000000-0000-0000-0000-00000000d002', 'Second dealership', 'Europe/London');
 INSERT INTO skill VALUES ('mot', 'MOT');
 INSERT INTO service_type VALUES ('00000000-0000-0000-0000-00000000e001', 'MOT test', 60, 'mot');
 INSERT INTO customer VALUES ('00000000-0000-0000-0000-00000000c001', 'Test Customer', '000', NULL, now());
-INSERT INTO vehicle VALUES ('00000000-0000-0000-0000-00000000f001',
-  '00000000-0000-0000-0000-00000000c001', 'TEST1', 'Make', 'Model', NULL);
 
 CREATE FUNCTION pg_temp.rid(n int) RETURNS uuid LANGUAGE sql IMMUTABLE AS
   $$ SELECT ('00000000-0000-0000-0000-' || lpad(n::text, 12, '0'))::uuid $$;
@@ -24,18 +23,30 @@ CREATE FUNCTION pg_temp.rid(n int) RETURNS uuid LANGUAGE sql IMMUTABLE AS
 INSERT INTO service_bay  SELECT pg_temp.rid(n), '00000000-0000-0000-0000-00000000d001', 'Bay ' || n  FROM generate_series(1, 30) n;
 INSERT INTO technician   SELECT pg_temp.rid(n), '00000000-0000-0000-0000-00000000d001', 'Tech ' || n FROM generate_series(1, 30) n;
 INSERT INTO courtesy_car SELECT pg_temp.rid(n), '00000000-0000-0000-0000-00000000d001', 'Car ' || n  FROM generate_series(1, 30) n;
+-- Bay 31 and technician 31 work at the second dealership.
+INSERT INTO service_bay VALUES (pg_temp.rid(31), '00000000-0000-0000-0000-00000000d002', 'Bay 31', true);
+INSERT INTO technician  VALUES (pg_temp.rid(31), '00000000-0000-0000-0000-00000000d002', 'Tech 31', true);
+-- Vehicles 1001 to 1100. Each booking gets a fresh one (up to 1090) unless the case names vehicle 91 or 92.
+INSERT INTO vehicle SELECT pg_temp.rid(1000 + n), '00000000-0000-0000-0000-00000000c001',
+                           'TEST' || n, 'Make', 'Model', NULL FROM generate_series(1, 100) n;
+CREATE TEMP SEQUENCE fresh_vehicle;
 
 -- Insert one appointment on 2 Nov 2026 (UTC). Times are 'HH:MM'. Returns 'ok' or the SQLSTATE.
--- Arguments: bay, technician, car (0 = none), transport, during text, busy text, status.
+-- Arguments: bay, technician, car (0 = none), transport, during text, busy text, status,
+-- vehicle (0 = a fresh one), dealership (1 or 2).
 CREATE FUNCTION pg_temp.book(bay int, tech int, car int, transport text,
-                             during_range text, busy_range text, status text DEFAULT 'confirmed')
+                             during_range text, busy_range text, status text DEFAULT 'confirmed',
+                             vehicle int DEFAULT 0, dealer int DEFAULT 1)
 RETURNS text LANGUAGE plpgsql AS $$
 BEGIN
   INSERT INTO appointment (id, dealership_id, customer_id, vehicle_id, service_type_id, technician_id,
                            service_bay_id, courtesy_car_id, transport, during, technician_busy,
                            time_zone, status, created_at, updated_at)
-  VALUES (gen_random_uuid(), '00000000-0000-0000-0000-00000000d001', '00000000-0000-0000-0000-00000000c001',
-          '00000000-0000-0000-0000-00000000f001', '00000000-0000-0000-0000-00000000e001',
+  VALUES (gen_random_uuid(), CASE WHEN dealer = 2 THEN '00000000-0000-0000-0000-00000000d002'::uuid
+                              ELSE '00000000-0000-0000-0000-00000000d001'::uuid END,
+          '00000000-0000-0000-0000-00000000c001',
+          pg_temp.rid(1000 + CASE WHEN vehicle = 0 THEN nextval('fresh_vehicle')::int ELSE vehicle END),
+          '00000000-0000-0000-0000-00000000e001',
           pg_temp.rid(tech), pg_temp.rid(bay), CASE WHEN car = 0 THEN NULL ELSE pg_temp.rid(car) END,
           transport, during_range::tstzrange, busy_range::tstzrange,
           'Europe/London', status, now(), now());
@@ -105,7 +116,26 @@ SELECT pg_temp.report('during (start, end] refused', '23514',
 SELECT pg_temp.report('during [start, end] refused', '23514',
   pg_temp.book(13, 14, 0, 'wait', pg_temp.r('09:00','10:00','[',']'), pg_temp.r('09:00','10:15')));
 
--- 8. Duplicates (SQLSTATE 23505 = unique violation).
+-- 8. Vehicle: one car, one appointment at a time, at any dealership, with no break (D-0001-146).
+--    Each case uses its own bay and technician, so only the vehicle can clash.
+SELECT pg_temp.report('vehicle: first booking', 'ok',
+  pg_temp.book(14, 15, 0, 'wait', pg_temp.r('09:00','10:00'), pg_temp.r('09:00','10:15'), 'confirmed', 91));
+SELECT pg_temp.report('vehicle: same vehicle overlapping, other bay and technician, refused', '23P01',
+  pg_temp.book(15, 16, 0, 'wait', pg_temp.r('09:30','10:30'), pg_temp.r('09:30','10:45'), 'confirmed', 91));
+SELECT pg_temp.report('vehicle: same vehicle overlapping at the other dealership, refused', '23P01',
+  pg_temp.book(31, 31, 0, 'wait', pg_temp.r('09:30','10:30'), pg_temp.r('09:30','10:45'), 'confirmed', 91, 2));
+SELECT pg_temp.report('vehicle: a different vehicle at the same time', 'ok',
+  pg_temp.book(15, 16, 0, 'wait', pg_temp.r('09:30','10:30'), pg_temp.r('09:30','10:45'), 'confirmed', 92));
+SELECT pg_temp.report('vehicle: touching, starts when the first ends (no break for a car)', 'ok',
+  pg_temp.book(16, 17, 0, 'wait', pg_temp.r('10:00','11:00'), pg_temp.r('10:00','11:15'), 'confirmed', 91));
+SELECT pg_temp.report('vehicle: overlapping but cancelled does not block', 'ok',
+  pg_temp.book(17, 18, 0, 'wait', pg_temp.r('09:30','10:30'), pg_temp.r('09:30','10:45'), 'cancelled', 91));
+UPDATE appointment SET status = 'cancelled', cancelled_at = now()
+  WHERE vehicle_id = pg_temp.rid(1091) AND status = 'confirmed';
+SELECT pg_temp.report('vehicle: new overlapping booking after the others are cancelled', 'ok',
+  pg_temp.book(18, 19, 0, 'wait', pg_temp.r('09:00','10:00'), pg_temp.r('09:00','10:15'), 'confirmed', 91));
+
+-- 9. Duplicates (SQLSTATE 23505 = unique violation).
 INSERT INTO idempotency_key VALUES ('actor-1', 'key-1', 'hash', 201, '{}', now());
 CREATE FUNCTION pg_temp.dup_idem() RETURNS text LANGUAGE plpgsql AS $$
 BEGIN

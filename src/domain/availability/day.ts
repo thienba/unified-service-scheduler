@@ -56,6 +56,8 @@ export interface DayContext {
   }[];
   bays: { bay: ServiceBay; jobs: Interval[] }[];
   courtesyCars: { car: CourtesyCar; jobs: Interval[] }[];
+  /** The vehicle's own blocking appointments at any dealership; no break applies (D-0001-146). */
+  vehicleJobs: Interval[];
   bookedCount: ReadonlyMap<string, number>;
 }
 
@@ -111,6 +113,17 @@ export function buildDay(
     courtesyCars: snapshot.courtesyCars
       .filter((c) => c.dealershipId === dealership.id && c.active)
       .map((car) => ({ car, jobs: carJobs.get(car.id) ?? [] })),
+    vehicleJobs:
+      request.vehicleId === undefined
+        ? []
+        : (snapshot.vehicleAppointments ?? [])
+            .filter(
+              (a) =>
+                isBlocking(a) &&
+                a.vehicleId === request.vehicleId &&
+                a.id !== request.excludeAppointmentId,
+            )
+            .map((a) => ({ start: a.start, end: a.end })),
     bookedCount: countByTechnician(live, date, dealership.timeZone),
   };
 }
@@ -156,6 +169,9 @@ export function evaluateStart(
     return { available: false, reasons: ["NOT_ON_GRID"] };
   }
   const reasons: UnavailableReason[] = [];
+  if (day.vehicleJobs.some((j) => overlaps(job, j))) {
+    reasons.push("VEHICLE_BUSY");
+  }
   const breakMinutes = day.snapshot.dealership.policies.breakMinutes;
 
   const onShift = day.technicians.filter((t) =>
