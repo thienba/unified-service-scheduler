@@ -12,13 +12,14 @@ if (!root) {
 }
 
 // The mock backend starts before the page renders, and only when the build is not a remote one.
+let mockFetch: typeof fetch | undefined;
 if (mockEnabled) {
   const { bootMock } = await import("./boot-mock");
-  await bootMock();
+  mockFetch = (await bootMock()).fetch;
 }
 
 createRoot(root).render(
   <StrictMode>
-    <App />
+    <App {...(mockFetch ? { fetch: mockFetch } : {})} />
   </StrictMode>,
 );
