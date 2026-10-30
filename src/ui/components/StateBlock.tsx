@@ -84,7 +84,12 @@ export function StateBlock({
   const visible = useAfterDelay(kind === "loading" ? delay : 0);
   const shell = useContext(ShellContext);
   useEffect(() => {
-    if (focusTitle && (shell?.interacted.current ?? true))
+    // A state of the page takes focus from the page only: when someone has moved on to the header (the skip
+    // link, the role switcher) or a dialog, their place is kept.
+    const active = document.activeElement;
+    const onPage =
+      !active || active === document.body || active.closest("main") !== null;
+    if (focusTitle && (shell?.interacted.current ?? true) && onPage)
       titleRef.current?.focus();
   }, [focusTitle, shell]);
   if (kind === "loading") {

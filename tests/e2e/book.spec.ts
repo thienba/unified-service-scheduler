@@ -991,7 +991,8 @@ async function expectFocusClearOfBar(page: Page) {
     };
   });
   if (!place || place.inBar) return;
-  expect(place.top).toBeGreaterThanOrEqual(0);
+  // Half a pixel of slack at each edge: Linux font metrics can leave a header button 0.4 px above the top.
+  expect(place.top).toBeGreaterThanOrEqual(-0.5);
   expect(place.bottom).toBeLessThanOrEqual(place.barTop + 0.5);
 }
 
