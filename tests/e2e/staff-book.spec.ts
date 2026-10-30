@@ -173,9 +173,12 @@ const fillNewCustomer = async (
     year: "Year (optional)",
   };
   for (const [field, value] of Object.entries(values)) {
-    await page
-      .getByRole("textbox", { name: labels[field], exact: true })
-      .fill(value ?? "");
+    const box = page.getByRole("textbox", { name: labels[field], exact: true });
+    // On a busy Linux WebKit runner a fill was once lost (cause not found), so each is checked and tried again.
+    await expect(async () => {
+      await box.fill(value ?? "");
+      await expect(box).toHaveValue(value ?? "", { timeout: 1000 });
+    }).toPass({ timeout: 10_000 });
   }
 };
 

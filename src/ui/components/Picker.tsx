@@ -3,7 +3,7 @@
 // React Aria moves focus into the popup, keeps it there, closes it on Esc or a tap outside, and puts focus back
 // on the control.
 import type { ReactNode } from "react";
-import { useContext } from "react";
+import { useContext, useLayoutEffect, useState } from "react";
 import {
   Dialog,
   Heading,
@@ -31,6 +31,41 @@ export function PickerNote({
       <span>{children}</span>
     </div>
   );
+}
+
+// A mouse opens a list on press, not on release. The sheet then rises under the pointer, and the release would
+// choose whichever row is there and close it. So a sheet opened during a press ignores the pointer until the
+// press ends. A touch opens on release and a key has no pointer, so neither waits.
+let pressed = false;
+if (typeof window !== "undefined") {
+  const track = (down: boolean) => () => {
+    pressed = down;
+  };
+  window.addEventListener("pointerdown", track(true), true);
+  window.addEventListener("pointerup", track(false), true);
+  window.addEventListener("pointercancel", track(false), true);
+}
+
+function useWaitsForRelease(open: boolean): boolean {
+  const [waits, setWaits] = useState(false);
+  useLayoutEffect(() => {
+    if (!open || !pressed) return;
+    setWaits(true);
+    let timer = 0;
+    // The next task: the mouseup and click of this same press still find the sheet ignoring them.
+    const released = () => {
+      timer = window.setTimeout(() => setWaits(false));
+    };
+    window.addEventListener("pointerup", released, { once: true });
+    window.addEventListener("pointercancel", released, { once: true });
+    return () => {
+      window.removeEventListener("pointerup", released);
+      window.removeEventListener("pointercancel", released);
+      window.clearTimeout(timer);
+      setWaits(false);
+    };
+  }, [open]);
+  return waits;
 }
 
 function SheetClose() {
@@ -66,6 +101,8 @@ export function Picker({
   children: ReactNode;
 }) {
   const wide = useMediaQuery(query.sm);
+  const isOpen = useContext(OverlayTriggerStateContext)?.isOpen ?? false;
+  const waits = useWaitsForRelease(isOpen && !wide);
   if (wide) {
     return (
       <Popover
@@ -94,7 +131,10 @@ export function Picker({
         // hands them over there, a Modal does not. This one never opens.
         <Popover isOpen={false}>{children}</Popover>
       )}
-      <ModalOverlay isDismissable className="ctl-scrim">
+      <ModalOverlay
+        isDismissable
+        className={cx("ctl-scrim", waits && "pointer-events-none")}
+      >
         <Modal
           className={cx("ctl-sheet", kind === "calendar" && "is-calendar")}
         >
