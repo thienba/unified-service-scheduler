@@ -282,7 +282,14 @@ export function describeBookContract(
         bookAppointment(customerActor(), deps, bookRequest(), KEY),
       ]);
       expect(first.kind).toBe("ok");
-      expect(second).toEqual({ ...first, replayed: true });
+      expect(second.kind).toBe("ok");
+      // Either one can run first, so which of the two is the replay is not fixed.
+      const answers = [first, second];
+      const original = answers.filter((a) => !("replayed" in a && a.replayed));
+      expect(original).toHaveLength(1);
+      expect(answers.filter((a) => a !== original[0])).toEqual([
+        { ...original[0], replayed: true },
+      ]);
       expect(await appointmentsOf(repo)).toHaveLength(1);
     });
 
