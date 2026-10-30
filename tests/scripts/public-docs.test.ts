@@ -2,6 +2,7 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
+  findAskWordingProblems,
   findCompanyNameProblems,
   findToolNameProblems,
   findPublicDocProblems,
@@ -146,6 +147,35 @@ describe("public docs check (D-0000-36 B, D-0000-11)", () => {
         readFileSync(path.join(repoRoot, f), "utf8"),
         exists,
       ),
+    );
+    expect(problems).toEqual([]);
+  });
+});
+
+describe("ask, do not decide alone (D-0000-45)", () => {
+  it.each([
+  ])("fails on %s", (text) => {
+    expect(findAskWordingProblems("a.md", `one\n${text}`)).not.toEqual([]);
+  });
+
+    expect(
+      findAskWordingProblems(
+        "a.md",
+      ),
+    ).toEqual([]);
+  });
+
+    const walk = (dir: string): string[] =>
+      readdirSync(path.join(repoRoot, dir)).flatMap((entry) => {
+        const rel = `${dir}/${entry}`;
+        if (statSync(path.join(repoRoot, rel)).isDirectory()) return walk(rel);
+        return entry.endsWith(".md") ? [rel] : [];
+      });
+    const files = walk(`${publicDocsDir}/assistant`);
+    expect(files).toContain(
+    );
+    const problems = files.flatMap((f) =>
+      findAskWordingProblems(f, readFileSync(path.join(repoRoot, f), "utf8")),
     );
     expect(problems).toEqual([]);
   });
