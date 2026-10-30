@@ -1618,6 +1618,14 @@ test("after the browser stops the mock worker, services, days and a booking stil
     if (r.url().includes("/api/") && !r.fromServiceWorker())
       missed.push(new URL(r.url()).pathname);
   });
+  // A read still in flight when the worker stops wakes it up and heals it, and the booking then has nothing to
+  // miss. So the worker stops for the booking only once nothing is in flight.
+  const inFlight = new Set<Request>();
+  page.on("request", (r) => {
+    if (r.url().includes("/api/")) inFlight.add(r);
+  });
+  page.on("requestfinished", (r) => inFlight.delete(r));
+  page.on("requestfailed", (r) => inFlight.delete(r));
 
   await start(page, 1440, "/book/for-customer");
   await page.getByRole("button", { name: "Add a new customer" }).click();
@@ -1643,6 +1651,7 @@ test("after the browser stops the mock worker, services, days and a booking stil
   await page.getByRole("radio", { name: "Waits on site" }).check();
 
   const bookings = watchBookings(page);
+  await expect.poll(() => inFlight.size).toBe(0);
   await stopWorker();
   await confirm(page).click();
   await expect(
