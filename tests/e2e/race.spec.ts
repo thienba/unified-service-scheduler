@@ -14,6 +14,7 @@ import {
   STAFF,
   api,
   beat,
+  contestedEvStart,
   keepVideo,
   londonDate,
   londonDay,
@@ -87,27 +88,19 @@ async function freeFor(
 }
 
 /**
- * The seeded EV check of customer A. Oliver Hughes (EV) does it in bay 1, so Tom Fletcher is the one free EV
- * technician and bay 2 the one free bay at that start. Fails with a plain message when the data has no such time.
+ * A start where Oliver Hughes (EV) does a job in bay 1, so Tom Fletcher is the one free EV technician and bay 2 the one
+ * free bay, and the cars of A and B are free. Fails with a plain message when the data has no such time.
  */
 async function contestedStart(page: Page): Promise<string> {
-  const mine = await api<Appointment[]>(page, A, "GET", "/appointments");
-  const ev = mine.body.find(
-    (a) => (a as unknown as { serviceTypeId: string }).serviceTypeId === EV,
-  );
-  if (!ev)
-    throw new Error(
-      "No contested time: the seed has no EV check for customer A. The race needs one.",
-    );
-  const oliver = await freeFor(page, EV, ev.start, OLIVER);
-  const tom = await freeFor(page, EV, ev.start, TOM);
+  const start = await contestedEvStart(page);
+  const oliver = await freeFor(page, EV, start, OLIVER);
+  const tom = await freeFor(page, EV, start, TOM);
   if (oliver || !tom)
     throw new Error(
-      `No contested time: at ${ev.start} Oliver Hughes should be busy and Tom Fletcher free, ` +
-        `but Oliver is ${oliver ? "free" : "busy"} and Tom is ${tom ? "free" : "busy"}. ` +
-        "The London sample data is closed on Sundays, so the seed moves the booking to the next open day.",
+      `No contested time: at ${start} Oliver Hughes should be busy and Tom Fletcher free, ` +
+        `but Oliver is ${oliver ? "free" : "busy"} and Tom is ${tom ? "free" : "busy"}.`,
     );
-  return ev.start;
+  return start;
 }
 
 /** The appointments of the start's London day, as staff read them. */

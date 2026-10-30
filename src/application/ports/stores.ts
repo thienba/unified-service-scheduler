@@ -53,6 +53,12 @@ export interface SchedulingReader {
     from: EpochMs,
     to: EpochMs,
   ): Promise<Appointment[]>;
+  /** Appointments that hold their resources and touch `[from, to)`, of one vehicle at any dealership (D-0001-146). */
+  listBlockingByVehicle(
+    vehicleId: string,
+    from: EpochMs,
+    to: EpochMs,
+  ): Promise<Appointment[]>;
 }
 
 export interface AppointmentStore {

@@ -22,6 +22,11 @@ export interface SchedulingSnapshot {
   courtesyCars: readonly CourtesyCar[];
   /** The appointments around the dates asked about. Cancelled ones are ignored. */
   appointments: readonly Appointment[];
+  /**
+   * The blocking appointments of the vehicle being booked, at any dealership (D-0001-146). Empty or
+   * missing when the car is not known yet.
+   */
+  vehicleAppointments?: readonly Appointment[];
 }
 
 export type UnavailableReason =
@@ -29,6 +34,7 @@ export type UnavailableReason =
   | "NO_QUALIFIED_TECHNICIAN_ON_SHIFT"
   | "BAY_BUSY"
   | "COURTESY_CAR_BUSY"
+  | "VEHICLE_BUSY"
   | "OUTSIDE_OPENING_HOURS"
   | "DEALERSHIP_CLOSED"
   | "NOT_ON_GRID"
@@ -42,6 +48,8 @@ export interface ResourceRequest {
   technicianId?: string;
   /** Only this bay may be chosen. */
   serviceBayId?: string;
+  /** The car being booked; its own appointments are looked at too (D-0001-146). */
+  vehicleId?: string;
   /** An appointment to leave out of the check, for reschedule and adjust. */
   excludeAppointmentId?: string;
 }

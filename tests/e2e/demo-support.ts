@@ -85,6 +85,42 @@ export async function resetDemo(page: Page) {
   expect(status).toBe(204);
 }
 
+/**
+ * A time for two customers to race for (D-0001-146). Customer A's seeded EV check holds Oliver Hughes for A's own car,
+ * and one car cannot be at two places, so A could not take part in a race at that time. Three hours later the same kind
+ * of check is booked for customer C's car with Oliver named. At that time the cars of A and B are free, Oliver is busy
+ * and Tom Fletcher is the one free EV technician.
+ */
+export async function contestedEvStart(page: Page): Promise<string> {
+  const mine = await api<{ start: string; serviceTypeId: string }[]>(
+    page,
+    A,
+    "GET",
+    "/appointments",
+  );
+  const seeded = mine.body.find((a) => a.serviceTypeId === "service-ev-check");
+  if (!seeded) throw new Error("The seed has no EV check for customer A.");
+  const start = plusMinutes(seeded.start, 180);
+  // Another tab of the browser books it, so a test that fakes or counts the calls of its own page is not disturbed.
+  const other = await page.context().newPage();
+  await other.goto("/");
+  await expect(
+    other.getByText("Service Scheduler", { exact: true }),
+  ).toBeVisible();
+  const held = await api(other, STAFF, "POST", "/appointments", {
+    dealershipId: LONDON,
+    serviceTypeId: "service-ev-check",
+    customerId: "customer-c",
+    vehicleId: "vehicle-c",
+    start,
+    transport: "wait",
+    technicianId: "tech-lon-ash",
+  });
+  await other.close();
+  expect(held.status).toBe(201);
+  return start;
+}
+
 /** The London date of an instant, `YYYY-MM-DD`. */
 export const londonDate = (at: string) =>
   new Intl.DateTimeFormat("en-CA", { timeZone: ZONE }).format(new Date(at));

@@ -575,7 +575,8 @@ export function describeManagerContract(
     it("REQ-BOOK-007.AC-1, D-0001-3: a change at one dealership changes the checks and flags of that dealership only", async () => {
       const ctx = await setup(wideShifts(seed(1, 1)));
       const one = await book(ctx, "16:00");
-      const two = await book(ctx, "16:00", { dealershipId: "d2" });
+      // Not 16:00: the same car cannot be at two dealerships at once (D-0001-146).
+      const two = await book(ctx, "17:00", { dealershipId: "d2" });
       const before = await dealership(ctx.repo, "d2");
       await save(ctx, overrideOn(TUESDAY, hours("08:00", "15:00")));
       expect(flagKinds((await get(ctx.repo, one.id))!)).toEqual([
@@ -583,7 +584,7 @@ export function describeManagerContract(
       ]);
       expect(await get(ctx.repo, two.id)).toEqual(two);
       expect(await dealership(ctx.repo, "d2")).toEqual(before);
-      expect(await tryBook(ctx, "16:00", TUESDAY, "d2")).toMatchObject({
+      expect(await tryBook(ctx, "17:00", TUESDAY, "d2")).toMatchObject({
         kind: "slot_unavailable",
         reasons: expect.arrayContaining(["TECHNICIAN_BUSY"]),
       });

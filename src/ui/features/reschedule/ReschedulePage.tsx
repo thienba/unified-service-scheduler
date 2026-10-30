@@ -221,6 +221,8 @@ interface Conflict {
   suggestions: TimeSlot[];
   /** Found by the early check before Confirm (D-0001-107 C): focus stays put and a polite live region speaks. */
   early: boolean;
+  /** The time is refused because the car is busy then, not because another booking took it (D-0001-146). */
+  vehicle: boolean;
 }
 
 interface Press {
@@ -273,6 +275,7 @@ function Rescheduling({
     a.transport,
     undefined,
     a.id,
+    a.vehicleId,
   );
   const byDate = new Map(fetchDates.map((d, i) => [d, results[i]!]));
   const stripLoading = fetchDates.some((d) => byDate.get(d)!.isPending);
@@ -318,6 +321,7 @@ function Rescheduling({
           a.transport,
           undefined,
           a.id,
+          a.vehicleId,
         ),
       });
     }
@@ -333,8 +337,14 @@ function Rescheduling({
   }
 
   /** The new time is not free any more: from a 409 at Confirm, or from the early check before it. */
-  function showConflict(at: string, suggestions: TimeSlot[], early: boolean) {
+  function showConflict(
+    at: string,
+    reasons: readonly string[],
+    suggestions: TimeSlot[],
+    early: boolean,
+  ) {
     setConflict({
+      vehicle: reasons.includes("VEHICLE_BUSY"),
       start: at,
       end: addMinutes(at, minutes),
       // Up to five closest times (REQ-BOOK-009.AC-2); the API sends five at most today.
@@ -356,13 +366,14 @@ function Rescheduling({
           start,
           transport: a.transport,
           appointmentId: a.id,
+          vehicleId: a.vehicleId,
         }
       : null,
     (answer, asked) => {
       // While Confirm is on its way its own answer decides (it may be our own move that took the time).
       if (answer.available || busy.current) return;
       keepFocus();
-      showConflict(asked.start, answer.suggestions, true);
+      showConflict(asked.start, answer.reasons, answer.suggestions, true);
     },
   );
 
@@ -388,7 +399,12 @@ function Rescheduling({
           error instanceof ApiProblem ? error : new ApiProblem(0, null, null);
         if (problem.code === "SLOT_UNAVAILABLE") {
           pending.current = null;
-          showConflict(press.start, problem.problem?.suggestions ?? [], false);
+          showConflict(
+            press.start,
+            problem.problem?.reasons ?? [],
+            problem.problem?.suggestions ?? [],
+            false,
+          );
           return;
         }
         if (problem.code === "CHANGE_WINDOW_CLOSED") {
@@ -740,7 +756,9 @@ function Times({
   }
   const own = localDateIn(a.start, zone) === day;
   const struck =
-    conflict && localDateIn(conflict.start, zone) === day ? conflict : null;
+    conflict && !conflict.vehicle && localDateIn(conflict.start, zone) === day
+      ? conflict
+      : null;
   const free = slots.filter(
     (s) => s.start !== struck?.start && !(own && s.start === a.start),
   );
@@ -845,6 +863,7 @@ function EmptyDay({
             start: instantAt(day, opening, zone),
             transport: a.transport,
             appointmentId: a.id,
+            vehicleId: a.vehicleId,
           },
         }),
       ),
@@ -885,6 +904,9 @@ function EmptyDay({
 
 /** The apology's title, also said by the live region when the early check finds the time gone. */
 function conflictTitle(conflict: Conflict, zone: string, now: number): string {
+  if (conflict.vehicle) {
+    return "This car already has an appointment at that time.";
+  }
   return `Sorry, ${formatTime(conflict.start, zone)} on ${formatDay(conflict.start, zone, now)} was just taken.`;
 }
 
@@ -934,8 +956,10 @@ function ConflictAlert({
       title={conflictTitle(conflict, zone, now)}
     >
       <p>
-        Another customer confirmed that time a moment before you. Your
-        appointment has not changed: it is still on{" "}
+        {conflict.vehicle
+          ? "Nothing was moved."
+          : "Another customer confirmed that time a moment before you."}{" "}
+        Your appointment has not changed: it is still on{" "}
         <span className="num">{current}</span>. Pick another time and confirm
         again.
       </p>

@@ -9,6 +9,7 @@ import { describeBookContract } from "../commands/book.contract";
 import { describeChangeContract } from "../commands/change.contract";
 import { describeManagerContract } from "../commands/manager.contract";
 import { describeOutboxContract } from "../commands/outbox.contract";
+import { describeVehicleContract } from "../commands/vehicle.contract";
 import { describeRaceContract, raceOnce } from "../commands/race.contract";
 import { appointmentsOf } from "../commands/fixtures";
 
@@ -41,6 +42,7 @@ describeChangeContract("Dexie", open);
 describeManagerContract("Dexie", open);
 describeOutboxContract("Dexie", open);
 describeRaceContract("Dexie", open);
+describeVehicleContract("Dexie", open);
 
 describe("Dexie store, two connections", () => {
   it("REQ-BOOK-009.AC-1: two separate connections over fake-indexeddb store exactly one appointment", async () => {
