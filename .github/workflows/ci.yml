@@ -1,8 +1,18 @@
 name: CI
 
+# Once per pull request, once per push to main (D-0000-44). Firefox and WebKit also run every night and by hand.
 on:
-  push:
   pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+
+# A newer push to the same pull request cancels the run still going for it.
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 # Read-only for the whole workflow (SEC-16.AC-4).
 permissions:
@@ -88,7 +98,9 @@ jobs:
           if-no-files-found: ignore
 
   # Firefox and WebKit are a warning only (architecture.md section 7.9). One job for both took over 40 minutes.
+  # They run on main, every night and by hand, not on each pull request (D-0000-44).
   e2e-other:
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     continue-on-error: true
