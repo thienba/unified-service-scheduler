@@ -164,7 +164,8 @@ for (const width of [390, 1440] as const) {
       await expect(
         page.getByRole("grid", { name: /November 2026/ }),
       ).toBeVisible();
-      await expect(cell(/Sunday, 1 November 2026/)).toHaveAttribute(
+      // Linux WebKit names the day without the comma ("Sunday 1 November 2026").
+      await expect(cell(/Sunday,? 1 November 2026/)).toHaveAttribute(
         "data-unavailable",
         "true",
       );

@@ -54,6 +54,8 @@ for (const width of [390, 1440] as const) {
     test("settings: idle, dirty, validation, checking, confirm-flags, saving, saved-with-flags", async ({
       page,
     }) => {
+      // Seven states, a held 3 s answer and an axe scan each: more than 30 s on a busy Linux WebKit runner.
+      test.slow();
       await interceptApi(page, { path: "/settings", delayMs: 3000 });
       await openAs(page, MANAGER, "/manage/dealership");
       await expect(day(page, "Saturday")).toBeVisible();
@@ -213,6 +215,8 @@ for (const width of [390, 1440] as const) {
     test("shifts: idle, dirty, validation, checking, confirm-flags, saving, saved-with-flags", async ({
       page,
     }) => {
+      // Seven states, a held 3 s answer and an axe scan each: more than 30 s on a busy Linux WebKit runner.
+      test.slow();
       await interceptApi(page, { path: "/shifts", delayMs: 3000 });
       await openAs(page, MANAGER, "/manage/shifts");
       const monday = next(1, today(), 7); // past the seeded bookings, which sit in the first week

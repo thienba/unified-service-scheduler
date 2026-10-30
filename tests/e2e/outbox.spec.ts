@@ -297,9 +297,14 @@ for (const width of [390, 1440]) {
           seen.skeleton === undefined
         )
           seen.skeleton = performance.now();
-        if (seen.skeleton === undefined) requestAnimationFrame(look);
       };
-      requestAnimationFrame(look);
+      // Each change to the page is seen as it happens, not at the next frame, which Firefox and WebKit can delay.
+      new MutationObserver(look).observe(document, {
+        subtree: true,
+        childList: true,
+        attributes: true,
+        characterData: true,
+      });
     });
     await slow.goto("/manage/outbox");
     await expect(
