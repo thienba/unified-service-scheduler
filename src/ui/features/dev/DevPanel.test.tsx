@@ -37,6 +37,8 @@ const logs = [
     level: "info",
     msg: "step.check",
     traceId: CONFLICT,
+    route: "POST /appointments",
+    method: "POST",
     durationMs: 3,
   },
   {
@@ -77,6 +79,11 @@ const telemetry = {
     {
       name: "appointment_conflicts_total",
       labels: { dealershipId: "d-leeds", reason: "TECHNICIAN_BUSY" },
+      value: 1,
+    },
+    {
+      name: "appointments_refused_total",
+      labels: { dealershipId: "d-leeds" },
       value: 1,
     },
     {
@@ -220,6 +227,9 @@ it("lists the lines newest first with time, level as icon and word, message, sta
       .getAttribute("href"),
   ).toBe("#i-alert");
   expect(items[0]!.querySelector(".bg-warning-tint-strong")).toBeNull();
+  expect(text(items[2]!)).toBe(
+    "09:14:01 UTCinfostep.check3 msPOST /appointments · reference 4bf92f35",
+  );
   expect(screen.getByText("4 of 4 lines")).toBeTruthy();
 });
 

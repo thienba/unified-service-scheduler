@@ -238,7 +238,11 @@ test("after a booking, a 409 and an empty search the numbers equal the API's, an
       .reduce((n, c) => n + c.value, 0);
   // Exactly the ticket's numbers: 1 booking confirmed, 1 time refused, 1 search with no free time.
   expect(value("appointments_confirmed_total")).toBe(1);
-  expect(value("appointment_conflicts_total")).toBe(1);
+  // The 409 had two reasons: each is counted, and the refusal once.
+  expect(value("appointments_refused_total")).toBe(1);
+  expect(value("appointment_conflicts_total")).toBe(
+    story.refused.body.reasons.length,
+  );
   expect(value("availability_search_empty_total")).toBe(1);
 
   const numbers = page.getByRole("region", { name: "Numbers" });
@@ -252,7 +256,8 @@ test("after a booking, a 409 and an empty search the numbers equal the API's, an
   ).toContainText("1 refused (409)");
   await expect(
     metric("Times refused because they were just taken"),
-  ).toContainText(/: 1\.$/);
+  ).toContainText(/: 1\..*: 1\.$/);
+  expect(story.refused.body.reasons.length).toBeGreaterThan(1);
   await expect(metric("Searches that found no free time")).toContainText(
     "1 search",
   );
@@ -322,6 +327,9 @@ test("after a booking, a 409 and an empty search the numbers equal the API's, an
     page.getByRole("searchbox", { name: "Find a reference" }),
   ).toHaveValue(reference);
   await expect(lines(page).filter({ hasText: "step.check" })).toHaveCount(1);
+  await expect(lines(page).filter({ hasText: "step.check" })).toContainText(
+    "POST /appointments",
+  );
   await expect(lines(page).filter({ hasText: "step.suggest" })).toHaveCount(1);
   for (const text of await lines(page).allTextContents())
     expect(text).toContain(`reference ${reference}`);

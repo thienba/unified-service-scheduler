@@ -224,6 +224,67 @@ describe("log lines", () => {
     }
   });
 
+  it("every step line has the route and method of its request, and comes before the command line and http.request", async () => {
+    await book(users.customerA);
+    const all = lines();
+    const steps = all.filter((l) => l.msg.startsWith("step."));
+    expect(steps.length).toBeGreaterThan(0);
+    for (const step of steps) {
+      expect(step).toMatchObject({
+        route: "POST /appointments",
+        method: "POST",
+      });
+    }
+    const order = all.map((l) => l.msg);
+    expect(order.at(-2)).toBe("appointment.book");
+    expect(order.at(-1)).toBe("http.request");
+    expect(order.lastIndexOf("step.write")).toBeLessThan(
+      order.indexOf("appointment.book"),
+    );
+  });
+
+  it("a replayed booking logs the command line as replayed and http.request as ok", async () => {
+    const headers = { "Idempotency-Key": key() };
+    const first = await book(users.customerA, {}, headers);
+    const again = await book(users.customerA, {}, headers);
+    expect(again.status).toBe(first.status);
+    expect(
+      lines()
+        .filter((l) => l.msg === "appointment.book")
+        .map((l) => l.outcome),
+    ).toEqual(["confirmed", "replayed"]);
+    expect(
+      lines()
+        .filter((l) => l.msg === "http.request")
+        .map((l) => l.outcome),
+    ).toEqual(["ok", "ok"]);
+    expect(
+      counter("appointments_confirmed_total", {
+        dealershipId: LON,
+        actorRole: "customer",
+      }),
+    ).toBe(1);
+    expect(
+      counter("idempotent_replays_total", { route: "POST /appointments" }),
+    ).toBe(1);
+  });
+
+  it("GET /_demo/telemetry writes no log line but is still counted", async () => {
+    await call("/me", { user: users.customerA });
+    const before = lines().length;
+    const reply = await call("/_demo/telemetry", { user: users.managerLondon });
+    expect(reply.status).toBe(200);
+    expect(lines()).toHaveLength(before);
+    expect(world.output).toHaveLength(before);
+    expect(
+      counter("http_requests_total", {
+        route: "GET /_demo/telemetry",
+        method: "GET",
+        status: "200",
+      }),
+    ).toBe(1);
+  });
+
   it("a 409 also logs the suggest step", async () => {
     await conflict();
     expect(lines().some((l) => l.msg === "step.suggest")).toBe(true);
@@ -263,14 +324,17 @@ describe("metrics (NFR-6)", () => {
     ).toBe(1);
   });
 
-  it("a 409 counts a conflict with the first reason, and its duration is under outcome ok", async () => {
+  it("a 409 counts a conflict for each reason and one refusal, and its duration is under outcome ok", async () => {
     const lost = await conflict();
-    expect(
-      counter("appointment_conflicts_total", {
-        dealershipId: LON,
-        reason: lost.body.reasons[0],
-      }),
-    ).toBe(1);
+    expect(lost.body.reasons.length).toBeGreaterThan(1);
+    for (const reason of lost.body.reasons) {
+      expect(
+        counter("appointment_conflicts_total", { dealershipId: LON, reason }),
+      ).toBe(1);
+    }
+    expect(counter("appointments_refused_total", { dealershipId: LON })).toBe(
+      1,
+    );
     const durations = world.telemetry.reader.histograms();
     expect(
       durations.find(

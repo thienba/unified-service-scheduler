@@ -226,10 +226,53 @@ export function describeBookContract(
         KEY,
       );
       expect(first.kind).toBe("ok");
-      expect(second).toEqual(first);
+      expect(second).toEqual({ ...first, replayed: true });
       expect(await appointmentsOf(repo)).toHaveLength(1);
       expect(metrics.count("idempotent_replays_total")).toBe(1);
       expect(metrics.count("appointments_confirmed_total")).toBe(1);
+    });
+
+    it("a replayed confirm logs outcome replayed, the first logs ok", async () => {
+      const { deps, logger } = await setup();
+      for (let i = 0; i < 2; i++) {
+        await bookAppointment(customerActor(), deps, bookRequest(), KEY);
+      }
+      const outcomes = logger.calls.flatMap((c) =>
+        c.kind === "info" && c.msg === "appointment.book"
+          ? [c.fields.outcome]
+          : [],
+      );
+      expect(outcomes).toEqual(["ok", "replayed"]);
+    });
+
+    it("a 409 with two reasons counts each reason and one refusal", async () => {
+      const { deps, metrics } = await setup(seed(1, 1));
+      await bookAppointment(customerActor("c1"), deps, bookRequest(), KEY);
+      metrics.counters.length = 0;
+      const lost = await bookAppointment(
+        customerActor("c2"),
+        deps,
+        bookRequest({ vehicleId: "v2" }),
+        OTHER_KEY,
+      );
+      expect(lost).toMatchObject({
+        kind: "slot_unavailable",
+        reasons: ["TECHNICIAN_BUSY", "BAY_BUSY"],
+      });
+      expect(metrics.counters).toEqual([
+        {
+          name: "appointments_refused_total",
+          labels: { dealershipId: "d1" },
+        },
+        {
+          name: "appointment_conflicts_total",
+          labels: { dealershipId: "d1", reason: "TECHNICIAN_BUSY" },
+        },
+        {
+          name: "appointment_conflicts_total",
+          labels: { dealershipId: "d1", reason: "BAY_BUSY" },
+        },
+      ]);
     });
 
     it("REQ-BOOK-009.AC-4: the same confirm twice together gives one appointment and the same answer", async () => {
@@ -239,7 +282,7 @@ export function describeBookContract(
         bookAppointment(customerActor(), deps, bookRequest(), KEY),
       ]);
       expect(first.kind).toBe("ok");
-      expect(second).toEqual(first);
+      expect(second).toEqual({ ...first, replayed: true });
       expect(await appointmentsOf(repo)).toHaveLength(1);
     });
 
@@ -716,7 +759,7 @@ export function describeBookContract(
       const first = await bookAppointment(staffActor(), deps, request, KEY);
       const second = await bookAppointment(staffActor(), deps, request, KEY);
       expect(first.kind).toBe("ok");
-      expect(second).toEqual(first);
+      expect(second).toEqual({ ...first, replayed: true });
       if (first.kind !== "ok") return;
       const customer = await repo.read((s) => s.customers.get("c1"));
       expect(customer?.vehicles.map((v) => v.id)).toEqual(
@@ -851,7 +894,7 @@ export function describeBookContract(
         newCustomerRequest(),
         KEY,
       );
-      expect(second).toEqual(first);
+      expect(second).toEqual({ ...first, replayed: true });
       const found = await repo.read((s) => s.customers.search("test person"));
       expect(found).toHaveLength(1);
       expect(found[0]?.vehicles).toHaveLength(1);
