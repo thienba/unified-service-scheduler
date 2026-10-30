@@ -1,4 +1,4 @@
-Final pass, 2026-10-29. Written against commit `a4f4c24` on `main`, after all 30 pull requests were merged. This document is final for the submission (brief, deliverable 1).
+Final pass, 2026-10-29. Written against commit `6845a22` on `main`, after all 30 pull requests were merged. This document is final for the submission (brief, deliverable 1).
 
 # System Design Document: Unified Service Scheduler
 
@@ -767,7 +767,7 @@ No penetration test or compliance review is planned. The threat model is the who
 
 ## Results
 
-Every number here was re-run for this pass on `main` at commit `a4f4c24` (all 30 pull requests merged), on 2026-10-29, on the author's Mac (Apple M3 Pro, Node 22.17.1), after `npm ci`. A number that was not re-run is not quoted. The logs of these runs are kept with the ticket in the work repo.
+Every number here was re-run for this pass on `main` at commit `6845a22` (all 30 pull requests merged), on 2026-10-29, on the author's Mac (Apple M3 Pro, Node 22.17.1), after `npm ci`. A number that was not re-run is not quoted. The logs of these runs are kept with the ticket in the work repo.
 
 | What                                              | Result                                                                                                                                                                                                         | Command                                                                                                                                                                     | Target                      |
 | ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
@@ -796,36 +796,36 @@ All in `thienba/unified-service-scheduler`. Every one is merged into `main` with
 
 | #   | Ticket                                                                  | Link                                                                | State  |
 | --- | ----------------------------------------------------------------------- | ------------------------------------------------------------------- | ------ |
-| 1   | PostgreSQL schema for the real backend                                  | [#1](https://github.com/thienba/unified-service-scheduler/pull/1)   | Merged |
-| 2   | System Design Document (draft)                                          | [#2](https://github.com/thienba/unified-service-scheduler/pull/2)   | Merged |
-| 3   | Scaffold the app with tokens, lint rules, tests and CI                  | [#3](https://github.com/thienba/unified-service-scheduler/pull/3)   | Merged |
-| 4   | Domain model and time rules                                             | [#4](https://github.com/thienba/unified-service-scheduler/pull/4)   | Merged |
-| 5   | Availability check and suggested times                                  | [#5](https://github.com/thienba/unified-service-scheduler/pull/5)   | Merged |
-| 6   | Repository with in-memory and IndexedDB stores and seed data            | [#6](https://github.com/thienba/unified-service-scheduler/pull/6)   | Merged |
-| 7   | Book, cancel and reschedule commands                                    | [#7](https://github.com/thienba/unified-service-scheduler/pull/7)   | Merged |
-| 8   | Manager adjust, hours and shifts commands with flagging                 | [#8](https://github.com/thienba/unified-service-scheduler/pull/8)   | Merged |
-| 9   | Reminder outbox                                                         | [#9](https://github.com/thienba/unified-service-scheduler/pull/9)   | Merged |
-| 10  | OpenAPI contract, mock API and typed client                             | [#10](https://github.com/thienba/unified-service-scheduler/pull/10) | Merged |
-| 11  | README with build, run, test and the AI Collaboration Narrative (draft) | [#11](https://github.com/thienba/unified-service-scheduler/pull/11) | Merged |
-| 12  | Trace ids, structured logs and metrics                                  | [#12](https://github.com/thienba/unified-service-scheduler/pull/12) | Merged |
-| 13  | Apply the human's answers to the logic                                  | [#13](https://github.com/thienba/unified-service-scheduler/pull/13) | Merged |
-| 14  | Demo users list for the role switcher                                   | [#14](https://github.com/thienba/unified-service-scheduler/pull/14) | Merged |
-| 15  | App shell, role switcher, dealership picker and shared components       | [#15](https://github.com/thienba/unified-service-scheduler/pull/15) | Merged |
-| 16  | Customer booking screens                                                | [#16](https://github.com/thienba/unified-service-scheduler/pull/16) | Merged |
-| 17  | Staff schedule: timeline, list and appointment view                     | [#17](https://github.com/thienba/unified-service-scheduler/pull/17) | Merged |
-| 18  | Manager: dealership settings and technician shifts                      | [#18](https://github.com/thienba/unified-service-scheduler/pull/18) | Merged |
-| 19  | Manager outbox screen                                                   | [#19](https://github.com/thienba/unified-service-scheduler/pull/19) | Merged |
-| 20  | Dev panel: logs, metrics and reset                                      | [#20](https://github.com/thienba/unified-service-scheduler/pull/20) | Merged |
-| 21  | Merge wave 1 screens and apply their answers                            | [#21](https://github.com/thienba/unified-service-scheduler/pull/21) | Merged |
-| 22  | Staff booking for an existing or new customer                           | [#22](https://github.com/thienba/unified-service-scheduler/pull/22) | Merged |
-| 23  | Customer appointments: list, cancel and reschedule                      | [#23](https://github.com/thienba/unified-service-scheduler/pull/23) | Merged |
-| 24  | Manager: adjust an appointment and the flagged list                     | [#24](https://github.com/thienba/unified-service-scheduler/pull/24) | Merged |
-| 25  | Merge wave 2 screens and apply their answers                            | [#25](https://github.com/thienba/unified-service-scheduler/pull/25) | Merged |
-| 26  | Courtesy car choice in booking                                          | [#26](https://github.com/thienba/unified-service-scheduler/pull/26) | Merged |
-| 27  | End-to-end demo scenarios and the two-tab race video                    | [#27](https://github.com/thienba/unified-service-scheduler/pull/27) | Merged |
-| 28  | Time zone note on every customer screen                                 | [#28](https://github.com/thienba/unified-service-scheduler/pull/28) | Merged |
-| 29  | Warn early when the chosen time is taken                                | [#29](https://github.com/thienba/unified-service-scheduler/pull/29) | Merged |
-| 30  | Content Security Policy messages in Firefox and WebKit                  | [#30](https://github.com/thienba/unified-service-scheduler/pull/30) | Merged |
+| 1   | PostgreSQL schema for the real backend                                  | [#1](https://github.com/thienba/unified-service-scheduler/commit/c79bd2ed2886596bf0b762f76fb65b59788da920)   | Merged |
+| 2   | System Design Document (draft)                                          | [#2](https://github.com/thienba/unified-service-scheduler/commit/232913b874c8c0aae8a37ccbed427a71c461ba97)   | Merged |
+| 3   | Scaffold the app with tokens, lint rules, tests and CI                  | [#3](https://github.com/thienba/unified-service-scheduler/commit/1a0f1f7ef046f8ea89d6075ff3416e41093f364a)   | Merged |
+| 4   | Domain model and time rules                                             | [#4](https://github.com/thienba/unified-service-scheduler/commit/494dff8593541d5c09101a50a433fe246905d4ad)   | Merged |
+| 5   | Availability check and suggested times                                  | [#5](https://github.com/thienba/unified-service-scheduler/commit/82ddf5e855d94e555cbf8a0487a28b0183e5fdba)   | Merged |
+| 6   | Repository with in-memory and IndexedDB stores and seed data            | [#6](https://github.com/thienba/unified-service-scheduler/commit/ce9421a596338f9d8148e9cf8a7fc88f7a579ccc)   | Merged |
+| 7   | Book, cancel and reschedule commands                                    | [#7](https://github.com/thienba/unified-service-scheduler/commit/58a80426589d9efa62d8e93edd206073b66504cc)   | Merged |
+| 8   | Manager adjust, hours and shifts commands with flagging                 | [#8](https://github.com/thienba/unified-service-scheduler/commit/0353a8018f235226630a6209dac586e0e31bdb92)   | Merged |
+| 9   | Reminder outbox                                                         | [#9](https://github.com/thienba/unified-service-scheduler/commit/3d98c27a5e7f3a3615bae085ff7648855abe1c4e)   | Merged |
+| 10  | OpenAPI contract, mock API and typed client                             | [#10](https://github.com/thienba/unified-service-scheduler/commit/d7370d35f608b7533d5eba9242aa7909badaa6a2) | Merged |
+| 11  | README with build, run, test and the AI Collaboration Narrative (draft) | [#11](https://github.com/thienba/unified-service-scheduler/commit/a1cc47546907e54cce9b2277ff841cd3b503f8ed) | Merged |
+| 12  | Trace ids, structured logs and metrics                                  | [#12](https://github.com/thienba/unified-service-scheduler/commit/43eaed3a4bd95f4e068d4da7d7ba93b2a88df4ba) | Merged |
+| 13  | Apply the human's answers to the logic                                  | [#13](https://github.com/thienba/unified-service-scheduler/commit/392213984be3fb96b6eef43fafa004a078d64a3e) | Merged |
+| 14  | Demo users list for the role switcher                                   | [#14](https://github.com/thienba/unified-service-scheduler/commit/a831a02d099d824ed206d6d978a208c78d1c4e2a) | Merged |
+| 15  | App shell, role switcher, dealership picker and shared components       | [#15](https://github.com/thienba/unified-service-scheduler/commit/43d519f8e9f5bbd7c6237b6906491029b7d9ea9c) | Merged |
+| 16  | Customer booking screens                                                | [#16](https://github.com/thienba/unified-service-scheduler/commit/02bc83d6914d620d6a21b2e62fef30d32c4fea62) | Merged |
+| 17  | Staff schedule: timeline, list and appointment view                     | [#17](https://github.com/thienba/unified-service-scheduler/commit/ec81ae364d249b72db9779c8e2d0ff4abf273054) | Merged |
+| 18  | Manager: dealership settings and technician shifts                      | [#18](https://github.com/thienba/unified-service-scheduler/commit/f6d88d893cec14f9c4fb5ac4969e42cda003427d) | Merged |
+| 19  | Manager outbox screen                                                   | [#19](https://github.com/thienba/unified-service-scheduler/commit/fbea20d0cc3dbed7443c61473f055e7dff77ec71) | Merged |
+| 20  | Dev panel: logs, metrics and reset                                      | [#20](https://github.com/thienba/unified-service-scheduler/commit/fbfe381ae24dd3327c971ab14ce9ceb415dcbe44) | Merged |
+| 21  | Merge wave 1 screens and apply their answers                            | [#21](https://github.com/thienba/unified-service-scheduler/commit/c54970843a3e864bbadf0382e32726c76d5463b1) | Merged |
+| 22  | Staff booking for an existing or new customer                           | [#22](https://github.com/thienba/unified-service-scheduler/commit/f0dcdefd3c732f7138e7d13dfcc3501cf6c05704) | Merged |
+| 23  | Customer appointments: list, cancel and reschedule                      | [#23](https://github.com/thienba/unified-service-scheduler/commit/6791cf12a093bdbd1f22caa3393aca0a32e71b54) | Merged |
+| 24  | Manager: adjust an appointment and the flagged list                     | [#24](https://github.com/thienba/unified-service-scheduler/commit/dc009aba11b3eff48d4d15cad45154d17a363855) | Merged |
+| 25  | Merge wave 2 screens and apply their answers                            | [#25](https://github.com/thienba/unified-service-scheduler/commit/e53ceb2ac83909756078398c56d1d094a78f9d7b) | Merged |
+| 26  | Courtesy car choice in booking                                          | [#26](https://github.com/thienba/unified-service-scheduler/commit/9c97c9df816a17f6f5486c5f4948c55892220866) | Merged |
+| 27  | End-to-end demo scenarios and the two-tab race video                    | [#27](https://github.com/thienba/unified-service-scheduler/commit/2d590664e2aea4c4eb16c7d07a3bacead51cd4aa) | Merged |
+| 28  | Time zone note on every customer screen                                 | [#28](https://github.com/thienba/unified-service-scheduler/commit/b44da69861dcc5c5777213b953035d870f7e56ea) | Merged |
+| 29  | Warn early when the chosen time is taken                                | [#29](https://github.com/thienba/unified-service-scheduler/commit/b20423ca30c452f1cdf7ccaf43e50acf969c0870) | Merged |
+| 30  | Content Security Policy messages in Firefox and WebKit                  | [#30](https://github.com/thienba/unified-service-scheduler/commit/1a7ef529901ee37eda9940b1e8f83828d41d2297) | Merged |
 
 ## How GenAI was used in design
 
