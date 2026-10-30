@@ -40,19 +40,19 @@ the reference a step needs.
    ([run.md](references/run.md)).
 
 Never skipped, whatever the size: capturing the human's context, recording what the run learned,
-the reviewer in a fresh context (a subagent on Claude Code), and the cost step. For a change of a few lines you may do the engineer's work yourself, following
-`.claude/agents/engineer.md`; the review still runs.
+the reviewer in a fresh context (a subagent of the AI assistant), and the cost step. For a change of a few lines you may do the engineer's work yourself, following
+`assistant/agents/engineer.md`; the review still runs.
 
 Throughout: never ask the human; record guesses ([never-stop.md](references/never-stop.md)).
 Never edit the product repo's own checkout; all code changes happen in `.state/<ticket-id>`.
 
 ## Roles
 
-Each role's instructions are in `.claude/agents/<role>.md`.
+Each role's instructions are in `assistant/agents/<role>.md`.
 
-- **Claude Code:** run a role as a subagent (`vtc-lite-<role>`) with the inputs its file lists,
+- **The AI assistant:** run a role as a subagent (`vtc-lite-<role>`) with the inputs its file lists,
   and the worktree path when it works on code.
-- **Codex:** read `.claude/agents/<role>.md` and do that role's work yourself as a separate step,
+- **Codex:** read `assistant/agents/<role>.md` and do that role's work yourself as a separate step,
   then return to this skill.
 
 Every role ends its reply with a `## Result` block; read it, never the role's whole transcript.

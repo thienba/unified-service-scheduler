@@ -19,7 +19,7 @@ come from `date -u`, never from a guess.
    - `context/environment.md`: which checks can run on this machine and which cannot, and the
      tools they need (simulators, devices, browsers) that are present or missing.
    - `context/index.md`: one line for each file written.
-   Commit memory. Each check you fill also goes into `.claude/settings.json` `permissions.allow`
+   Commit memory. Each check you fill also goes into `assistant/settings.json` `permissions.allow`
    as `Bash(<command>:*)`, so later runs need no prompt for it; if the host refuses that edit,
    say in the report that `new-workspace.sh --update` adds them.
 
@@ -56,7 +56,7 @@ A ticket whose `dependsOn` ticket is in `error` is skipped and set to `error` wi
 0. **What the run learned** goes into `context/` first
    ([context.md](context.md#record-what-a-run-learned)).
 1. **Cost**, as the last step before the final memory commit. Run
-   `node bin/cost.mjs --host <claude|codex> --since <start time> --marker <run marker>
+   `node bin/cost.mjs --host <assistant|codex> --since <start time> --marker <run marker>
    --project . --record . --log logs
    --request "<the request, one line>" --tickets <ids>`.
    If `node` is missing or it prints `{"measured":false}`, write "cost not measured" in the
@@ -67,7 +67,7 @@ A ticket whose `dependsOn` ticket is in `error` is skipped and set to `error` wi
    ```markdown
    # <the request, in the human's words>
 
-   Run `<run marker>` · <start time> to <end time> · host <claude|codex>
+   Run `<run marker>` · <start time> to <end time> · host <assistant|codex>
 
    ## Tickets
 

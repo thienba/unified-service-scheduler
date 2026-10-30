@@ -3,6 +3,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   findCompanyNameProblems,
+  findToolNameProblems,
   findPublicDocProblems,
   findReferenceCodes,
   publicDocsDir,
@@ -85,9 +86,9 @@ describe("public docs check (D-0000-36 B, D-0000-11)", () => {
   });
 
   it("allows a link to the copied skill's own references/ folder", () => {
-    const skill = `${publicDocsDir}/claude/skills/vtc-lite/SKILL.md`;
+    const skill = `${publicDocsDir}/assistant/skills/vtc-lite/SKILL.md`;
     const exists = (p: string) =>
-      p === `${publicDocsDir}/claude/skills/vtc-lite/references/run.md`;
+      p === `${publicDocsDir}/assistant/skills/vtc-lite/references/run.md`;
     expect(
       findPublicDocProblems(skill, "[run.md](references/run.md#a)", exists),
     ).toEqual([]);
@@ -106,7 +107,15 @@ describe("public docs check (D-0000-36 B, D-0000-11)", () => {
     expect(findCompanyNameProblems("docs/a.md", "the company")).toEqual([]);
   });
 
-  it("finds no company name in docs/ and src/", () => {
+  it("fails on the AI tool's name in any case (D-0000-42)", () => {
+    for (const word of ["Claude", "CLAUDE", "claude"])
+      expect(
+        findToolNameProblems("docs/a.md", `one\nbuilt with ${word}`),
+      ).toEqual(["docs/a.md:2: names the AI tool (D-0000-42)"]);
+    expect(findToolNameProblems("docs/a.md", "the AI assistant")).toEqual([]);
+  });
+
+  it("finds no company or AI tool name in docs/ and src/", () => {
     const walk = (dir: string): string[] =>
       readdirSync(path.join(repoRoot, dir)).flatMap((entry) => {
         const rel = `${dir}/${entry}`;
@@ -116,6 +125,10 @@ describe("public docs check (D-0000-36 B, D-0000-11)", () => {
     const problems = [...walk("docs"), ...walk("src")].flatMap((f) =>
       findCompanyNameProblems(f, readFileSync(path.join(repoRoot, f), "utf8")),
     );
+    const tool = [...walk("docs"), ...walk("src")].flatMap((f) =>
+      findToolNameProblems(f, readFileSync(path.join(repoRoot, f), "utf8")),
+    );
+    expect(tool).toEqual([]);
     expect(problems).toEqual([]);
   });
 
