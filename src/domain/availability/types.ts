@@ -31,6 +31,7 @@ export type UnavailableReason =
   | "COURTESY_CAR_BUSY"
   | "OUTSIDE_OPENING_HOURS"
   | "DEALERSHIP_CLOSED"
+  | "NOT_ON_GRID"
   | "TOO_SOON"
   | "BEYOND_HORIZON";
 
@@ -47,6 +48,8 @@ export interface ResourceRequest {
 
 export interface CheckRequest extends ResourceRequest {
   start: EpochMs;
+  /** An adjust that keeps the stored start: the grid is not checked, every other check is. */
+  keepsStoredStart?: boolean;
 }
 
 export interface DayRequest extends ResourceRequest {

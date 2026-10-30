@@ -49,6 +49,7 @@ const reasonWords: Record<string, string> = {
   COURTESY_CAR_BUSY: "no courtesy car is free then",
   OUTSIDE_OPENING_HOURS: "the dealership is closed at that time",
   DEALERSHIP_CLOSED: "the dealership is closed that day",
+  NOT_ON_GRID: "that time is not on the 15-minute grid",
   TOO_SOON: "bookings need more notice than that",
   BEYOND_HORIZON: "that day is further ahead than bookings open",
 };

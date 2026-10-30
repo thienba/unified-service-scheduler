@@ -484,6 +484,7 @@ export interface components {
       | "COURTESY_CAR_BUSY"
       | "OUTSIDE_OPENING_HOURS"
       | "DEALERSHIP_CLOSED"
+      | "NOT_ON_GRID"
       | "TOO_SOON"
       | "BEYOND_HORIZON";
     Phone: string;
