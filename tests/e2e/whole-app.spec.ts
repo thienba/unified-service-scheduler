@@ -401,6 +401,9 @@ test("SEC-13.AC-2: after staff load the schedule and a search with results, swit
     new MutationObserver((records) => {
       for (const r of records)
         for (const n of Array.from(r.addedNodes)) {
+          // The header's "Viewing as" lists every customer by name (D-0001-144): that is the switcher, not staff data.
+          const element = n instanceof Element ? n : n.parentElement;
+          if (element?.closest("header")) continue;
           const text = n.textContent ?? "";
           for (const m of markers) if (text.includes(m)) seen.push(m);
         }

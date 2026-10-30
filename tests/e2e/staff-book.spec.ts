@@ -1546,6 +1546,54 @@ test("video: a staff member taps a free gap, finds a customer, picks a car, a se
   await context.close();
 });
 
+// D-0001-144: a customer staff add can be picked in "Viewing as", and then sees their own booking. The seeded
+// walk-in customer is in the list too.
+test("a new customer staff add appears under Viewing as, and picking them shows their appointment", async ({
+  page,
+}) => {
+  await start(page, 1440, "/book/for-customer");
+  await page.getByRole("button", { name: "Add a new customer" }).click();
+  await fillNewCustomer(page, {
+    name: "Nadia Pham",
+    phone: "07700 900888",
+    registration: "NP22 VTC",
+    make: "Mazda",
+    model: "CX-5",
+  });
+  await continueButton(page).click();
+  await chooseOption(service(page), "service-oil-change");
+  await day(page, "Fri 30 Oct").check();
+  await chip(page, "09:00 to 10:00").check();
+  await page.getByRole("radio", { name: "Waits on site" }).check();
+  await confirm(page).click();
+  await expect(
+    page.getByText("Nadia Pham is now saved, so you can find Nadia next time."),
+  ).toBeVisible();
+
+  await pickRole(page, "Customer");
+  const who = selectNamed(page, "Who");
+  await who.click();
+  const names = await page
+    .getByRole("listbox")
+    .getByRole("option")
+    .allInnerTexts();
+  expect(names.map((n) => n.trim())).toEqual([
+    "Demo Customer A",
+    "Demo Customer B",
+    "Demo Walk-in Carol",
+    "Nadia Pham",
+  ]);
+  await shot(page, "viewing-as", "new-customer-listed");
+  await page.getByRole("option", { name: "Nadia Pham" }).click();
+  await expect(
+    page.getByText(/^Now viewing as Customer, Nadia Pham/),
+  ).toBeVisible();
+  await page.getByRole("link", { name: "My appointments" }).first().click();
+  await expect(page.getByRole("main")).toContainText("Oil and filter change");
+  await expect(page.getByRole("main")).toContainText("NP22 VTC");
+  await shot(page, "my-appointments", "new-customer");
+});
+
 // D-0001-142: a browser stops an idle service worker, and MSW's worker then forgets this tab, so calls go past
 // it to the host. The page must heal itself: lists still load and a booking is made once. Chromium only, where
 // the DevTools protocol can stop the worker the way the browser does.
