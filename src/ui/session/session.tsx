@@ -83,7 +83,14 @@ export function SessionProvider({
   useEffect(() => {
     let current = true;
     setState((s) => ({ ...s, status: "loading" }));
-    loadMe().then(
+    (demo
+      ? // A failed user list does not block a valid stored user: the switcher reports that failure itself.
+        demo
+          .settle()
+          .catch(() => undefined)
+          .then(loadMe)
+      : loadMe()
+    ).then(
       (me) => current && setState({ status: "ready", me, problem: null }),
       (error: unknown) => {
         if (!current) return;
@@ -99,7 +106,7 @@ export function SessionProvider({
     return () => {
       current = false;
     };
-  }, [loadMe, attempt]);
+  }, [demo, loadMe, attempt]);
 
   useEffect(() => {
     if (!demo) return;

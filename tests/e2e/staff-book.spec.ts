@@ -67,7 +67,9 @@ async function start(
   await page.clock.setFixedTime(NOW);
   await openApp(page);
   await pickRole(page, options.role ?? "Staff");
-  await page.getByRole("button", { name: "Dismiss" }).click();
+  // Customer A is already in use on a first visit, so no toast was shown for it.
+  const dismiss = page.getByRole("button", { name: "Dismiss" });
+  if (await dismiss.isVisible()) await dismiss.click();
   await page.goto(address);
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 }
