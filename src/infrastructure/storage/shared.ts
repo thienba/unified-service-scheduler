@@ -1,5 +1,27 @@
 // Small pure helpers both stores use, so that they answer the same way (AD-8).
-import type { Customer, EpochMs, Vehicle } from "../../domain/model";
+import type { Customer, DemoUser, EpochMs, Vehicle } from "../../domain/model";
+
+/**
+ * The seeded users, then a customer user for every stored customer that has none, by name (D-0001-144). So a
+ * customer staff add can be picked in "Viewing as" and sees their own appointments.
+ */
+export function withCustomerUsers(
+  users: readonly DemoUser[],
+  customers: readonly Customer[],
+): DemoUser[] {
+  const linked = new Set(users.map((u) => u.customerId));
+  const added = customers
+    .filter((c) => !linked.has(c.id))
+    .map((c): DemoUser => ({
+      id: `user-${c.id}`,
+      name: c.name,
+      role: "customer",
+      customerId: c.id,
+      dealershipIds: [],
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name) || a.id.localeCompare(b.id));
+  return [...users, ...added];
+}
 
 /** True when `[start, end)` touches `[from, to)`. */
 export function touchesRange(

@@ -10,6 +10,7 @@ import {
   formatDuration,
   formatTimeRange,
 } from "../../format/format";
+import { useSession } from "../../session/session";
 import { useStaffMemory } from "./staff-memory";
 import type { Appointment, Transport } from "./queries";
 
@@ -32,6 +33,11 @@ export function StaffBooked({
   useEffect(() => forget(), [forget]);
   const newCustomer =
     (here.state as { newCustomer?: boolean } | null)?.newCustomer === true;
+  // The new customer can now be picked in "Viewing as" (D-0001-144).
+  const reloadUsers = useSession().switcher?.reloadUsers;
+  useEffect(() => {
+    if (newCustomer) reloadUsers?.();
+  }, [newCustomer, reloadUsers]);
   const zone = appointment.timeZone;
   const start = Date.parse(appointment.start);
   const name = appointment.display.customerName ?? "The customer";
