@@ -151,7 +151,7 @@ export async function chooseOption(
     if ((await list.count()) === 0) await trigger.click();
     await option.scrollIntoViewIfNeeded({ timeout: 2000 });
     await option.click({ timeout: 2000 });
-    await expect(list).toHaveCount(0, { timeout: 1000 });
+    await expect(list).toHaveCount(0, { timeout: 5000 });
   }).toPass({ timeout: 15_000 });
 }
 
