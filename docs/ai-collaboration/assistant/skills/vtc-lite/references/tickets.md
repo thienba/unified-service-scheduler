@@ -1,4 +1,4 @@
-Sources: Software Factory kit, .claude/skills/factory/references/tasks.md, tasks-intake.md; rewritten for VTC Lite.
+Sources: Software Factory kit, assistant/skills/factory/references/tasks.md, tasks-intake.md; rewritten for VTC Lite.
 
 # Tickets
 

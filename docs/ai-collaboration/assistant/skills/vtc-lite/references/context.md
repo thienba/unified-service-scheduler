@@ -1,4 +1,4 @@
-Sources: Software Factory kit, .claude/skills/factory/references/context.md, context-concepts.md; rewritten for VTC Lite.
+Sources: Software Factory kit, assistant/skills/factory/references/context.md, context-concepts.md; rewritten for VTC Lite.
 
 # Context: the project's memory
 
