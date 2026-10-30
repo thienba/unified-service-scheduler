@@ -21,6 +21,16 @@ export async function pickRole(
   role: "Customer" | "Staff" | "Manager",
 ) {
   const wide = (page.viewportSize()?.width ?? 1440) >= 640;
+  // A first visit already opens as Customer A (D-0001-145); picking the role in use does nothing. Wait until
+  // the shell shows who is in use before deciding.
+  const shown = wide
+    ? page
+        .getByRole("group", { name: "Viewing as" })
+        .getByRole("button", { pressed: true })
+    : page.getByRole("button", { name: /^Viewing as/ });
+  await expect(shown).toBeVisible();
+  await expect(shown).not.toContainText("Not signed in");
+  if (new RegExp(role).test((await shown.textContent()) ?? "")) return;
   if (wide) {
     await page
       .getByRole("group", { name: "Viewing as" })

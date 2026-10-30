@@ -11,7 +11,7 @@ import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { TimesNote } from "../session/TimesNote";
 import "../testing/css-escape";
 import { App } from "./App";
-import { fakeApi, problem } from "./fake-api";
+import { demoUsers, fakeApi, json, problem } from "./fake-api";
 import { readSavedUser, saveUser } from "../demo/saved-user";
 
 const base = "https://api.test/api";
@@ -43,20 +43,103 @@ async function pick(role: string) {
 const heading = (name: string | RegExp) =>
   screen.findByRole("heading", { level: 1, name });
 
-it("with nobody picked, / shows signed-out and the header says Not signed in", async () => {
-  open("/");
-  await heading("You are not signed in.");
+/** A fake API that knows the default demo user, as the seeded mock does. */
+const customerA = {
+  id: "user-customer-a",
+  name: "Demo Customer A",
+  role: "customer",
+  dealershipIds: [],
+};
+const withDefault = () =>
+  fakeApi({
+    "GET /_demo/users": () => json([...demoUsers, customerA]),
+    "GET /me": (request) => {
+      const user = [...demoUsers, customerA].find(
+        (u) => u.id === request.headers.get("X-Demo-User"),
+      );
+      return user
+        ? json({
+            userId: user.id,
+            name: user.name,
+            role: user.role,
+            customerId: null,
+            dealershipIds: user.dealershipIds,
+          })
+        : problem(401, "UNKNOWN_USER");
+    },
+  });
+const meCalls = (api: ReturnType<typeof fakeApi>) =>
+  api.calls.filter((c) => c.url.endsWith("/me"));
+
+it("first visit: with nothing stored, / opens the booking page as Demo Customer A, stores the choice, and shows no toast", async () => {
+  const api = open("/", withDefault());
+  await heading("Book a service");
+  const group = await screen.findByRole("group", { name: "Viewing as" });
   expect(
-    screen.getByText(
-      "Pick who you are with Viewing as at the top of the page. This is a demo, so there is no password.",
-    ),
-  ).toBeTruthy();
-  expect(screen.getByText("Not signed in")).toBeTruthy();
+    within(group).getByRole("button", { name: "Customer" }).ariaPressed,
+  ).toBe("true");
+  expect(readSavedUser()).toBe("user-customer-a");
+  expect(meCalls(api).map((c) => c.headers.get("X-Demo-User"))).toEqual([
+    "user-customer-a",
+  ]);
+  expect(screen.queryByText(/^Now viewing as/)).toBeNull();
+  expect(screen.queryByText("Not signed in")).toBeNull();
+});
+
+it("first visit: /schedule shows no-permission with its way to switch role", async () => {
+  open("/schedule", withDefault());
+  await heading("You cannot do that as Customer.");
+  expect(screen.getByRole("button", { name: "Switch role" })).toBeTruthy();
+});
+
+it("a stored user the seed no longer has falls back to Demo Customer A with no call answered 401", async () => {
+  saveUser("user-gone");
+  const api = open("/", withDefault());
+  await heading("Book a service");
+  expect(readSavedUser()).toBe("user-customer-a");
+  expect(meCalls(api)).toHaveLength(1);
+  expect(meCalls(api)[0]!.headers.get("X-Demo-User")).toBe("user-customer-a");
+  expect(screen.queryByText(/^Now viewing as/)).toBeNull();
+});
+
+it("a failed user list does not block a valid stored user: /me still loads and that user is in use", async () => {
+  saveUser("u-staff");
+  const api = open(
+    "/",
+    fakeApi({ "GET /_demo/users": () => problem(500, "INTERNAL") }),
+  );
+  await heading("Schedule");
+  expect(readSavedUser()).toBe("u-staff");
+  expect(meCalls(api)[0]!.headers.get("X-Demo-User")).toBe("u-staff");
+});
+
+it("when the default user is also missing from the list, /me answers 401 and the signed-out screen shows", async () => {
+  saveUser("user-gone");
+  const api = open("/");
+  await heading("You are not signed in.");
+  expect(meCalls(api)).toHaveLength(1);
+  expect(readSavedUser()).toBe("user-gone");
+});
+
+it("a hand-picked Staff user stays on a fresh open of /", async () => {
+  open("/", withDefault());
+  await heading("Book a service");
+  await pick("Staff");
+  await heading("Schedule");
+  expect(readSavedUser()).toBe("u-staff");
+  cleanup();
+
+  const api = open("/", withDefault());
+  await heading("Schedule");
+  expect(readSavedUser()).toBe("u-staff");
+  expect(meCalls(api).map((c) => c.headers.get("X-Demo-User"))).toEqual([
+    "u-staff",
+  ]);
 });
 
 it("picking a role sends that user's id, lands on the home and shows the toast with the name the API returned", async () => {
-  const api = open("/");
-  await heading("You are not signed in.");
+  const api = open("/", withDefault());
+  await heading("Book a service");
   await pick("Staff");
   await heading("Schedule");
   expect(
@@ -260,6 +343,7 @@ it("a failed switch keeps the earlier user and says nothing changed", async () =
 it("in remote mode there is no role switcher, no dev link and no X-Demo-User", async () => {
   const api = open("/", fakeApi(), { demo: null });
   await heading("You are not signed in.");
+  expect(screen.getByText("Not signed in")).toBeTruthy();
   expect(screen.queryByRole("group", { name: "Viewing as" })).toBeNull();
   expect(api.calls.some((c) => c.headers.has("X-Demo-User"))).toBe(false);
   expect(api.calls.some((c) => c.url.includes("/_demo/"))).toBe(false);

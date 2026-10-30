@@ -15,20 +15,113 @@ import { shot } from "./customer-support";
 const nav = (page: import("@playwright/test").Page) =>
   page.getByRole("navigation", { name: "Main" });
 
-test("with nobody picked, / says so and the header says Not signed in", async ({
-  page,
-}) => {
+const USER_KEY = "service-scheduler-demo-user";
+const viewingAs = (page: import("@playwright/test").Page) =>
+  page.getByRole("group", { name: "Viewing as" });
+
+/** The header control (from 640 wide) or the phone button (below) names Customer. */
+async function expectViewingAsCustomer(page: import("@playwright/test").Page) {
+  if ((page.viewportSize()?.width ?? 1440) >= 640)
+    await expect(
+      viewingAs(page).getByRole("button", { pressed: true }),
+    ).toHaveText("Customer");
+  else
+    await expect(
+      page.getByRole("button", { name: /^Viewing as.*Customer/ }),
+    ).toBeVisible();
+}
+
+/** Collects what the console reports and every /api/me answer. */
+function watch(page: import("@playwright/test").Page) {
+  const problems: string[] = [];
+  const meStatuses: number[] = [];
+  page.on("console", (m) => {
+    if (m.type() === "error") problems.push(m.text());
+  });
+  page.on("pageerror", (e) => problems.push(e.message));
+  page.on("response", (r) => {
+    if (new URL(r.url()).pathname === "/api/me") meStatuses.push(r.status());
+  });
+  return { problems, meStatuses };
+}
+
+/** The log lines the mock backend holds, as one string. */
+const logText = (page: import("@playwright/test").Page) =>
+  page.evaluate(async () => {
+    const response = await fetch("/api/_demo/telemetry", {
+      headers: { "X-Demo-User": "user-customer-a" },
+    });
+    return JSON.stringify((await response.json()).logs).toLowerCase();
+  });
+
+for (const width of [390, 1440]) {
+  test(`at ${width} wide, first visit: an empty browser opens / as Demo Customer A on the booking page, with no 401, no unknown_user log line, no console error, no toast and no axe violation`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await firstVisit(page);
+  });
+}
+
+async function firstVisit(page: import("@playwright/test").Page) {
+  const { problems, meStatuses } = watch(page);
   await openApp(page);
   await expect(
-    page.getByRole("heading", { level: 1, name: "You are not signed in." }),
+    page.getByRole("heading", { level: 1, name: "Book a service" }),
   ).toBeVisible();
-  await expect(
-    page.getByText(
-      "Pick who you are with Viewing as at the top of the page. This is a demo, so there is no password.",
-    ),
-  ).toBeVisible();
-  await expect(page.getByText("Not signed in").first()).toBeVisible();
+  await expect(page).toHaveURL(/\/book$/);
+  await expectViewingAsCustomer(page);
+  expect(await page.evaluate((k) => localStorage.getItem(k), USER_KEY)).toBe(
+    "user-customer-a",
+  );
+  await expect(page.getByText("Not signed in")).toHaveCount(0);
+  await expect(page.getByText(/^Now viewing as/)).toHaveCount(0);
+  expect(meStatuses).toEqual([200]);
+  expect(await logText(page)).not.toContain("unknown_user");
+  expect(problems).toEqual([]);
   await expect(page.getByRole("link", { name: "Dev panel" })).toBeVisible();
+  await expectNoAxeViolations(page);
+}
+
+test("first visit: a deep link to /book opens filled in, and /schedule shows no-permission with its way to switch role", async ({
+  page,
+}) => {
+  await page.goto("/book?dealership=dealership-london&service=service-full");
+  await expect(
+    page.getByRole("heading", {
+      level: 1,
+      name: "Choose a time for your full service",
+    }),
+  ).toBeVisible();
+  await expect(page).toHaveURL(/\/book\?dealership=dealership-london/);
+  await expect(page.getByText(/^Now viewing as/)).toHaveCount(0);
+
+  await page.goto("/schedule");
+  await expect(
+    page.getByRole("heading", { name: "You cannot do that as Customer." }),
+  ).toBeVisible();
+  await expect(page.getByRole("button", { name: "Switch role" })).toBeVisible();
+});
+
+test("a stored user that no longer exists falls back to Demo Customer A, with no 401 on /me and no locked screen", async ({
+  page,
+}) => {
+  await page.addInitScript(
+    (k) => localStorage.setItem(k, "user-gone"),
+    USER_KEY,
+  );
+  const { problems, meStatuses } = watch(page);
+  await openApp(page);
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Book a service" }),
+  ).toBeVisible();
+  await expectViewingAsCustomer(page);
+  expect(await page.evaluate((k) => localStorage.getItem(k), USER_KEY)).toBe(
+    "user-customer-a",
+  );
+  expect(meStatuses).toEqual([200]);
+  expect(await logText(page)).not.toContain("unknown_user");
+  expect(problems).toEqual([]);
 });
 
 test("picking each role sends X-Demo-User, lands on the home, and shows the toast", async ({
@@ -293,7 +386,7 @@ for (const width of [390, 1440]) {
   }) => {
     await page.setViewportSize({ width, height: 900 });
     await openApp(page);
-    await expectNoAxeViolations(page); // signed-out
+    await expectNoAxeViolations(page); // first visit
     await pickRole(page, "Customer");
     await expectNoAxeViolations(page);
     await page.goto("/schedule");

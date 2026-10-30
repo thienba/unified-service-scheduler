@@ -916,7 +916,7 @@ test.describe("the message links (D-0001-22 f, D-0001-77 A, SEC-17.AC-2, SEC-11.
     return confirmation.links;
   }
 
-  test("the owner opens the appointment and the reschedule screen; nobody picked sees signed-out; another customer sees not-found; staff and managers see no-permission on reschedule", async ({
+  test("the owner opens the appointment and the reschedule screen; a fresh browser opens as Customer A and does not find it; another customer sees not-found; staff and managers see no-permission on reschedule", async ({
     page,
     browser,
   }) => {
@@ -954,7 +954,7 @@ test.describe("the message links (D-0001-22 f, D-0001-77 A, SEC-17.AC-2, SEC-11.
       ).toBeVisible();
     }
 
-    // A fresh browser with nobody picked: the storage holds no user, so both links say signed out.
+    // A fresh browser opens as Customer A (D-0001-145) but has no such appointment in its own storage.
     const fresh = await browser.newContext({
       viewport: { width: 1440, height: 900 },
     });
@@ -962,7 +962,9 @@ test.describe("the message links (D-0001-22 f, D-0001-77 A, SEC-17.AC-2, SEC-11.
     await stranger.clock.setFixedTime(NOW);
     for (const link of [links.cancel, links.reschedule]) {
       await stranger.goto(new URL(link).pathname);
-      await expect(h1(stranger, "You are not signed in.")).toBeVisible();
+      await expect(
+        h1(stranger, "We cannot find that appointment."),
+      ).toBeVisible();
     }
     await fresh.close();
   });
