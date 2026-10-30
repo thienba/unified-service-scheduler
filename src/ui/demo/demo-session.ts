@@ -7,6 +7,9 @@ import { readSavedUser, saveUser } from "./saved-user";
 
 export const DEMO_USER_HEADER = "X-Demo-User";
 
+/** Who a browser with no choice stored opens as (D-0001-145). */
+export const DEFAULT_DEMO_USER = "user-customer-a";
+
 export type DemoUser = components["schemas"]["DemoUserListing"];
 
 export interface DemoSupport {
@@ -16,6 +19,11 @@ export interface DemoSupport {
   setUser: (id: string) => void;
   /** The seeded users. It uses a client with no headers: nobody is picked yet. */
   listUsers: () => Promise<DemoUser[]>;
+  /**
+   * Run before the first `GET /me`. A stored id the seed no longer has is replaced by the default, so the
+   * call never answers 401 for it. Without the default in the list, nothing is changed.
+   */
+  settle: () => Promise<void>;
 }
 
 export function createDemoSupport(options: {
@@ -23,10 +31,15 @@ export function createDemoSupport(options: {
   fetch?: typeof fetch;
 }): DemoSupport {
   let picked = readSavedUser();
+  if (!picked) {
+    picked = DEFAULT_DEMO_USER;
+    saveUser(picked);
+  }
   const plain = createApiClient({
     baseUrl: options.baseUrl,
     ...(options.fetch ? { fetch: options.fetch } : {}),
   });
+  const listUsers = () => call(plain.GET("/_demo/users"));
   return {
     headers: (): Record<string, string> =>
       picked ? { [DEMO_USER_HEADER]: picked } : {},
@@ -35,6 +48,14 @@ export function createDemoSupport(options: {
       picked = id;
       saveUser(id);
     },
-    listUsers: () => call(plain.GET("/_demo/users")),
+    listUsers,
+    settle: async () => {
+      const users = await listUsers();
+      const has = (id: string | null) => users.some((u) => u.id === id);
+      if (!has(picked) && has(DEFAULT_DEMO_USER)) {
+        picked = DEFAULT_DEMO_USER;
+        saveUser(picked);
+      }
+    },
   };
 }
