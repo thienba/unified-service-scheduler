@@ -27,7 +27,11 @@ export function checkStart(
   const reasons = policyReasons(snapshot, request.start, now);
   if (reasons.length > 0) return { available: false, reasons };
   const date = localDateOf(request.start, snapshot.dealership.timeZone);
-  return evaluateStart(buildDay(snapshot, date, request), request.start);
+  return evaluateStart(
+    buildDay(snapshot, date, request),
+    request.start,
+    request.keepsStoredStart !== true,
+  );
 }
 
 /** Every free start on one local date, on the dealership's grid from the opening instant. */
