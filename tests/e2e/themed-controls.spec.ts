@@ -485,3 +485,28 @@ test("video: a booking made with the keyboard only, through the themed Select co
   await video?.saveAs(path.join(dir!, "keyboard-booking-themed-controls.webm"));
   await video?.delete();
 });
+
+// A mouse opens a list on press. On a phone-width screen the sheet rises under the pointer, and the release must
+// not choose the row that is there.
+test("at 390 wide a press held on a time control opens the sheet, and the release chooses nothing", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openAdjust(page);
+  const time = selectNamed(page, "Start time");
+  await time.scrollIntoViewIfNeeded();
+  const box = (await time.boundingBox())!;
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  const list = page.getByRole("listbox", { name: /^Start time/ });
+  await expect(list).toBeVisible();
+  await page.waitForTimeout(400);
+  await page.mouse.up();
+  await page.waitForTimeout(300);
+  await expect(list).toBeVisible();
+  await expect(time).toHaveText("09:15");
+  // The sheet answers the pointer again: a press on a row chooses it.
+  await list.locator('[data-value="10:00"]').click();
+  await expect(list).toHaveCount(0);
+  await expect(time).toHaveText("10:00");
+});
