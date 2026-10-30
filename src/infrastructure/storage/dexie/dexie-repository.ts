@@ -20,6 +20,7 @@ import {
   phoneDigits,
   plateKey,
   touchesRange,
+  withCustomerUsers,
 } from "../shared";
 import {
   SchedulerDb,
@@ -257,7 +258,16 @@ export function createDexieRepository(databaseName: string): DexieRepository {
       }
     },
     getSeedVersion: async () => (await db.meta.get("seedVersion"))?.value,
-    listDemoUsers: () => db.demoUsers.toArray().then(byId),
+    listDemoUsers: async () =>
+      withCustomerUsers(
+        byId(await db.demoUsers.toArray()),
+        (await db.customers.toArray()).map(({ id, name, phone, email }) => ({
+          id,
+          name,
+          phone,
+          email,
+        })),
+      ),
     replaceAll: (seed, seedVersion) =>
       db.transaction("rw", db.tables, async () => {
         for (const table of db.tables) await table.clear();

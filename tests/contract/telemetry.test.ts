@@ -428,21 +428,23 @@ describe("the demo endpoints (AD-2, AD-17)", () => {
     );
   });
 
-  const SIX = [
+  const SEEDED_USERS = [
     "user-customer-a",
     "user-customer-b",
     "user-staff-london",
     "user-manager-london",
     "user-staff-saigon",
     "user-manager-saigon",
+    // D-0001-144: every customer can be picked; the seeded walk-in customer has no user of their own.
+    "user-customer-c",
   ];
 
-  it("GET /_demo/users answers 200 with no X-Demo-User: the six users, each id, name, role and dealershipIds only", async () => {
+  it("GET /_demo/users answers 200 with no X-Demo-User: the six users and one per other customer, each id, name, role and dealershipIds only", async () => {
     const reply = await call("/_demo/users");
     expect(reply.status).toBe(200);
     expect(reply.problems).toEqual([]);
     expect(reply.body.map((u: { id: string }) => u.id).sort()).toEqual(
-      [...SIX].sort(),
+      [...SEEDED_USERS].sort(),
     );
     for (const user of reply.body) {
       expect(Object.keys(user).sort()).toEqual([
@@ -486,13 +488,13 @@ describe("the demo endpoints (AD-2, AD-17)", () => {
     }
   });
 
-  it("after POST /_demo/reset the same six users are returned", async () => {
+  it("after POST /_demo/reset the same seven users are returned", async () => {
     const before = (await call("/_demo/users")).body;
     await book(users.customerA);
     await call("/_demo/reset", { user: users.customerA, method: "POST" });
     const after = await call("/_demo/users");
     expect(after.body).toEqual(before);
-    expect(after.body).toHaveLength(6);
+    expect(after.body).toHaveLength(7);
   });
 });
 
