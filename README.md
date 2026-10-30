@@ -189,7 +189,7 @@ npm run check:remote-build  # a build for a real backend holds no demo-only code
 npm run check:public-docs   # this README and docs/ai-collaboration hold no secrets, local paths or reference codes
 ```
 
-To run only the scheduling rules: `npx vitest run src/domain src/application`. `npm run e2e:other` runs the end-to-end tests in Firefox and WebKit too; see [Known limits](#known-limits). GitHub Actions runs all of these on every push and pull request.
+To run only the scheduling rules: `npx vitest run src/domain src/application`. `npm run e2e:other` runs the end-to-end tests in Firefox and WebKit too; see [Known limits](#known-limits). GitHub Actions runs the checks and the Chromium end-to-end tests on every pull request and push to `main`, and Firefox and WebKit on `main`, every night and when started by hand.
 
 ## AI Collaboration Narrative
 
