@@ -47,7 +47,9 @@ async function shot(page: Page, name: string) {
 /** Picks the role and closes the "Now viewing as" toast so it does not cover the page. */
 async function signIn(page: Page, role: "Customer" | "Staff" | "Manager") {
   await pickRole(page, role);
-  await page.getByRole("button", { name: "Dismiss" }).click();
+  // Customer A is already in use on a first visit, so no toast was shown for it.
+  const dismiss = page.getByRole("button", { name: "Dismiss" });
+  if (await dismiss.isVisible()) await dismiss.click();
 }
 
 async function openSchedule(page: Page, query = "") {
