@@ -375,13 +375,12 @@ describe("checkStart: lead time, horizon, break", () => {
     for (const t of times) expect(t < at("00:00", "2026-12-03")).toBe(true);
   });
 
-  it("a 15-minute break: a job ending at 10:00 blocks 10:00 and 10:10, 10:15 is free (AC-3)", () => {
+  it("a 15-minute break: a job ending at 10:00 blocks 10:00, 10:15 is free (AC-3)", () => {
     const s = snapshot({
       technicians: [technician("t1")],
       appointments: [appt("a1", "t1", "b2", at("09:00"), at("10:00"))],
     });
     expect(reasons(check(s, at("10:00")))).toEqual(["TECHNICIAN_BUSY"]);
-    expect(reasons(check(s, at("10:10")))).toEqual(["TECHNICIAN_BUSY"]);
     expect(check(s, at("10:15")).available).toBe(true);
   });
 
@@ -647,26 +646,26 @@ describe("suggest", () => {
   });
 });
 
-describe("searchDay across DST in Europe/London (AD-9, S4)", () => {
-  const london = (date: string, open: string, close: string, hour = 7) =>
-    snapshot({
-      dealership: dealership({
-        timeZone: "Europe/London",
-        weeklyHours: { [hour]: { open, close } },
+const london = (date: string, open: string, close: string, hour = 7) =>
+  snapshot({
+    dealership: dealership({
+      timeZone: "Europe/London",
+      weeklyHours: { [hour]: { open, close } },
+    }),
+    technicians: [
+      technician("t1", {
+        shiftPattern: { [hour]: { start: "00:00", end: "23:00" } },
       }),
-      technicians: [
-        technician("t1", {
-          shiftPattern: { [hour]: { start: "00:00", end: "23:00" } },
-        }),
-      ],
-      serviceType: {
-        id: "s1",
-        name: "S",
-        durationMinutes: 60,
-        requiredSkill: "mechanic",
-      },
-    });
+    ],
+    serviceType: {
+      id: "s1",
+      name: "S",
+      durationMinutes: 60,
+      requiredSkill: "mechanic",
+    },
+  });
 
+describe("searchDay across DST in Europe/London (AD-9, S4)", () => {
   it("spring forward: grid starts are real 15-minute steps from the opening instant, and the first and last fit the window", () => {
     // 2026-03-29: clocks jump 01:00 to 02:00. Open 00:30 to 03:30 is two real hours.
     const s = london("2026-03-29", "00:30", "03:30");
@@ -687,6 +686,39 @@ describe("searchDay across DST in Europe/London (AD-9, S4)", () => {
     expect(starts.at(-1)).toBe(utc("2026-10-25T02:30:00Z"));
     expect(starts).toHaveLength(13);
     starts.forEach((t, i) => expect(t).toBe(starts[0]! + i * 15 * MIN));
+  });
+});
+
+describe("checkStart: the grid (D-0001-147)", () => {
+  it("a start off the grid, with minutes or seconds, is NOT_ON_GRID", () => {
+    const s = snapshot();
+    expect(check(s, at("10:07"))).toEqual({
+      available: false,
+      reasons: ["NOT_ON_GRID"],
+    });
+    expect(check(s, at("14:07") + 33_000)).toEqual({
+      available: false,
+      reasons: ["NOT_ON_GRID"],
+    });
+    expect(check(s, at("10:15")).available).toBe(true);
+  });
+
+  it("the grid counts real time from the opening instant, also across a clock change", () => {
+    // 2026-03-29 London: open 00:10, clocks jump at 01:00 UTC. Grid is 00:10Z + 15 minutes.
+    const s = london("2026-03-29", "00:10", "04:00");
+    const now = utc("2026-03-01T00:00:00Z");
+    const ask = (iso: string) =>
+      checkStart(s, { ...wait, start: utc(iso) }, now);
+    expect(ask("2026-03-29T00:25:00Z").available).toBe(true);
+    expect(ask("2026-03-29T01:25:00Z").available).toBe(true);
+    expect(ask("2026-03-29T00:15:00Z")).toEqual({
+      available: false,
+      reasons: ["NOT_ON_GRID"],
+    });
+    expect(ask("2026-03-29T01:30:00Z")).toEqual({
+      available: false,
+      reasons: ["NOT_ON_GRID"],
+    });
   });
 });
 

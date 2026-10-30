@@ -753,6 +753,154 @@ describe.each(transports)("API contract through $name", (transport) => {
     });
   });
 
+  describe("starts must be on the 15-minute grid (D-0001-147)", () => {
+    const offGrid = [at(MONDAY, "10:07"), `${MONDAY}T14:07:33Z`];
+    const onGrid = (iso: string) => Date.parse(iso) % (15 * 60_000) === 0;
+    const expectNotOnGrid = (reply: Reply) => {
+      expect(reply.status).toBe(409);
+      expect(reply.body.code).toBe("SLOT_UNAVAILABLE");
+      expect(reply.body.reasons).toContain("NOT_ON_GRID");
+      expect(reply.body.suggestions.length).toBeGreaterThan(0);
+      for (const suggestion of reply.body.suggestions) {
+        expect(onGrid(suggestion.start)).toBe(true);
+      }
+    };
+
+    it.each(offGrid)(
+      "POST /appointments at %s is 409 NOT_ON_GRID with grid suggestions and stores nothing",
+      async (start) => {
+        expectNotOnGrid(await book(users.customerA, { start }));
+        const list = await dayList(users.staffLondon, MONDAY);
+        expect(list.body).toEqual([]);
+      },
+    );
+
+    it.each(offGrid)(
+      "POST /availability-checks at %s is 200 available:false with NOT_ON_GRID",
+      async (start) => {
+        const reply = await send("/availability-checks", {
+          user: users.customerA,
+          method: "POST",
+          body: {
+            dealershipId: LON,
+            serviceTypeId: OIL,
+            start,
+            transport: "wait",
+          },
+        });
+        expect(reply.status).toBe(200);
+        expect(reply.body.available).toBe(false);
+        expect(reply.body.reasons).toContain("NOT_ON_GRID");
+      },
+    );
+
+    it.each(offGrid)(
+      "reschedule and adjust to %s are 409 NOT_ON_GRID and the appointment is unchanged",
+      async (start) => {
+        const before = await send(`/appointments/${SEEDED_A.id}`, {
+          user: users.managerLondon,
+        });
+        const move = await send(`/appointments/${SEEDED_A.id}/reschedule`, {
+          user: users.customerA,
+          method: "POST",
+          headers: { "Idempotency-Key": key() },
+          body: { start },
+        });
+        expectNotOnGrid(move);
+        const adjust = await send(`/appointments/${SEEDED_A.id}`, {
+          user: users.managerLondon,
+          method: "PATCH",
+          body: { start },
+        });
+        expectNotOnGrid(adjust);
+        const after = await send(`/appointments/${SEEDED_A.id}`, {
+          user: users.managerLondon,
+        });
+        expect(after.body).toEqual(before.body);
+      },
+    );
+
+    it("an adjust that keeps the start and changes only the technician or the bay is still 200", async () => {
+      const patch = (body: Record<string, unknown>) =>
+        send(`/appointments/${SEEDED_A.id}`, {
+          user: users.managerLondon,
+          method: "PATCH",
+          body,
+        });
+      const tech = await patch({ technicianId: "tech-lon-cedar" });
+      expect(tech.status).toBe(200);
+      expect(tech.body).toMatchObject({
+        technicianId: "tech-lon-cedar",
+        start: SEEDED_A.start,
+      });
+      const bay = await patch({ serviceBayId: "bay-lon-2" });
+      expect(bay.status).toBe(200);
+      expect(bay.body).toMatchObject({
+        serviceBayId: "bay-lon-2",
+        start: SEEDED_A.start,
+      });
+    });
+  });
+
+  describe("an appointment stored off the grid (D-0001-147)", () => {
+    // The dealership opens at 08:10 that day, so the stored 10:00 is no longer on the grid.
+    const moveOpening = async () => {
+      const { body } = await send(`/dealerships/${LON}`, {
+        user: users.managerLondon,
+      });
+      const saved = await send(`/dealerships/${LON}/settings`, {
+        user: users.managerLondon,
+        method: "PUT",
+        body: {
+          weeklyHours: body.weeklyHours,
+          dateOverrides: { [SEEDED_A.date]: { open: "08:10", close: "18:00" } },
+          policies: {
+            leadTimeMinutes: body.policies.leadTimeMinutes,
+            horizonDays: body.policies.horizonDays,
+            breakMinutes: body.policies.breakMinutes,
+          },
+        },
+      });
+      expect(saved.status).toBe(200);
+    };
+    const patch = (body: Record<string, unknown>) =>
+      send(`/appointments/${SEEDED_A.id}`, {
+        user: users.managerLondon,
+        method: "PATCH",
+        body,
+      });
+
+    it("a new technician or bay with the stored start is 200, also when the start is off the grid", async () => {
+      await moveOpening();
+      const tech = await patch({ technicianId: "tech-lon-cedar" });
+      expect(tech.status).toBe(200);
+      expect(tech.body).toMatchObject({
+        technicianId: "tech-lon-cedar",
+        start: SEEDED_A.start,
+      });
+      const bay = await patch({ serviceBayId: "bay-lon-2" });
+      expect(bay.status).toBe(200);
+      expect(bay.body.start).toBe(SEEDED_A.start);
+    });
+
+    it("a move to a different off-grid start is still 409 NOT_ON_GRID and nothing changes", async () => {
+      await moveOpening();
+      const before = await send(`/appointments/${SEEDED_A.id}`, {
+        user: users.managerLondon,
+      });
+      const clash = await patch({
+        start: at(SEEDED_A.date, "10:05"),
+        technicianId: "tech-lon-cedar",
+      });
+      expect(clash.status).toBe(409);
+      expect(clash.body.reasons).toContain("NOT_ON_GRID");
+      const after = await send(`/appointments/${SEEDED_A.id}`, {
+        user: users.managerLondon,
+      });
+      expect(after.body).toEqual(before.body);
+    });
+  });
+
   describe("reading the schedule (REQ-BOOK-004, 006, 010)", () => {
     it("staff get every appointment of the local date with a display block; a booking made a moment ago is there; an empty date is an empty list", async () => {
       const before = await dayList(users.staffLondon, SEEDED_A.date);
