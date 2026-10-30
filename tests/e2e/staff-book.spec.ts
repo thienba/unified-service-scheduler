@@ -1545,3 +1545,69 @@ test("video: a staff member taps a free gap, finds a customer, picks a car, a se
   await page.waitForTimeout(2500);
   await context.close();
 });
+
+// D-0001-142: a browser stops an idle service worker, and MSW's worker then forgets this tab, so calls go past
+// it to the host. The page must heal itself: lists still load and a booking is made once. Chromium only, where
+// the DevTools protocol can stop the worker the way the browser does.
+test("after the browser stops the mock worker, services, days and a booking still work, with one booking made", async ({
+  page,
+  browserName,
+}) => {
+  test.skip(
+    browserName !== "chromium",
+    "Stopping a worker needs Chromium's DevTools protocol",
+  );
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send("ServiceWorker.enable");
+  const stopWorker = () => cdp.send("ServiceWorker.stopAllWorkers");
+  const missed: string[] = [];
+  page.on("response", (r) => {
+    if (r.url().includes("/api/") && !r.fromServiceWorker())
+      missed.push(new URL(r.url()).pathname);
+  });
+
+  await start(page, 1440, "/book/for-customer");
+  await page.getByRole("button", { name: "Add a new customer" }).click();
+  await fillNewCustomer(page, {
+    name: "Heal Test",
+    phone: "07700 900777",
+    registration: "HT21 ABC",
+    make: "Honda",
+    model: "Civic",
+  });
+  await stopWorker();
+  await continueButton(page).click();
+  await service(page).click();
+  await expect(page.getByRole("option")).toHaveCount(3);
+  await page.keyboard.press("Escape");
+
+  await stopWorker();
+  await chooseOption(service(page), "service-oil-change");
+  await expect(day(page, "Fri 30 Oct")).toBeVisible();
+  await expect(page.getByText("We could not check the days.")).toHaveCount(0);
+  await day(page, "Fri 30 Oct").check();
+  await chip(page, "09:00 to 10:00").check();
+  await page.getByRole("radio", { name: "Waits on site" }).check();
+
+  const bookings = watchBookings(page);
+  await stopWorker();
+  await confirm(page).click();
+  await expect(
+    page.getByText("Heal Test is now saved, so you can find Heal next time."),
+  ).toBeVisible();
+
+  // The calls really went past the worker, and were sent again.
+  expect(missed).toEqual(
+    expect.arrayContaining(["/api/service-types", "/api/appointments"]),
+  );
+  // A retried booking keeps its key, and the customer and the car are stored once.
+  expect(new Set(bookings.map((b) => b.key)).size).toBe(1);
+  const found = await api(page, STAFF, "POST", "/customers/search", {
+    text: "HT21ABC",
+  });
+  const people = (found.body as { name: string; vehicles: unknown[] }[]).filter(
+    (c) => c.name === "Heal Test",
+  );
+  expect(people).toHaveLength(1);
+  expect(people[0]!.vehicles).toHaveLength(1);
+});

@@ -342,8 +342,10 @@ for (const width of [390, 1440]) {
       await start(page, width, DEEP);
       await chip(page, "13:00 to 16:00").check();
       let posted = 0;
+      // Only a booking counts: the early check of the chosen time (D-0001-107) is a POST too.
       page.on("request", (r) => {
-        if (r.method() === "POST") posted += 1;
+        if (r.method() === "POST" && r.url().endsWith("/api/appointments"))
+          posted += 1;
       });
       await confirm(page).click();
       const heading = page.getByText(

@@ -17,7 +17,7 @@ import { SessionProvider } from "../session/session";
 import { appRoutes } from "./routes";
 
 export interface AppProps {
-  /** For tests: where the API answers, and the `fetch` that answers. */
+  /** Where the API answers, and the `fetch` that answers: tests set them; the mock gives its healing `fetch`. */
   baseUrl?: string;
   fetch?: typeof fetch;
   /** For tests: start in memory at these addresses instead of the browser's. */
