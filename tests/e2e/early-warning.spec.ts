@@ -16,6 +16,7 @@ import {
   A,
   B,
   LONDON,
+  contestedEvStart,
   MANAGER,
   STAFF,
   api,
@@ -68,14 +69,12 @@ async function freeFor(page: Page, start: string, tech: string) {
   return answer.body.available;
 }
 
-/** The start of customer A's seeded EV check, where Tom Fletcher is the one free EV technician. */
+/** A start where Oliver Hughes is busy and Tom Fletcher is the one free EV technician, and A's and B's cars are free. */
 async function contestedStart(page: Page): Promise<string> {
-  const mine = await api<Appointment[]>(page, A, "GET", "/appointments");
-  const ev = mine.body.find((a) => a.serviceTypeId === EV);
-  if (!ev) throw new Error("The seed has no EV check for customer A.");
-  expect(await freeFor(page, ev.start, OLIVER)).toBe(false);
-  expect(await freeFor(page, ev.start, TOM)).toBe(true);
-  return ev.start;
+  const start = await contestedEvStart(page);
+  expect(await freeFor(page, start, OLIVER)).toBe(false);
+  expect(await freeFor(page, start, TOM)).toBe(true);
+  return start;
 }
 
 /** A new EV check for customer A on the contested day, away from the contested hour (to be moved onto it). */

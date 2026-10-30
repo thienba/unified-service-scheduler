@@ -1,6 +1,7 @@
 // The mock API in a real browser (VITE_API_MODE=mock, the default): the service worker answers `/api`,
 // the data survives a reload, and two pages of one browser race for the same time (AD-4, S1).
 import { expect, test, type Page } from "@playwright/test";
+import { contestedEvStart } from "./demo-support";
 
 const LONDON = "dealership-london";
 const EV_CHECK = "service-ev-check";
@@ -46,12 +47,8 @@ async function open(page: Page) {
   ).toBeVisible();
 }
 
-/** The seeded EV check of customer A: Ash is busy then, so Cedar is the one free EV technician. */
-async function contestedStart(page: Page): Promise<string> {
-  const mine = await api(page, "/appointments", { user: "user-customer-a" });
-  expect(mine.status).toBe(200);
-  return mine.body[0].start;
-}
+/** A time when Ash is busy, so Cedar is the one free EV technician, and the cars of A and B are free. */
+const contestedStart = (page: Page): Promise<string> => contestedEvStart(page);
 
 const booking = (start: string) => ({
   dealershipId: LONDON,
@@ -151,6 +148,8 @@ test("the console shows JSON lines with the trace id, the telemetry answers, and
   const logged: string[] = [];
   page.on("console", (message) => logged.push(message.text()));
   await open(page);
+  const seeded = (await api(page, "/appointments", { user: "user-customer-a" }))
+    .body[0].start;
   const start = await contestedStart(page);
   // Cedar is the one free EV technician: the first booking takes them, the second is refused.
   const first = await api(page, "/appointments", {
@@ -200,5 +199,5 @@ test("the console shows JSON lines with the trace id, the telemetry answers, and
   });
   expect(reset).toBe(204);
   const mine = await api(page, "/appointments", { user: "user-customer-a" });
-  expect(mine.body[0].start).toBe(start);
+  expect(mine.body[0].start).toBe(seeded);
 });

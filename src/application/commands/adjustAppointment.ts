@@ -119,6 +119,7 @@ async function adjust(
           serviceTypeId: current.serviceTypeId,
           around: request.start ?? current.start,
           daysEitherSide: 0,
+          vehicleId: current.vehicleId,
         });
         if (!snapshot) return { ok: false, error: { kind: "not_found" } };
         return { ok: true, value: { current, snapshot } };
@@ -152,6 +153,7 @@ async function adjust(
         start,
         transport: current.transport,
         excludeAppointmentId: current.id,
+        vehicleId: current.vehicleId,
         technicianId,
         serviceBayId,
         keepsStoredStart: start === current.start,
@@ -174,6 +176,7 @@ async function adjust(
             start,
             transport: current.transport,
             excludeAppointmentId: current.id,
+            vehicleId: current.vehicleId,
             technicianId: request.technicianId,
             serviceBayId: request.serviceBayId,
           },

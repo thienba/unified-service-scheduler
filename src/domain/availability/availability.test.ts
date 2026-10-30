@@ -772,3 +772,61 @@ describe("a fixed technician in the day search and the suggestions (D-0001-31 A)
     );
   });
 });
+
+describe("checkStart: one car, one appointment at a time (D-0001-146)", () => {
+  const busyCar = (over: object = {}, start = "10:00", end = "11:00") =>
+    appt("car1", "t9", "b9", at(start), at(end), {
+      dealershipId: "d2",
+      vehicleId: "v1",
+      ...over,
+    });
+  const withCar = (list: ReturnType<typeof busyCar>[]) =>
+    snapshot({ vehicleAppointments: list });
+  const carCheck = (s: ReturnType<typeof snapshot>, start: number, x = {}) =>
+    check(s, start, { vehicleId: "v1", ...x });
+
+  it("an overlapping blocking appointment of the same car at another dealership: VEHICLE_BUSY", () => {
+    const s = withCar([busyCar()]);
+    expect(reasons(carCheck(s, at("10:30")))).toEqual(["VEHICLE_BUSY"]);
+    expect(reasons(carCheck(s, at("09:30")))).toEqual(["VEHICLE_BUSY"]);
+  });
+
+  it("the same appointments do not block a request with no car, or another car", () => {
+    const s = withCar([busyCar()]);
+    expect(check(s, at("10:30")).available).toBe(true);
+    expect(carCheck(s, at("10:30"), { vehicleId: "v2" }).available).toBe(true);
+  });
+
+  it("touching times do not clash and no rest break applies to a car", () => {
+    const s = withCar([busyCar()]);
+    expect(carCheck(s, at("11:00")).available).toBe(true);
+    expect(carCheck(s, at("09:00")).available).toBe(true);
+  });
+
+  it("a cancelled appointment does not block", () => {
+    const s = withCar([busyCar({ status: "cancelled", cancelledAt: 1 })]);
+    expect(carCheck(s, at("10:30")).available).toBe(true);
+  });
+
+  it("the appointment being moved does not block itself", () => {
+    const s = withCar([busyCar()]);
+    expect(
+      carCheck(s, at("10:30"), { excludeAppointmentId: "car1" }).available,
+    ).toBe(true);
+  });
+
+  it("searchDay and suggest leave out the times the car is busy", () => {
+    const s = withCar([busyCar()]);
+    const request = { transport: "wait", vehicleId: "v1" } as const;
+    const starts = searchDay(s, { ...request, date: MONDAY }, NOW);
+    expect(starts).not.toContain(at("09:15"));
+    expect(starts).not.toContain(at("10:45"));
+    expect(starts).toContain(at("09:00"));
+    expect(starts).toContain(at("11:00"));
+    const near = suggest(s, { ...request, start: at("10:00") }, NOW);
+    expect(near.length).toBeGreaterThan(0);
+    for (const start of near) {
+      expect(carCheck(s, start).available).toBe(true);
+    }
+  });
+});

@@ -23,6 +23,8 @@ import {
   keepVideo,
   londonDay,
   londonTime,
+  plusMinutes,
+  contestedEvStart,
   open,
   signInAs,
 } from "./demo-support";
@@ -775,7 +777,8 @@ test("scenario 7a, time zones (REQ-BOOK-013.AC-2, S4): a browser in Saigon sees 
   );
   await chooseOption(page.getByRole("button", { name: /^Car/ }), "vehicle-a");
   await expect(chip(page, "08:00 to 09:00")).toBeVisible();
-  await expect(chip(page, "10:00 to 11:00")).toBeVisible();
+  // Customer A's car is at the dealership from 10:00 to 13:00 (the booking above), so the chips start again at 13:00.
+  await expect(chip(page, "13:00 to 14:00")).toBeVisible();
   await beat(page, 1500);
 
   // The same tab as London staff, then as the London manager.
@@ -927,8 +930,10 @@ test("scenario 8, dev panel (NFR-6): after the race the panel shows the confirme
     "GET",
     `/appointments?dealershipId=${LONDON}&date=2026-10-31`,
   );
-  // The race at the seeded EV check of customer A (Sat 31 Oct, 10:00): Tom Fletcher is the one free EV technician.
-  const start = "2026-10-31T10:00:00Z";
+  // The race three hours after the seeded EV check of customer A (Sat 31 Oct, 13:00): Tom Fletcher is the one free EV
+  // technician, and the cars of A and B are both free (D-0001-146).
+  const start = await contestedEvStart(page);
+  const range = `${londonTime(start)} to ${londonTime(plusMinutes(start, 60))}`;
   for (const p of [first, page]) {
     await p.goto(
       `/book?dealership=${LONDON}&service=service-ev-check&date=2026-10-31`,
@@ -938,7 +943,7 @@ test("scenario 8, dev panel (NFR-6): after the race the panel shows the confirme
       p === first ? "vehicle-a" : "vehicle-b",
     );
     await dayTile(p, londonDay(start)).check();
-    await chip(p, "10:00 to 11:00").check();
+    await chip(p, range).check();
     await p.getByRole("radio", { name: "Wait on site" }).check();
   }
   await first.getByRole("button", { name: "Confirm booking" }).click();
@@ -948,7 +953,9 @@ test("scenario 8, dev panel (NFR-6): after the race the panel shows the confirme
   );
   await page.getByRole("button", { name: "Confirm booking" }).click();
   await expect(
-    page.getByText("Sorry, 10:00 on Sat 31 Oct was just taken."),
+    page.getByText(
+      `Sorry, ${londonTime(start)} on ${londonDay(start)} was just taken.`,
+    ),
   ).toBeVisible();
   const reference = (await (await refusal).headerValue("X-Trace-Id"))!.slice(
     0,

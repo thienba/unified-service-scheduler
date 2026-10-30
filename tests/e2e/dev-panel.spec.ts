@@ -6,6 +6,7 @@ import { mkdirSync } from "node:fs";
 import path from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 import type { Telemetry } from "../../src/ui/features/dev/telemetry";
+import { contestedEvStart } from "./demo-support";
 import {
   expectNoAxeViolations,
   expectNoSidewaysScroll,
@@ -101,6 +102,8 @@ const londonDate = (instant: string) =>
   );
 
 interface Story {
+  /** The start of customer A's seeded appointment. */
+  seeded: string;
   contested: string;
   /** The Idempotency-Key of the customer's booking, to show after a reset that its record is gone. */
   bookedKey: string;
@@ -118,10 +121,12 @@ async function tellTheStory(
   page: Page,
   { canary: withCanary = true } = {},
 ): Promise<Story> {
-  const mine = await api<{ start: string }[]>(page, "/appointments", {
-    user: "user-customer-a",
-  });
-  const contested = mine.body[0]!.start;
+  const seeded = (
+    await api<{ start: string }[]>(page, "/appointments", {
+      user: "user-customer-a",
+    })
+  ).body[0]!.start;
+  const contested = await contestedEvStart(page);
   // Cedar is the one free EV technician then: the first booking takes them, the second is refused.
   const bookedKey = crypto.randomUUID();
   const booked = await api<Id>(page, "/appointments", {
@@ -149,7 +154,7 @@ async function tellTheStory(
   });
   expect(missing.status).toBe(404);
   if (!withCanary)
-    return { contested, bookedKey, booked, refused, canary: null };
+    return { contested, seeded, bookedKey, booked, refused, canary: null };
   const later = new Date(new Date(contested).getTime() + 3 * 3_600_000)
     .toISOString()
     .replace(".000Z", "Z");
@@ -170,7 +175,7 @@ async function tellTheStory(
     },
   });
   expect(canary.status).toBe(201);
-  return { contested, bookedKey, booked, refused, canary };
+  return { contested, seeded, bookedKey, booked, refused, canary };
 }
 
 /** Opens the panel from the footer link, inside the same tab. */
@@ -434,7 +439,7 @@ test("reset: the dialog starts on Keep my data, the reset empties what this brow
     story.booked.body.id,
   );
   expect(myAppointments.body).toContainEqual(
-    expect.objectContaining({ start: story.contested, status: "confirmed" }),
+    expect.objectContaining({ start: story.seeded, status: "confirmed" }),
   );
   // SEC-13.AC-4 through the screen once: no canary customer, and the outbox holds the seed's messages only.
   const found = await api(page, "/customers/search", {
@@ -650,21 +655,33 @@ test("D-0001-84: a booking and a lost race made on the real booking screen, then
   const confirm = (page: Page) =>
     page.getByRole("button", { name: "Confirm booking" });
 
-  // Two customers' screens are open on the same time (10:00 on Fri 30 Oct); the first one confirms.
+  // A customer's screen is open on 10:00 on Fri 30 Oct; someone else (a new customer with a new car, because customer
+  // A's own car cannot have two appointments at once) confirms that time first.
   const winner = await context.newPage();
   await open(winner);
   await openApp(winner);
   await pickRole(winner, "Customer");
   const page = await context.newPage();
   await open(page);
-  await winner.goto(DEEP);
   await page.goto(DEEP);
-  await choose(winner);
   await choose(page);
-  await confirm(winner).click();
-  await expect(
-    winner.getByRole("heading", { level: 1, name: "You are booked" }),
-  ).toBeVisible();
+  const rival = await api(winner, "/appointments", {
+    user: "user-staff-london",
+    method: "POST",
+    body: {
+      dealershipId: LONDON,
+      serviceTypeId: "service-full",
+      start: "2026-10-30T10:00:00Z",
+      transport: "wait",
+      newCustomer: {
+        name: "Ravi Menon",
+        phone: "0161 496 0456",
+        email: "ravi@example.com",
+      },
+      newVehicle: { registration: "GH78 MNO", make: "Skoda", model: "Octavia" },
+    },
+  });
+  expect(rival.status).toBe(201);
 
   // This tab's confirm is refused (409); it then takes the closest time (201). Both are made on the screen.
   const refusal = page.waitForResponse(
@@ -746,10 +763,7 @@ test("video: a booking and a just-taken answer in two pages, the line found by i
   await expect(
     customer.getByRole("navigation", { name: "Main" }).first(),
   ).toBeVisible();
-  const mine = await api<{ start: string }[]>(customer, "/appointments", {
-    user: "user-customer-a",
-  });
-  const contested = mine.body[0]!.start;
+  const contested = await contestedEvStart(customer);
   // The manager books the one free EV technician for customer B; a moment later customer A asks for the same time.
   const booked = await api<Id>(manager, "/appointments", {
     user: "user-manager-london",

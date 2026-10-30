@@ -71,6 +71,20 @@ describe.each(transports)("API contract through $name", (transport) => {
       },
     });
 
+  /** Takes a technician at `start` with a car of its own: customer A's seeded car is already busy then (D-0001-146). */
+  const takeSecondTechnician = (start: string) =>
+    book(users.staffLondon, {
+      customerId: "customer-a",
+      vehicleId: undefined,
+      newVehicle: {
+        registration: "TT01 AAA",
+        make: "Make",
+        model: "Model",
+      },
+      serviceTypeId: EV,
+      start,
+    });
+
   const dayList = (user: string, date: string, dealershipId = LON) =>
     send("/appointments", { user, query: { dealershipId, date } });
 
@@ -358,14 +372,7 @@ describe.each(transports)("API contract through $name", (transport) => {
       expect(
         listed.body.slots.map((s: { start: string }) => s.start),
       ).toContain(SEEDED_A.start);
-      expect(
-        (
-          await book(users.customerA, {
-            serviceTypeId: EV,
-            start: SEEDED_A.start,
-          })
-        ).status,
-      ).toBe(201);
+      expect((await takeSecondTechnician(SEEDED_A.start)).status).toBe(201);
       const late = await book(users.customerB, {
         serviceTypeId: EV,
         start: SEEDED_A.start,
@@ -477,10 +484,7 @@ describe.each(transports)("API contract through $name", (transport) => {
       });
 
       it("a taken time is 409 and stores no customer", async () => {
-        await book(users.customerA, {
-          serviceTypeId: EV,
-          start: SEEDED_A.start,
-        });
+        await takeSecondTechnician(SEEDED_A.start);
         const reply = await book(users.staffLondon, {
           ...newPeople,
           serviceTypeId: EV,
@@ -898,6 +902,176 @@ describe.each(transports)("API contract through $name", (transport) => {
         user: users.managerLondon,
       });
       expect(after.body).toEqual(before.body);
+    });
+  });
+
+  describe("one car, one appointment at a time (D-0001-146)", () => {
+    const SGN = "dealership-saigon";
+    const THURSDAY = SEEDED_A.date;
+    const busyFrom = at(THURSDAY, "08:00");
+    const busyTo = at(THURSDAY, "09:00");
+    const overlapsBusy = (s: { start: string; end: string }) =>
+      Date.parse(s.start) < Date.parse(busyTo) &&
+      Date.parse(busyFrom) < Date.parse(s.end);
+    const bookSaigon = () =>
+      book(users.customerA, {
+        dealershipId: SGN,
+        serviceTypeId: OIL,
+        start: busyFrom,
+        vehicleId: "vehicle-a",
+      });
+    const days = (user: string, query: Record<string, unknown>) =>
+      send(`/dealerships/${LON}/availability`, {
+        user,
+        query: {
+          serviceTypeId: OIL,
+          date: THURSDAY,
+          transport: "wait",
+          ...query,
+        },
+      });
+    const check = (user: string, body: Record<string, unknown>) =>
+      send("/availability-checks", {
+        user,
+        method: "POST",
+        body: {
+          dealershipId: LON,
+          serviceTypeId: OIL,
+          start: at(THURSDAY, "08:30"),
+          transport: "wait",
+          ...body,
+        },
+      });
+
+    it("a second booking that overlaps the car's other dealership is 409 VEHICLE_BUSY with suggestions that leave out the busy time, and nothing is stored", async () => {
+      expect((await bookSaigon()).status).toBe(201);
+      const before = (
+        await send("/appointments", {
+          user: users.managerLondon,
+          query: { dealershipId: LON, date: THURSDAY },
+        })
+      ).body;
+      const late = await book(users.customerA, {
+        serviceTypeId: OIL,
+        start: at(THURSDAY, "08:30"),
+        vehicleId: "vehicle-a",
+      });
+      expect(late.status).toBe(409);
+      expect(late.body.code).toBe("SLOT_UNAVAILABLE");
+      expect(late.body.reasons).toContain("VEHICLE_BUSY");
+      expect(late.body.suggestions.length).toBeGreaterThan(0);
+      expect(late.body.suggestions.some(overlapsBusy)).toBe(false);
+      const after = (
+        await send("/appointments", {
+          user: users.managerLondon,
+          query: { dealershipId: LON, date: THURSDAY },
+        })
+      ).body;
+      expect(after).toEqual(before);
+    });
+
+    it("the same overlap at the same dealership is refused too, and another car is not", async () => {
+      expect((await book(users.customerA, { start: busyFrom })).status).toBe(
+        201,
+      );
+      const same = await book(users.customerA, {
+        start: at(THURSDAY, "08:30"),
+      });
+      expect(same.status).toBe(409);
+      expect(same.body.reasons).toContain("VEHICLE_BUSY");
+      const other = await book(users.customerB, {
+        start: at(THURSDAY, "08:30"),
+        vehicleId: "vehicle-b",
+      });
+      // Resources may be short at that time, but the reason is never the other car.
+      expect(other.body.reasons ?? []).not.toContain("VEHICLE_BUSY");
+    });
+
+    it("reschedule and adjust apply the same rule", async () => {
+      const first = await book(users.customerA, { start: busyFrom });
+      const second = await book(users.customerA, {
+        start: at(THURSDAY, "13:00"),
+      });
+      expect(first.status).toBe(201);
+      expect(second.status).toBe(201);
+      const reschedule = await send(
+        `/appointments/${second.body.id}/reschedule`,
+        {
+          user: users.customerA,
+          method: "POST",
+          headers: { "Idempotency-Key": key() },
+          body: { start: at(THURSDAY, "08:30") },
+        },
+      );
+      expect(reschedule.status).toBe(409);
+      expect(reschedule.body.reasons).toContain("VEHICLE_BUSY");
+      const adjust = await send(`/appointments/${second.body.id}`, {
+        user: users.managerLondon,
+        method: "PATCH",
+        body: { start: at(THURSDAY, "08:30") },
+      });
+      expect(adjust.status).toBe(409);
+      expect(adjust.body.reasons).toContain("VEHICLE_BUSY");
+      const self = await send(`/appointments/${first.body.id}/reschedule`, {
+        user: users.customerA,
+        method: "POST",
+        headers: { "Idempotency-Key": key() },
+        body: { start: at(THURSDAY, "08:30") },
+      });
+      expect(self.status).toBe(200);
+    });
+
+    it("the day search and the check take an optional vehicleId and leave out the car's busy times", async () => {
+      expect((await bookSaigon()).status).toBe(201);
+      const without = await days(users.customerA, {});
+      const withCar = await days(users.customerA, { vehicleId: "vehicle-a" });
+      expect(without.status).toBe(200);
+      expect(without.body.slots.some(overlapsBusy)).toBe(true);
+      expect(withCar.status).toBe(200);
+      expect(withCar.body.slots.length).toBeGreaterThan(0);
+      expect(withCar.body.slots.some(overlapsBusy)).toBe(false);
+
+      expect((await check(users.customerA, {})).body.available).toBe(true);
+      const busy = await check(users.customerA, { vehicleId: "vehicle-a" });
+      expect(busy.status).toBe(200);
+      expect(busy.body.available).toBe(false);
+      expect(busy.body.reasons).toContain("VEHICLE_BUSY");
+      expect(busy.body.suggestions.some(overlapsBusy)).toBe(false);
+      const otherCar = await check(users.customerB, {
+        vehicleId: "vehicle-b",
+      });
+      expect(otherCar.body.available).toBe(true);
+    });
+
+    it("SEC-6: a car a customer does not own is the same 404 as a missing car; staff follow the dealership rules", async () => {
+      const notMine = await check(users.customerB, { vehicleId: "vehicle-a" });
+      const missing = await check(users.customerB, { vehicleId: "nope" });
+      expect(notMine.status).toBe(404);
+      expect(missing.status).toBe(404);
+      expect({ ...notMine.body, traceId: "", instance: "" }).toEqual({
+        ...missing.body,
+        traceId: "",
+        instance: "",
+      });
+      const dayNotMine = await days(users.customerB, {
+        vehicleId: "vehicle-a",
+      });
+      const dayMissing = await days(users.customerB, { vehicleId: "nope" });
+      expect([dayNotMine.status, dayMissing.status]).toEqual([404, 404]);
+      expect(dayNotMine.body.detail).toEqual(dayMissing.body.detail);
+      for (const user of [users.staffLondon, users.managerLondon]) {
+        expect((await check(user, { vehicleId: "vehicle-a" })).status).toBe(
+          200,
+        );
+      }
+      expect(
+        (
+          await check(users.staffLondon, {
+            dealershipId: SGN,
+            vehicleId: "vehicle-a",
+          })
+        ).status,
+      ).toBe(403);
     });
   });
 

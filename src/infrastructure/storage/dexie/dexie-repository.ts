@@ -107,6 +107,22 @@ function buildStores(db: SchedulerDb): Stores {
       getServiceType: (id) => db.serviceTypes.get(id),
       listBlockingAppointments: async (dealershipId, from, to) =>
         (await touching(dealershipId, from, to)).filter(isBlocking),
+      listBlockingByVehicle: async (vehicleId, from, to) => {
+        const car = await db.vehicles.get(vehicleId);
+        if (car === undefined) return [];
+        const rows = await db.appointments
+          .where("customerId")
+          .equals(car.customerId)
+          .toArray();
+        return byStartThenId(
+          rows.filter(
+            (a) =>
+              a.vehicleId === vehicleId &&
+              isBlocking(a) &&
+              touchesRange(a, from, to),
+          ),
+        );
+      },
     },
     appointments: {
       get: (id) => db.appointments.get(id),

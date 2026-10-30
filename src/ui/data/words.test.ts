@@ -62,6 +62,17 @@ it("a 409 SLOT_UNAVAILABLE gives each reason in words and never the raw code", (
   );
 });
 
+it("a 409 with VEHICLE_BUSY says the car already has an appointment then (D-0001-146)", () => {
+  const w = describeProblem(
+    make(409, "SLOT_UNAVAILABLE", { reasons: ["VEHICLE_BUSY"] }),
+  );
+  expect(w.title).toBe("This car already has an appointment at that time.");
+  expect(w.reasons).toEqual([
+    "this car already has an appointment at that time",
+  ]);
+  expect(JSON.stringify(w)).not.toMatch(/VEHICLE_BUSY|SLOT_UNAVAILABLE/);
+});
+
 it("422 gives each field's own message and a count", () => {
   const w = describeProblem(
     make(422, "VALIDATION_FAILED", {

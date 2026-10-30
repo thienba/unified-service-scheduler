@@ -41,6 +41,7 @@ export const availabilityKey = (
   transport: Transport,
   technicianId?: string,
   appointmentId?: string,
+  vehicleId?: string,
 ) =>
   [
     "availability",
@@ -50,6 +51,7 @@ export const availabilityKey = (
     transport,
     technicianId ?? null,
     appointmentId ?? null,
+    vehicleId ?? null,
   ] as const;
 
 /** The free start times of each date: one call per date (customer.md, "for the architect"). With a
@@ -62,6 +64,7 @@ export function useWeekAvailability(
   transport: Transport,
   technicianId?: string,
   appointmentId?: string,
+  vehicleId?: string,
 ) {
   const { client } = useSession();
   const queryClient = useQueryClient();
@@ -73,6 +76,7 @@ export function useWeekAvailability(
       t,
       technicianId,
       appointmentId,
+      vehicleId,
     );
   return useQueries({
     queries: dates.map((date) => ({
@@ -88,6 +92,7 @@ export function useWeekAvailability(
                 transport,
                 ...(technicianId ? { technicianId } : {}),
                 ...(appointmentId ? { appointmentId } : {}),
+                ...(vehicleId ? { vehicleId } : {}),
               },
             },
           }),

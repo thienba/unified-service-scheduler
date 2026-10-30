@@ -1,7 +1,8 @@
 -- Design for the real backend. NOT used by the demo (the demo keeps its data in the browser).
 -- Source: architecture.md section 7.8, AD-18, D-0000-8.
 -- The database itself refuses double booking: one exclusion constraint each for the bay,
--- the technician (job plus break) and the courtesy car. Cancelled appointments do not block.
+-- the technician (job plus break), the courtesy car and the vehicle (at any dealership, no
+-- break). Cancelled appointments do not block.
 -- Load with: psql -v ON_ERROR_STOP=1 -f docs/postgres/schema.sql
 
 CREATE EXTENSION IF NOT EXISTS btree_gist;  -- lets GiST compare ids with = (research.md F3.1)
@@ -83,7 +84,10 @@ CREATE TABLE appointment (
     WHERE (status <> 'cancelled'),
   CONSTRAINT appointment_courtesy_car_no_overlap
     EXCLUDE USING gist (courtesy_car_id WITH =, during WITH &&)
-    WHERE (status <> 'cancelled' AND courtesy_car_id IS NOT NULL)
+    WHERE (status <> 'cancelled' AND courtesy_car_id IS NOT NULL),
+  CONSTRAINT appointment_vehicle_no_overlap     -- one car, one appointment at a time (D-0001-146)
+    EXCLUDE USING gist (vehicle_id WITH =, during WITH &&)
+    WHERE (status <> 'cancelled')
 );
 CREATE INDEX appointment_customer ON appointment (customer_id);
 
