@@ -107,6 +107,17 @@ function buildStores(data: Data): Stores {
       getServiceType: async (id) => copy(data.serviceTypes.get(id)),
       listBlockingAppointments: async (dealershipId, from, to) =>
         copy(touching(dealershipId, from, to).filter(isBlocking)),
+      listBlockingByVehicle: async (vehicleId, from, to) =>
+        copy(
+          byStartThenId(
+            [...data.appointments.values()].filter(
+              (a) =>
+                a.vehicleId === vehicleId &&
+                isBlocking(a) &&
+                touchesRange(a, from, to),
+            ),
+          ),
+        ),
     },
     appointments: {
       get: async (id) => copy(data.appointments.get(id)),

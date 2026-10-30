@@ -83,6 +83,24 @@ async function takeTheCar(page: Page, time: string) {
   expect(answer.status).toBe(201);
 }
 
+/**
+ * Counts the availability calls of a page that are still out. The page asks again when its car is chosen, so a test
+ * that books behind the page's back first waits until every answer is in; otherwise a late answer would already hold
+ * the booking.
+ */
+function trackSearches(page: Page) {
+  let out = 0;
+  const done = (request: { url(): string }) => {
+    if (request.url().includes("/availability?")) out -= 1;
+  };
+  page.on("request", (request) => {
+    if (request.url().includes("/availability?")) out += 1;
+  });
+  page.on("requestfinished", done);
+  page.on("requestfailed", done);
+  return () => expect.poll(() => out).toBe(0);
+}
+
 /** The customer's car and Fri 30 Oct. */
 async function carAndDay(page: Page) {
   await chooseOption(page.getByRole("button", { name: /^Car/ }), "vehicle-a");
@@ -198,10 +216,12 @@ for (const width of [390, 1440]) {
     test("courtesy-cleared: with the car chosen, someone books it for 11:00; picking 11:30 clears the choice and says so", async ({
       page,
     }) => {
+      const settled = trackSearches(page);
       await start(page, width, DEEP);
       await carAndDay(page);
       await option(page, CAR).check();
       await expect(chip(page, "11:30 to 14:30")).toBeVisible();
+      await settled();
       // The list on this page is now out of date: the only car goes from 11:00 to 12:00.
       await takeTheCar(page, "11:00");
       await chip(page, "11:30 to 14:30").check();
@@ -223,6 +243,7 @@ for (const width of [390, 1440]) {
     }) => {
       await start(page, width, DEEP);
       const other = await context.newPage();
+      const settled = trackSearches(other);
       await other.setViewportSize({ width, height: 900 });
       await other.clock.setFixedTime(NOW);
       await other.goto(DEEP);
@@ -230,16 +251,11 @@ for (const width of [390, 1440]) {
       await chip(other, "10:00 to 13:00").check();
       await option(other, CAR).check();
       await expect(option(other, CAR)).toBeChecked();
+      await settled();
 
-      // The first page takes the car with a one-hour EV check at 10:00: the time stays free to wait.
-      await page.goto(`/book?dealership=${LONDON}&service=service-ev-check`);
-      await carAndDay(page);
-      await chip(page, "10:00 to 11:00").check();
-      await option(page, CAR).check();
-      await confirm(page).click();
-      await expect(
-        page.getByRole("heading", { level: 1, name: "You are booked" }),
-      ).toBeVisible();
+      // Someone else takes the car with a one-hour EV check at 10:00: the time stays free to wait. It is not
+      // customer A's own car, because one car cannot have two appointments at once.
+      await takeTheCar(other, "10:00");
 
       const before = await api(
         other,
@@ -455,6 +471,7 @@ test("the day tile counts follow the car choice: with the car out from 11:00 to 
 test("courtesy-cleared on a week only searched with the courtesy car: the strip stays and the clicked time keeps focus (WCAG 2.4.3)", async ({
   page,
 }) => {
+  const settled = trackSearches(page);
   await start(page, 1440, DEEP);
   await chooseOption(page.getByRole("button", { name: /^Car/ }), "vehicle-a");
   await expect(day(page, "Wed 28 Oct")).toBeVisible();
@@ -464,6 +481,7 @@ test("courtesy-cleared on a week only searched with the courtesy car: the strip 
   await day(page, "Thu 5 Nov").check();
   const time = chip(page, "11:30 to 14:30");
   await expect(time).toBeVisible();
+  await settled();
   // The list on this page is now out of date: the only car goes from 11:00 to 12:00.
   const taken = await api(page, STAFF, "POST", "/appointments", {
     dealershipId: LONDON,

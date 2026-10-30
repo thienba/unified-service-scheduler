@@ -198,6 +198,8 @@ export interface paths {
      *     Staff and managers ask about their own dealerships. `appointmentId` leaves that appointment out of
      *     the search, for the person moving it; only its owner, or staff or a manager of its dealership, may send
      *     it, and anyone else gets the same 404 as for a missing appointment.
+     *     `vehicleId` leaves out the times that car is already booked, at any dealership (`VEHICLE_BUSY`); a
+     *     customer who names a car they do not own gets the same 404 as for a missing car.
      */
     get: operations["searchAvailability"];
     put?: never;
@@ -223,7 +225,8 @@ export interface paths {
      *     (`available: false`, with reasons and suggested times). `technicianId` is for staff and managers only.
      *     `appointmentId` leaves that appointment out of the check, for the person moving it; only its owner, or
      *     staff or a manager of its dealership, may send it, and anyone else gets the same 404 as for a missing
-     *     appointment.
+     *     appointment. `vehicleId` counts the car's own appointments at any dealership as busy times
+     *     (`VEHICLE_BUSY`); a customer who names a car they do not own gets the same 404 as for a missing car.
      */
     post: operations["checkAvailability"];
     delete?: never;
@@ -482,6 +485,7 @@ export interface components {
       | "NO_QUALIFIED_TECHNICIAN_ON_SHIFT"
       | "BAY_BUSY"
       | "COURTESY_CAR_BUSY"
+      | "VEHICLE_BUSY"
       | "OUTSIDE_OPENING_HOURS"
       | "DEALERSHIP_CLOSED"
       | "NOT_ON_GRID"
@@ -806,6 +810,7 @@ export interface components {
       transport: components["schemas"]["Transport"];
       technicianId?: components["schemas"]["Id"];
       appointmentId?: components["schemas"]["Id"];
+      vehicleId?: components["schemas"]["Id"];
     };
     RescheduleRequest: {
       start: components["schemas"]["Instant"];
@@ -1298,6 +1303,7 @@ export interface operations {
         transport: components["schemas"]["Transport"];
         technicianId?: components["schemas"]["Id"];
         appointmentId?: components["schemas"]["Id"];
+        vehicleId?: components["schemas"]["Id"];
       };
       header?: {
         /** @description W3C trace context, `00-<32 hex>-<16 hex>-<2 hex>`. A value that does not match is ignored and a new trace id is made. */

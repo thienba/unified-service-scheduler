@@ -95,6 +95,33 @@ export async function bookAs(
   return answer.body as Appointment;
 }
 
+/**
+ * Staff book a new customer with a new car, for a rival who takes a time first. None of the demo customers' cars is
+ * busy because of it: one car cannot be at two places (D-0001-146).
+ */
+export async function bookForSomeoneNew(
+  page: Page,
+  startAt: string,
+  options: { service?: string; transport?: string } = {},
+): Promise<Appointment> {
+  const answer = await api(page, STAFF, "POST", "/appointments", {
+    dealershipId: LONDON,
+    serviceTypeId: options.service ?? "service-full",
+    start: startAt,
+    transport: options.transport ?? "drop_off",
+    newCustomer: {
+      name: "Ravi Menon",
+      phone: "0161 496 0456",
+      email: "ravi@example.com",
+    },
+    newVehicle: { registration: "GH78 MNO", make: "Skoda", model: "Octavia" },
+  });
+  if (answer.status !== 201) {
+    throw new Error(`Booking failed: ${JSON.stringify(answer)}`);
+  }
+  return answer.body as Appointment;
+}
+
 export async function cancelAs(page: Page, user: string, id: string) {
   const answer = await api(page, user, "POST", `/appointments/${id}/cancel`);
   expect(answer.status).toBe(200);

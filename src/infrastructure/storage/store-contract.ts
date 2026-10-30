@@ -140,6 +140,31 @@ export function bookOnce(
   });
 }
 
+/** Reads the car's blocking appointments at any dealership, then inserts one if there is none (D-0001-146). */
+export function bookCarOnce(
+  repo: Repository,
+  id: string,
+  dealershipId: string,
+): Promise<Outcome<string, "VEHICLE_BUSY">> {
+  return repo.write(async (stores) => {
+    const busy = await stores.scheduling.listBlockingByVehicle(
+      "v1",
+      T0,
+      T0 + HOUR,
+    );
+    if (busy.length > 0) return { ok: false, error: "VEHICLE_BUSY" };
+    await stores.appointments.insert(
+      appointment({
+        id,
+        dealershipId,
+        technicianId: dealershipId === "d1" ? "t1" : "t3",
+        serviceBayId: dealershipId === "d1" ? "bay1" : "bay9",
+      }),
+    );
+    return { ok: true, value: id };
+  });
+}
+
 export function describeStoreContract(
   storeName: string,
   create: () => Promise<Repository>,
@@ -164,6 +189,65 @@ export function describeStoreContract(
         { ok: false, error: "SLOT_UNAVAILABLE" },
       ]);
       expect(await stored(repo)).toHaveLength(1);
+    });
+
+    it("guarantee 1 for a car: two write units for the same vehicle at the same time, at two dealerships, leave one", async () => {
+      const repo = await seeded();
+      const results = await Promise.all([
+        bookCarOnce(repo, "a1", "d1"),
+        bookCarOnce(repo, "a2", "d2"),
+      ]);
+      expect(results.filter((r) => r.ok)).toHaveLength(1);
+      expect(results.filter((r) => !r.ok)).toEqual([
+        { ok: false, error: "VEHICLE_BUSY" },
+      ]);
+      const all = await repo.read(async (s) => [
+        ...(await s.appointments.listByDealershipDay("d1", 0, T0 * 2)),
+        ...(await s.appointments.listByDealershipDay("d2", 0, T0 * 2)),
+      ]);
+      expect(all).toHaveLength(1);
+    });
+
+    it("listBlockingByVehicle gives one vehicle's blocking appointments at any dealership that touch the range", async () => {
+      const repo = await seeded();
+      await repo.write(async (s) => {
+        await s.appointments.insert(appointment({ id: "here" }));
+        await s.appointments.insert(
+          appointment({
+            id: "there",
+            dealershipId: "d2",
+            start: T0 + 2 * HOUR,
+            end: T0 + 3 * HOUR,
+          }),
+        );
+        await s.appointments.insert(
+          appointment({
+            id: "gone",
+            status: "cancelled",
+            cancelledAt: T0,
+          }),
+        );
+        await s.appointments.insert(
+          appointment({ id: "other", vehicleId: "v2", customerId: "c2" }),
+        );
+        await s.appointments.insert(
+          appointment({
+            id: "later",
+            start: T0 + 9 * HOUR,
+            end: T0 + 10 * HOUR,
+          }),
+        );
+        return { ok: true, value: null };
+      });
+      const found = await repo.read((s) =>
+        s.scheduling.listBlockingByVehicle("v1", T0, T0 + 4 * HOUR),
+      );
+      expect(found.map((a) => a.id)).toEqual(["here", "there"]);
+      expect(
+        await repo.read((s) =>
+          s.scheduling.listBlockingByVehicle("missing", T0, T0 + 4 * HOUR),
+        ),
+      ).toEqual([]);
     });
 
     it("guarantee 2: a unit that throws keeps nothing it wrote", async () => {

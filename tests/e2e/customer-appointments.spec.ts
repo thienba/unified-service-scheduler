@@ -24,6 +24,7 @@ import {
   answerFrom,
   api,
   bookAs,
+  bookForSomeoneNew,
   checkAnswered,
   cancelAs,
   mine,
@@ -538,7 +539,7 @@ test.describe("reschedule", () => {
       .check();
     // The early check for the chosen time (D-0001-107) answers first, so B takes the time between it and Confirm.
     await checkAnswered(page, "2026-11-02T13:00:00Z");
-    await bookAs(page, B, "2026-11-02T13:00:00Z");
+    await bookForSomeoneNew(page, "2026-11-02T13:00:00Z");
     await button(page, "Confirm new time").click();
     const sorry = page.getByRole("heading", {
       name: "Sorry, 13:00 on Mon 2 Nov was just taken.",

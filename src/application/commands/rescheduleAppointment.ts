@@ -111,6 +111,7 @@ async function reschedule(
           serviceTypeId: current.serviceTypeId,
           around: start,
           daysEitherSide: 0,
+          vehicleId: current.vehicleId,
         });
         if (!snapshot) return { ok: false, error: { kind: "not_found" } };
         if (
@@ -133,6 +134,7 @@ async function reschedule(
       start,
       transport: current.transport,
       excludeAppointmentId: current.id,
+      vehicleId: current.vehicleId,
     };
     const checked = await runCheck(deps, snapshot, check, now);
     if (!checked.available) {
@@ -185,6 +187,7 @@ async function reschedule(
           start,
           transport: current!.transport,
           excludeAppointmentId: appointmentId,
+          vehicleId: current!.vehicleId,
         },
       },
       error,

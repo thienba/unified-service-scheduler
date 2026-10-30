@@ -261,6 +261,8 @@ async function book(
           serviceTypeId,
           around: start,
           daysEitherSide: 0,
+          // A new car has no appointments, so it needs no check (D-0001-146).
+          vehicleId: created ? undefined : vehicleId,
         });
         if (!snapshot) return { ok: false, error: { kind: "not_found" } };
         return {
@@ -272,7 +274,12 @@ async function book(
     if (!loaded.ok) return loaded;
     const { snapshot, customerId, vehicleId, created } = loaded.value;
 
-    const checked = await runCheck(deps, snapshot, check, now);
+    const checked = await runCheck(
+      deps,
+      snapshot,
+      { ...check, vehicleId: created ? undefined : vehicleId },
+      now,
+    );
     if (!checked.available) {
       return {
         ok: false,
@@ -332,7 +339,11 @@ async function book(
   if (error.kind === "conflict") {
     return slotUnavailable(
       deps,
-      { dealershipId, serviceTypeId, request: { ...check, start } },
+      {
+        dealershipId,
+        serviceTypeId,
+        request: { ...check, vehicleId: request.vehicleId },
+      },
       error,
       now,
     );

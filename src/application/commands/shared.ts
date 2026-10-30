@@ -100,6 +100,7 @@ export async function slotUnavailable(
         serviceTypeId: want.serviceTypeId,
         around: want.request.start,
         daysEitherSide: SUGGEST_WINDOW_DAYS,
+        vehicleId: want.request.vehicleId,
       });
       if (!snapshot) return [];
       const lengthMs = snapshot.serviceType.durationMinutes * MINUTE_MS;
