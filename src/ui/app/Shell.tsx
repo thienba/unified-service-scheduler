@@ -64,7 +64,7 @@ export function Shell() {
       <div className="flex min-h-dvh flex-col">
         <a
           href="#main"
-          className="absolute start-2 -top-32 z-(--z-toast) rounded-control bg-surface px-4 py-3 focus:top-2"
+          className="fixed start-2 -top-32 z-(--z-toast) rounded-control bg-surface px-4 py-3 focus:top-2"
         >
           Skip to main content
         </a>
