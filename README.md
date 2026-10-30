@@ -238,4 +238,5 @@ Each example says what I asked, what came back, how I checked it, and whether I 
 - **Firefox and WebKit are only partly covered.** The full end-to-end run there is a warning-only job with known failures, mostly focus and visibility checks in WebKit. Only the race and the security-policy tests are claimed for those two browsers, and two browser messages are set aside in those tests.
 - **Some claims are still unverified**, such as whether one Safari message also appears in real Safari. The list, with what is settled, is in the System Design Document under [Claims marked unverified](docs/system-design.md#claims-marked-unverified).
 - **The live demo is deployed by hand.** It is not linked to the repository, so a push does not update it.
+- **Reload if a list does not load right after an update.** Just after a new version of the live demo goes up, a page left open from the old version can fail to load a list (such as the services) with "Something went wrong on our side" and no reference. Reloading the page fixes it.
 - **Sample data only.** All people, cars and numbers are made up.
