@@ -836,19 +836,20 @@ This repository was recreated on 2026-10-30, and its pull request numbers start 
 | 29  | Warn early when the chosen time is taken                                | [#29](https://github.com/thienba/unified-service-scheduler/commit/b20423ca30c452f1cdf7ccaf43e50acf969c0870) | Merged |
 | 30  | Content Security Policy messages in Firefox and WebKit                  | [#30](https://github.com/thienba/unified-service-scheduler/commit/1a7ef529901ee37eda9940b1e8f83828d41d2297) | Merged |
 
-Pull requests of this repository, since it was recreated. All are merged and link to their merge commits. #5 to #9 were stacked, each on the one before it, and merged in that order.
+Pull requests of this repository, since it was recreated. All are merged and link to their merge commits. #5 to #9 were stacked, each on the one before it, and merged in that order. The last row links to its pull request page, because a change cannot name its own merge commit.
 
-| #   | Ticket                                                            | Link                                                                                                       | State  |
-| --- | ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | ------ |
-| 1   | Links point at merged commits after the repository was recreated  | [#1](https://github.com/thienba/unified-service-scheduler/commit/d22ed7e8c1ba96d80402d41175ffff6751235572) | Merged |
-| 2   | Firefox and WebKit end-to-end runs green                          | [#2](https://github.com/thienba/unified-service-scheduler/commit/c71c31c9fab0615af45ea25014557c30fa3a67aa) | Merged |
-| 3   | CI: Chromium per pull request, other browsers on main and nightly | [#3](https://github.com/thienba/unified-service-scheduler/commit/d262a84286ad0c9d2f9cd80cb09ea440bc752732) | Merged |
-| 4   | A sheet opened during a mouse press waits for the release         | [#4](https://github.com/thienba/unified-service-scheduler/commit/fe9fb7c8ea1db7f37b3acbdcac9a3f96917d563d) | Merged |
-| 5   | Start times must be on the grid                                   | [#5](https://github.com/thienba/unified-service-scheduler/commit/77dab77782792d15de90fcd0a2d34904ed416398) | Merged |
-| 6   | One car, one appointment at a time                                | [#6](https://github.com/thienba/unified-service-scheduler/commit/1e6ef510c72add3d362611f87bca642bb25e866d) | Merged |
-| 7   | Logs: replays, every conflict reason, steps with a route          | [#7](https://github.com/thienba/unified-service-scheduler/commit/48e825b30459a7de361a9fff4b09ff4495ea2964) | Merged |
-| 8   | First visit opens as Customer A                                   | [#8](https://github.com/thienba/unified-service-scheduler/commit/1e3ffdeba4358428296e46ee3410ad547699a0c8) | Merged |
-| 9   | Documents match the product                                       | [#9](https://github.com/thienba/unified-service-scheduler/commit/05c2ecff24558bc9500c6bdc388ab1070247385d) | Merged |
+| #   | Ticket                                                                | Link                                                                                                       | State  |
+| --- | --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | ------ |
+| 1   | Links point at merged commits after the repository was recreated      | [#1](https://github.com/thienba/unified-service-scheduler/commit/d22ed7e8c1ba96d80402d41175ffff6751235572) | Merged |
+| 2   | Firefox and WebKit end-to-end runs green                              | [#2](https://github.com/thienba/unified-service-scheduler/commit/c71c31c9fab0615af45ea25014557c30fa3a67aa) | Merged |
+| 3   | CI: Chromium per pull request, other browsers on main and nightly     | [#3](https://github.com/thienba/unified-service-scheduler/commit/d262a84286ad0c9d2f9cd80cb09ea440bc752732) | Merged |
+| 4   | A sheet opened during a mouse press waits for the release             | [#4](https://github.com/thienba/unified-service-scheduler/commit/fe9fb7c8ea1db7f37b3acbdcac9a3f96917d563d) | Merged |
+| 5   | Start times must be on the grid                                       | [#5](https://github.com/thienba/unified-service-scheduler/commit/77dab77782792d15de90fcd0a2d34904ed416398) | Merged |
+| 6   | One car, one appointment at a time                                    | [#6](https://github.com/thienba/unified-service-scheduler/commit/1e6ef510c72add3d362611f87bca642bb25e866d) | Merged |
+| 7   | Logs: replays, every conflict reason, steps with a route              | [#7](https://github.com/thienba/unified-service-scheduler/commit/48e825b30459a7de361a9fff4b09ff4495ea2964) | Merged |
+| 8   | First visit opens as Customer A                                       | [#8](https://github.com/thienba/unified-service-scheduler/commit/1e3ffdeba4358428296e46ee3410ad547699a0c8) | Merged |
+| 9   | Documents match the product                                           | [#9](https://github.com/thienba/unified-service-scheduler/commit/05c2ecff24558bc9500c6bdc388ab1070247385d) | Merged |
+| 10  | After the merge: skip link on first visit, documents and WebKit tests | [#10](https://github.com/thienba/unified-service-scheduler/pull/10)                                        | Merged |
 
 ## How GenAI was used in design
 
