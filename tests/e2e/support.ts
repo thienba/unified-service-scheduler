@@ -140,15 +140,35 @@ export async function chooseOption(
   choice: string | { label: string },
 ) {
   const page = trigger.page();
-  await trigger.click();
   const list = page.getByRole("listbox");
   const option =
     typeof choice === "string"
       ? list.locator(`[role="option"][data-value="${choice}"]`)
       : list.getByRole("option", { name: choice.label, exact: true });
-  await option.scrollIntoViewIfNeeded();
-  await option.click();
-  await expect(list).toHaveCount(0);
+  // The rows can be drawn again while the list is open, when the day's hours arrive just after a date was
+  // typed; Linux WebKit is slow enough to show it. So the open, scroll and press are tried again as one step.
+  await expect(async () => {
+    if ((await list.count()) === 0) await trigger.click();
+    await option.scrollIntoViewIfNeeded({ timeout: 2000 });
+    await option.click({ timeout: 2000 });
+    await expect(list).toHaveCount(0, { timeout: 5000 });
+  }).toPass({ timeout: 15_000 });
+  // On a phone the sheet locks the page's scroll while open and gives it back a frame after it closes. Wait
+  // until the page has stopped moving, or the next click can land where a control was a moment ago.
+  await expect(page.locator(".ctl-scrim")).toHaveCount(0);
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          new Promise<boolean>((done) => {
+            const before = scrollY;
+            requestAnimationFrame(() =>
+              requestAnimationFrame(() => done(scrollY === before)),
+            );
+          }),
+      ),
+    )
+    .toBe(true);
 }
 
 /** A DatePicker by its label: the group of its three segments and the calendar button. */

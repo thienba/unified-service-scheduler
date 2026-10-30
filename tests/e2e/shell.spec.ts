@@ -175,9 +175,20 @@ test("remote proof: page.route does not see calls the service worker answers (D-
 
 test("a 500 from the API shows the error words with a reference and a Copy button; no network says the same without a reference", async ({
   page,
-  context,
 }) => {
-  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  // Clipboard permissions exist only in Chromium, so the copied text is recorded instead of read back.
+  await page.addInitScript(() => {
+    const copied: string[] = [];
+    (window as unknown as { copied: string[] }).copied = copied;
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: {
+        writeText: async (text: string) => {
+          copied.push(text);
+        },
+      },
+    });
+  });
   await interceptApi(page, {
     path: "/me",
     status: 500,
@@ -197,9 +208,11 @@ test("a 500 from the API shows the error words with a reference and a Copy butto
   ).toBeVisible();
   await page.getByRole("button", { name: "Copy reference 4bf92f35" }).click();
   await expect(page.getByText("Reference 4bf92f35 copied")).toBeAttached();
-  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(
-    "4bf92f35",
-  );
+  expect(
+    await page.evaluate(
+      () => (window as unknown as { copied: string[] }).copied,
+    ),
+  ).toEqual(["4bf92f35"]);
   await expect(page.getByText("INTERNAL")).toHaveCount(0);
 });
 

@@ -64,7 +64,9 @@ async function expectPopup(page: Page, title: string, name = title) {
   // Once it has slid up (240 ms): the whole width, resting on the bottom edge, at most 90% high.
   await expect
     .poll(async () => {
-      const box = (await sheets.first().boundingBox())!;
+      // No box yet while the sheet is still being drawn: keep waiting rather than fail.
+      const box = await sheets.first().boundingBox();
+      if (!box) return null;
       return [
         Math.round(box.width),
         Math.round(box.y + box.height),
@@ -164,7 +166,8 @@ for (const width of [390, 1440] as const) {
       await expect(
         page.getByRole("grid", { name: /November 2026/ }),
       ).toBeVisible();
-      await expect(cell(/Sunday, 1 November 2026/)).toHaveAttribute(
+      // Linux WebKit names the day without the comma ("Sunday 1 November 2026").
+      await expect(cell(/Sunday,? 1 November 2026/)).toHaveAttribute(
         "data-unavailable",
         "true",
       );
