@@ -1,6 +1,6 @@
 // design.md 8.1. Skip link, header (brand, dealership picker, role switcher), navigation, the page, the footer.
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Link, Outlet, useLocation } from "react-router";
+import { Link, Outlet, useLocation, useNavigationType } from "react-router";
 import { mockEnabled } from "../../config";
 import { IconSprite } from "../components/Icon";
 import { query, useMediaQuery } from "../components/hooks";
@@ -26,7 +26,8 @@ export function Shell() {
   const [slot, setSlot] = useState<HTMLElement | null>(null);
   const main = useRef<HTMLElement>(null);
   const { pathname } = useLocation();
-  const first = useRef(true);
+  const navigationType = useNavigationType();
+  const previous = useRef(pathname);
   const interacted = useRef(false);
 
   useEffect(() => {
@@ -43,13 +44,14 @@ export function Shell() {
 
   // A new page starts at its top: focus moves to the page, not to wherever the last one left it.
   useEffect(() => {
-    if (first.current) {
-      first.current = false;
-      return;
-    }
+    if (previous.current === pathname) return;
+    // The redirect from "/" to the role's home is still the same page load: the first Tab stays on the skip link.
+    const redirected = previous.current === "/" && navigationType === "REPLACE";
+    previous.current = pathname;
+    if (redirected) return;
     interacted.current = true;
     main.current?.focus({ preventScroll: true });
-  }, [pathname]);
+  }, [pathname, navigationType]);
 
   const role = me?.role ?? null;
   const showsNav = status === "ready" && role !== null;
