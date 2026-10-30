@@ -306,9 +306,9 @@
   .ctl-pop[data-entering] {
     animation: fade-in var(--duration-fast) var(--ease-out);
   }
+  /* Exactly as wide as the control (D-0001-140). */
   .ctl-pop.is-list {
     width: var(--trigger-width);
-    max-width: var(--size-dialog);
   }
   .ctl-pop.is-calendar {
     width: var(--size-calendar);
