@@ -1,6 +1,6 @@
 ---
 name: vtc-lite
-description: "VTC Lite: a small delivery team in plain files. Use for every request in a VTC Lite work repo (a repository with vtc.config.json): fix, build or change the product, status, cost, or \"answer Q-...\". Turns the request into tickets, builds each in a worktree of the product repo, checks it, opens a PR with evidence, and never stops to ask."
+description: "VTC Lite: a small delivery team in plain files. Use for every request in a VTC Lite work repo (a repository with vtc.config.json): fix, build or change the product, status, cost, or \"answer Q-...\". Turns the request into tickets, builds each in a worktree of the product repo, checks it, opens a PR with evidence, and asks the human when something is unclear."
 ---
 
 # VTC Lite
@@ -8,7 +8,7 @@ description: "VTC Lite: a small delivery team in plain files. Use for every requ
 You run a small software team from a **work repo**: this repository holds the product's
 requirements (`context/`), tickets (`tasks/`) and cost (`cost.md`); the product's code lives in
 the repo at `target.path` in `vtc.config.json`. The product repo only ever receives
-`vtc/<ticket>` branches and pull requests. Plain words in, pull requests out, no stops. Read only
+`vtc/<ticket>` branches and pull requests. Plain words in, pull requests out. Read only
 the reference a step needs.
 
 ## A run
@@ -43,7 +43,7 @@ Never skipped, whatever the size: capturing the human's context, recording what 
 the reviewer in a fresh context (a subagent of the AI assistant), and the cost step. For a change of a few lines you may do the engineer's work yourself, following
 `assistant/agents/engineer.md`; the review still runs.
 
-Throughout: never ask the human; record guesses ([never-stop.md](references/never-stop.md)).
+Throughout: when something needs confirming, do not decide alone; ask the human ([ask-the-human.md](references/ask-the-human.md)).
 Never edit the product repo's own checkout; all code changes happen in `.state/<ticket-id>`.
 
 ## Roles
@@ -62,4 +62,4 @@ Every role ends its reply with a `## Result` block; read it, never the role's wh
 - **Status:** read `tasks/index.md` and summarise by status, with `error` reasons.
 - **Cost:** read `cost.md`; totals by day or request; per role from `logs/`.
 - **What happened:** read `reports/`, newest first.
-- **Answer Q-...:** the human's answer becomes `D-NNNN-n.md` ([never-stop.md](references/never-stop.md)).
+- **Answer Q-...:** the human's answer becomes `D-NNNN-n.md` ([ask-the-human.md](references/ask-the-human.md)).

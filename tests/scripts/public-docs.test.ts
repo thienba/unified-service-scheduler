@@ -2,6 +2,7 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
+  findAskWordingProblems,
   findCompanyNameProblems,
   findToolNameProblems,
   findPublicDocProblems,
@@ -148,6 +149,49 @@ describe("public docs check (D-0000-36 B, D-0000-11)", () => {
         readFileSync(path.join(repoRoot, f), "utf8"),
         exists,
       ),
+    );
+    expect(problems).toEqual([]);
+  });
+});
+
+describe("ask, do not decide alone (D-0000-45)", () => {
+  it.each([
+    "Throughout: never ask the human.",
+    "Never stop to ask.",
+    "Plain words in, pull requests out, no stops.",
+    "record a guess instead",
+    "it is recorded as a guess (see Unclear points)",
+    "see [never-stop.md](references/never-stop.md)",
+    "- Ask the human anything; record a guess instead.",
+    "guesses: <Q- files written, or none>",
+    "## Guesses",
+  ])("fails on %s", (text) => {
+    expect(findAskWordingProblems("a.md", `one\n${text}`)).not.toEqual([]);
+  });
+
+  it("allows asking and the word guess in other uses", () => {
+    expect(
+      findAskWordingProblems(
+        "a.md",
+        "Do not decide alone; ask the human.\nDates come from `date -u`, never from a guess.\nNever ask for credentials.\nquestions: <Q- files>",
+      ),
+    ).toEqual([]);
+  });
+
+  it("finds none in the copied process files, which hold ask-the-human.md", () => {
+    const walk = (dir: string): string[] =>
+      readdirSync(path.join(repoRoot, dir)).flatMap((entry) => {
+        const rel = `${dir}/${entry}`;
+        if (statSync(path.join(repoRoot, rel)).isDirectory()) return walk(rel);
+        return entry.endsWith(".md") ? [rel] : [];
+      });
+    const files = walk(`${publicDocsDir}/assistant`);
+    expect(files).toContain(
+      `${publicDocsDir}/assistant/skills/vtc-lite/references/ask-the-human.md`,
+    );
+    expect(files.some((f) => f.endsWith("never-stop.md"))).toBe(false);
+    const problems = files.flatMap((f) =>
+      findAskWordingProblems(f, readFileSync(path.join(repoRoot, f), "utf8")),
     );
     expect(problems).toEqual([]);
   });

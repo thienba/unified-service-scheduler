@@ -36,9 +36,9 @@ attribution lines to the body or the commits.
 
 <links, or "none (no UI change)" or the skipped reason>
 
-## Guesses
+## Questions
 
-<each Q- file this ticket raised: the question and the option taken, or "none">
+<each Q- file this ticket raised: the question and the recommendation, or "none">
 
 ## Review
 

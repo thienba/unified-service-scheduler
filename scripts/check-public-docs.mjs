@@ -164,6 +164,37 @@ export function findToolNameProblems(file, text) {
     );
 }
 
+/** D-0000-45: the public process files say "do not decide alone, ask the human", never the opposite. */
+const askWordingPatterns = [
+  /never ask the human/i,
+  /never stops?\b/i,
+  /\bno stops\b/i,
+  /\brecord(?:ed|s)?\b[^\n.]{0,60}\bguess(?:es)?\b/i,
+  /never-stop/i,
+  /ask the human anything/i,
+  /^guesses:/i,
+  /^#+ guesses\b/i,
+];
+
+/**
+ * @param {string} file path of the file, relative to the repository root
+ * @param {string} text the file's text
+ * @returns {string[]} what is wrong, one line each, as `file:line: problem`
+ */
+export function findAskWordingProblems(file, text) {
+  return text
+    .split("\n")
+    .flatMap((line, index) =>
+      askWordingPatterns.flatMap((re) =>
+        re.test(line)
+          ? [
+              `${file}:${index + 1}: says to decide alone or not to ask (D-0000-45): ${re.exec(line)?.[0]}`,
+            ]
+          : [],
+      ),
+    );
+}
+
 /** @param {string} dir */
 function textFiles(dir) {
   return readdirSync(dir).flatMap((entry) => {
@@ -219,13 +250,15 @@ function main() {
     ];
   });
   problems.push(...named);
+  for (const file of markdownFiles(join(publicDocsDir, "assistant")))
+    problems.push(...findAskWordingProblems(file, readFileSync(file, "utf8")));
   for (const problem of problems) console.error(problem);
   if (problems.length > 0) {
     console.error(`${problems.length} problem(s) in the public docs.`);
     process.exit(1);
   }
   console.log(
-    `Public docs are clean: ${files.length} files checked for secrets, local paths, real email addresses and links into references/; the README, docs/, src/ and the page files for the company and AI tool names; and the README for reference codes.`,
+    `Public docs are clean: ${files.length} files checked for secrets, local paths, real email addresses and links into references/; the README, docs/, src/ and the page files for the company and AI tool names; the README for reference codes; and the process files for wording that says not to ask the human.`,
   );
 }
 

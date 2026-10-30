@@ -22,7 +22,7 @@ what a request touches and never asks again what a file answers.
 | `<NNNN-area>/index.md` | the area's business need, then every requirement, decision and open question with its body | whoever changes the area |
 | `<NNNN-area>/REQ-<AREA>-NNN.md` | one requirement | BA, or the lead from what the human said |
 | `<NNNN-area>/existing-behavior.md` | what the code does today in the flows a run touched, observable, with `path:line` | any run that learns it |
-| `<NNNN-area>/Q-NNNN-n.md` | an open question with the option taken | any role |
+| `<NNNN-area>/Q-NNNN-n.md` | an open question with options and a recommendation | any role |
 | `<NNNN-area>/D-NNNN-n.md` | a decision | any role, from an answer or a meaning change |
 | `questions/`, `decisions/` | product-wide `Q-0000-n.md` and `D-0000-n.md` | any role |
 
@@ -74,11 +74,11 @@ for it again. Runs on every request, with or without planning roles.
      words where they gave them. A changed meaning also gets a `D-` file.
    - A decision, a priority or a constraint ("only iOS Safari", "no new dependency"): a `D-` file
      in the area it settles (`decisions/` when product-wide), with the reason when given.
-   - An answer to a `Q-` file: [never-stop.md](never-stop.md#when-the-human-answers).
+   - An answer to a `Q-` file: [ask-the-human.md](ask-the-human.md#when-the-human-answers).
    - A fact about the product, its users, devices or environment: the matching file
      (`overview.md`, `environment.md`, the area's `index.md`).
    Write only what the human said or what follows from it with no other reading; anything you have
-   to guess is a `Q-` file ([never-stop.md](never-stop.md)), never a fact.
+   to guess is a `Q-` file ([ask-the-human.md](ask-the-human.md)), never a fact.
 3. **Index and commit.** Update every `index.md` you touched and commit memory as
    `context: <slug>`, together with the `references/` file.
 

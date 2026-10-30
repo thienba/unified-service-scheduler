@@ -50,14 +50,12 @@ and the body sections `## Description` and `## Acceptance criteria`.
    contain.
 2. Every ticket is verifiable on its own by the acceptance criteria it carries.
 3. Put schema migrations in their own ticket, before the tickets that use the new schema.
-4. A contradiction between the requirements and the architecture is recorded as a guess (see
-   Unclear points), and the ticket follows the option you took.
+4. A contradiction between the requirements and the architecture is a question for the human (see
+   Unclear points); the ticket waits for the answer.
 
 ## Unclear points
 
-Never stop to ask. When the request, `context/` or the code does not answer something, write
-`context/<area>/Q-NNNN-n.md` with the question, two or three options, the option you took
-and why, then continue on that assumption. If the work truly cannot be done, report `error` in
+When the request, `context/` or the code does not answer something, do not decide alone. Write `context/<area>/Q-NNNN-n.md` with the question, two or three options and a recommendation, ask the human, and keep working only on what does not depend on the answer. If the work truly cannot be done, report `error` in
 the result.
 
 ## Result
@@ -68,7 +66,7 @@ End your reply with:
 ## Result
 status: done | error: <cause>: <text>
 files: <ticket folders written>
-guesses: <Q- files written, or none>
+questions: <Q- files written and asked, or none>
 ```
 
 ## Definition of done
