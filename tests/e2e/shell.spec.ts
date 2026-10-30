@@ -11,6 +11,7 @@ import {
   selectNamed,
 } from "./support";
 import { shot } from "./customer-support";
+import { webKitSelectMessage } from "./policy-support";
 
 const nav = (page: import("@playwright/test").Page) =>
   page.getByRole("navigation", { name: "Main" });
@@ -36,7 +37,10 @@ function watch(page: import("@playwright/test").Page) {
   const problems: string[] = [];
   const meStatuses: number[] = [];
   page.on("console", (m) => {
-    if (m.type() === "error") problems.push(m.text());
+    // WebKit's own message for a native <select> is set aside (D-0001-109); nothing else is.
+    if (m.type() === "error" && m.text() !== webKitSelectMessage) {
+      problems.push(m.text());
+    }
   });
   page.on("pageerror", (e) => problems.push(e.message));
   page.on("response", (r) => {
@@ -331,6 +335,20 @@ test("the first Tab stop is the skip link, and a page has one h1 and the landmar
   await expect(page.getByRole("banner")).toHaveCount(1);
   await expect(page.getByRole("main")).toHaveCount(1);
   await expect(page.getByRole("navigation", { name: "Main" })).toHaveCount(1);
+});
+
+test("first visit: once the booking page has settled, the first Tab stop is still the skip link", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Book a service" }),
+  ).toBeVisible();
+  await expect(page).toHaveURL(/\/book$/);
+  await page.keyboard.press("Tab");
+  await expect(
+    page.getByRole("link", { name: "Skip to main content" }),
+  ).toBeFocused();
 });
 
 for (const width of widths) {
