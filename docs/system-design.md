@@ -794,17 +794,17 @@ The same timed test also ran on the CI machine (GitHub Actions, `ubuntu-latest`)
 
 All in `thienba/unified-service-scheduler`. Every one is merged into `main` with a merge commit.
 
-| #   | Ticket                                                                  | Link                                                                | State  |
-| --- | ----------------------------------------------------------------------- | ------------------------------------------------------------------- | ------ |
-| 1   | PostgreSQL schema for the real backend                                  | [#1](https://github.com/thienba/unified-service-scheduler/commit/c79bd2ed2886596bf0b762f76fb65b59788da920)   | Merged |
-| 2   | System Design Document (draft)                                          | [#2](https://github.com/thienba/unified-service-scheduler/commit/232913b874c8c0aae8a37ccbed427a71c461ba97)   | Merged |
-| 3   | Scaffold the app with tokens, lint rules, tests and CI                  | [#3](https://github.com/thienba/unified-service-scheduler/commit/1a0f1f7ef046f8ea89d6075ff3416e41093f364a)   | Merged |
-| 4   | Domain model and time rules                                             | [#4](https://github.com/thienba/unified-service-scheduler/commit/494dff8593541d5c09101a50a433fe246905d4ad)   | Merged |
-| 5   | Availability check and suggested times                                  | [#5](https://github.com/thienba/unified-service-scheduler/commit/82ddf5e855d94e555cbf8a0487a28b0183e5fdba)   | Merged |
-| 6   | Repository with in-memory and IndexedDB stores and seed data            | [#6](https://github.com/thienba/unified-service-scheduler/commit/ce9421a596338f9d8148e9cf8a7fc88f7a579ccc)   | Merged |
-| 7   | Book, cancel and reschedule commands                                    | [#7](https://github.com/thienba/unified-service-scheduler/commit/58a80426589d9efa62d8e93edd206073b66504cc)   | Merged |
-| 8   | Manager adjust, hours and shifts commands with flagging                 | [#8](https://github.com/thienba/unified-service-scheduler/commit/0353a8018f235226630a6209dac586e0e31bdb92)   | Merged |
-| 9   | Reminder outbox                                                         | [#9](https://github.com/thienba/unified-service-scheduler/commit/3d98c27a5e7f3a3615bae085ff7648855abe1c4e)   | Merged |
+| #   | Ticket                                                                  | Link                                                                                                        | State  |
+| --- | ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- | ------ |
+| 1   | PostgreSQL schema for the real backend                                  | [#1](https://github.com/thienba/unified-service-scheduler/commit/c79bd2ed2886596bf0b762f76fb65b59788da920)  | Merged |
+| 2   | System Design Document (draft)                                          | [#2](https://github.com/thienba/unified-service-scheduler/commit/232913b874c8c0aae8a37ccbed427a71c461ba97)  | Merged |
+| 3   | Scaffold the app with tokens, lint rules, tests and CI                  | [#3](https://github.com/thienba/unified-service-scheduler/commit/1a0f1f7ef046f8ea89d6075ff3416e41093f364a)  | Merged |
+| 4   | Domain model and time rules                                             | [#4](https://github.com/thienba/unified-service-scheduler/commit/494dff8593541d5c09101a50a433fe246905d4ad)  | Merged |
+| 5   | Availability check and suggested times                                  | [#5](https://github.com/thienba/unified-service-scheduler/commit/82ddf5e855d94e555cbf8a0487a28b0183e5fdba)  | Merged |
+| 6   | Repository with in-memory and IndexedDB stores and seed data            | [#6](https://github.com/thienba/unified-service-scheduler/commit/ce9421a596338f9d8148e9cf8a7fc88f7a579ccc)  | Merged |
+| 7   | Book, cancel and reschedule commands                                    | [#7](https://github.com/thienba/unified-service-scheduler/commit/58a80426589d9efa62d8e93edd206073b66504cc)  | Merged |
+| 8   | Manager adjust, hours and shifts commands with flagging                 | [#8](https://github.com/thienba/unified-service-scheduler/commit/0353a8018f235226630a6209dac586e0e31bdb92)  | Merged |
+| 9   | Reminder outbox                                                         | [#9](https://github.com/thienba/unified-service-scheduler/commit/3d98c27a5e7f3a3615bae085ff7648855abe1c4e)  | Merged |
 | 10  | OpenAPI contract, mock API and typed client                             | [#10](https://github.com/thienba/unified-service-scheduler/commit/d7370d35f608b7533d5eba9242aa7909badaa6a2) | Merged |
 | 11  | README with build, run, test and the AI Collaboration Narrative (draft) | [#11](https://github.com/thienba/unified-service-scheduler/commit/a1cc47546907e54cce9b2277ff841cd3b503f8ed) | Merged |
 | 12  | Trace ids, structured logs and metrics                                  | [#12](https://github.com/thienba/unified-service-scheduler/commit/43eaed3a4bd95f4e068d4da7d7ba93b2a88df4ba) | Merged |
