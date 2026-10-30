@@ -148,6 +148,22 @@ export function findCompanyNameProblems(file, text) {
     );
 }
 
+/**
+ * D-0000-42: the public project does not name the AI tool, in any case.
+ * @param {string} file path of the file, relative to the repository root
+ * @param {string} text the file's text
+ * @returns {string[]} what is wrong, one line each, as `file:line: problem`
+ */
+export function findToolNameProblems(file, text) {
+  return text
+    .split("\n")
+    .flatMap((line, index) =>
+      /claude/i.test(line)
+        ? [`${file}:${index + 1}: names the AI tool (D-0000-42)`]
+        : [],
+    );
+}
+
 /** @param {string} dir */
 function textFiles(dir) {
   return readdirSync(dir).flatMap((entry) => {
@@ -195,9 +211,13 @@ function main() {
     "index.html",
     "package.json",
     "vercel.json",
-  ].flatMap((file) =>
-    findCompanyNameProblems(file, readFileSync(file, "utf8")),
-  );
+  ].flatMap((file) => {
+    const text = readFileSync(file, "utf8");
+    return [
+      ...findCompanyNameProblems(file, text),
+      ...findToolNameProblems(file, text),
+    ];
+  });
   problems.push(...named);
   for (const problem of problems) console.error(problem);
   if (problems.length > 0) {
@@ -205,7 +225,7 @@ function main() {
     process.exit(1);
   }
   console.log(
-    `Public docs are clean: ${files.length} files checked for secrets, local paths, real email addresses and links into references/; the README, docs/, src/ and the page files for the company name; and the README for reference codes.`,
+    `Public docs are clean: ${files.length} files checked for secrets, local paths, real email addresses and links into references/; the README, docs/, src/ and the page files for the company and AI tool names; and the README for reference codes.`,
   );
 }
 
