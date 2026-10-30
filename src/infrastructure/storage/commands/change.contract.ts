@@ -340,8 +340,15 @@ export function describeChangeContract(
         { start: at("16:00") },
         KEY,
       );
-      expect(second).toEqual(first);
+      expect(second).toEqual({ ...first, replayed: true });
       expect((await stored(ctx.repo, appt.id))?.version).toBe(2);
+      expect(
+        ctx.logger.calls.flatMap((c) =>
+          c.kind === "info" && c.msg === "appointment.reschedule"
+            ? [c.fields.outcome]
+            : [],
+        ),
+      ).toEqual(["ok", "replayed"]);
       expect(ctx.metrics.counters).toContainEqual({
         name: "idempotent_replays_total",
         labels: { route: "POST /appointments/{id}/reschedule" },

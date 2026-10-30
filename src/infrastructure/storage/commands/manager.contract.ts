@@ -180,7 +180,10 @@ export function describeManagerContract(
         (result as { suggestions: unknown[] }).suggestions.length,
       ).toBeGreaterThan(0);
       expect(await get(ctx.repo, appt.id)).toEqual(appt);
-      expect(ctx.metrics.count("appointment_conflicts_total")).toBe(1);
+      expect(ctx.metrics.count("appointments_refused_total")).toBe(1);
+      expect(ctx.metrics.count("appointment_conflicts_total")).toBe(
+        (result as { reasons: unknown[] }).reasons.length,
+      );
     });
 
     function adjustAdjustOnly(

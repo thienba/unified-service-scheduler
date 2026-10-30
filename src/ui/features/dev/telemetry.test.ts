@@ -47,6 +47,11 @@ const telemetry: Telemetry = {
       value: 1,
     },
     {
+      name: "appointments_refused_total",
+      labels: { dealershipId: "d-leeds" },
+      value: 2,
+    },
+    {
       name: "availability_search_empty_total",
       labels: { dealershipId: "d-leeds" },
       value: 2,
@@ -85,9 +90,9 @@ describe("numbersOf (NFR-6)", () => {
     });
   });
 
-  it("counts the 409s by reason, in the words of design.md section 9, most first", () => {
+  it("counts the 409s by reason, in the words of design.md section 9, most first; one 409 with two reasons is one refusal", () => {
     expect(numbers.refused).toEqual({
-      total: 3,
+      total: 2,
       reasons: [
         {
           words: "Every technician who can do this job is busy then",

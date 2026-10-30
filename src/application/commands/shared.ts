@@ -31,7 +31,7 @@ export type Failure =
   | { kind: "idempotency_key_reused" };
 
 export type CommandResult =
-  | { kind: "ok"; appointment: Appointment }
+  | { kind: "ok"; appointment: Appointment; replayed?: true }
   | Failure
   | {
       kind: "slot_unavailable";
@@ -88,10 +88,14 @@ export async function slotUnavailable(
   now: EpochMs,
 ): Promise<CommandResult> {
   const { dealershipId } = want;
-  deps.metrics.increment("appointment_conflicts_total", {
-    dealershipId,
-    reason: conflict.reasons[0]!,
-  });
+  // One refusal is one 409, whatever the number of reasons; the panel's total counts it once.
+  deps.metrics.increment("appointments_refused_total", { dealershipId });
+  for (const reason of conflict.reasons) {
+    deps.metrics.increment("appointment_conflicts_total", {
+      dealershipId,
+      reason,
+    });
+  }
   const began = deps.clock.now();
   const suggestions = await deps.uow.read((stores) =>
     deps.logger.step("suggest", async () => {
@@ -135,7 +139,7 @@ export function logOutcome(
   deps.logger.info(msg, {
     ...fields,
     actorRole: actor.role,
-    outcome: result.kind,
+    outcome: result.kind === "ok" && result.replayed ? "replayed" : result.kind,
     ...(result.kind === "slot_unavailable" ? { reasons: result.reasons } : {}),
     ...(result.kind === "ok" ? { appointmentId: result.appointment.id } : {}),
   });

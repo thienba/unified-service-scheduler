@@ -334,7 +334,7 @@ async function book(
   const { error } = outcome;
   if (error.kind === "replay") {
     deps.metrics.increment("idempotent_replays_total", { route: ROUTES.book });
-    return { kind: "ok", appointment: error.appointment };
+    return { kind: "ok", appointment: error.appointment, replayed: true };
   }
   if (error.kind === "conflict") {
     return slotUnavailable(

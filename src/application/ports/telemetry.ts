@@ -36,6 +36,7 @@ export type CounterName =
   | "availability_search_empty_total"
   | "appointments_confirmed_total"
   | "appointment_conflicts_total"
+  | "appointments_refused_total"
   | "appointments_cancelled_total"
   | "idempotent_replays_total";
 
