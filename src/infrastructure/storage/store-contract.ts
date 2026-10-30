@@ -740,10 +740,44 @@ export function describeStoreContract(
       ).toEqual(["t1", "t2"]);
     });
 
+    // D-0001-144: every stored customer can be picked in "Viewing as", a new one as soon as it is stored.
+    it("lists a customer user for every customer with no user of its own, by name, after the seeded users", async () => {
+      const repo = await seeded();
+      await repo.write(async (s) => {
+        await s.customers.insert(
+          { id: "c0", name: "Aaron New", phone: "+44 7700 900333", email: "" },
+          {
+            id: "v0",
+            customerId: "c0",
+            registration: "EF22 NEW",
+            make: "Kia",
+            model: "Ceed",
+          },
+        );
+        return { ok: true, value: undefined };
+      });
+      const users = await repo.listDemoUsers();
+      expect(users.map((u) => [u.id, u.name])).toEqual([
+        ["u1", "Demo staff"],
+        ["user-c0", "Aaron New"],
+        ["user-c1", "Alex Demo-Smith"],
+        ["user-c2", "Bo Demo-Jones"],
+      ]);
+      expect(users[1]).toMatchObject({
+        role: "customer",
+        customerId: "c0",
+        dealershipIds: [],
+      });
+    });
+
     it("replaceAll swaps everything stored for the seed and its version", async () => {
       const repo = await seeded();
       expect(await repo.getSeedVersion()).toBe(1);
-      expect((await repo.listDemoUsers()).map((u) => u.id)).toEqual(["u1"]);
+      expect((await repo.listDemoUsers()).map((u) => u.id)).toEqual([
+        "u1",
+        "user-c1",
+        "user-c2",
+      ]);
       await bookOnce(repo, "a1");
       await repo.replaceAll(fixtureSeed(), 2);
       expect(await repo.getSeedVersion()).toBe(2);

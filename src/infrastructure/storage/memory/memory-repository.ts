@@ -27,6 +27,7 @@ import {
   phoneDigits,
   plateKey,
   touchesRange,
+  withCustomerUsers,
 } from "../shared";
 
 interface Data {
@@ -255,7 +256,12 @@ export function createMemoryRepository(): Repository {
         return outcome;
       }),
     getSeedVersion: async () => committed.seedVersion,
-    listDemoUsers: async () => copy(byId([...committed.demoUsers.values()])),
+    listDemoUsers: async () =>
+      copy(
+        withCustomerUsers(byId([...committed.demoUsers.values()]), [
+          ...committed.customers.values(),
+        ]),
+      ),
     replaceAll: (seed, seedVersion) =>
       enqueue(async () => {
         const next = emptyData();
