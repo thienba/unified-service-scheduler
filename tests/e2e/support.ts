@@ -153,6 +153,22 @@ export async function chooseOption(
     await option.click({ timeout: 2000 });
     await expect(list).toHaveCount(0, { timeout: 5000 });
   }).toPass({ timeout: 15_000 });
+  // On a phone the sheet locks the page's scroll while open and gives it back a frame after it closes. Wait
+  // until the page has stopped moving, or the next click can land where a control was a moment ago.
+  await expect(page.locator(".ctl-scrim")).toHaveCount(0);
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          new Promise<boolean>((done) => {
+            const before = scrollY;
+            requestAnimationFrame(() =>
+              requestAnimationFrame(() => done(scrollY === before)),
+            );
+          }),
+      ),
+    )
+    .toBe(true);
 }
 
 /** A DatePicker by its label: the group of its three segments and the calendar button. */
