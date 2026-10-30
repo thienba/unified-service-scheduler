@@ -172,7 +172,7 @@ async function reschedule(
     deps.metrics.increment("idempotent_replays_total", {
       route: ROUTES.reschedule,
     });
-    return { kind: "ok", appointment: error.appointment };
+    return { kind: "ok", appointment: error.appointment, replayed: true };
   }
   if (error.kind === "conflict") {
     const current = await deps.uow.read((stores) =>

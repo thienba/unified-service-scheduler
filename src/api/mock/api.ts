@@ -73,6 +73,18 @@ export function createApi(
       info: (msg, fields = {}) => {
         held.push({ msg, fields });
       },
+      // A step is held too, so that it can carry the route of its request.
+      async step(name, work) {
+        const began = clock.now();
+        try {
+          return await work();
+        } finally {
+          held.push({
+            msg: `step.${name}`,
+            fields: { durationMs: clock.now() - began },
+          });
+        }
+      },
     };
     let route = "unmatched";
     let dealershipId: string | undefined;
@@ -205,7 +217,13 @@ export function createApi(
     if (typeof appointment?.dealershipId === "string") {
       dealershipId ??= appointment.dealershipId;
     }
-    for (const { msg, fields } of held) {
+    // The panel reads its own list from this route: logging the read would fill the list it shows.
+    const silent = route === "GET /_demo/telemetry";
+    for (const { msg, fields } of silent ? [] : held) {
+      if (msg.startsWith("step.")) {
+        traced.info(msg, { ...fields, route, method: request.method });
+        continue;
+      }
       const same = fields.appointmentId === appointment?.id;
       traced.info(msg, {
         ...fields,
@@ -231,7 +249,9 @@ export function createApi(
       actorRole,
       outcome,
     };
-    if (status >= 500) traced.error("http.request", line);
+    if (silent) {
+      // Counted, but not logged.
+    } else if (status >= 500) traced.error("http.request", line);
     else traced.info("http.request", line);
     metrics.increment("http_requests_total", {
       route,
