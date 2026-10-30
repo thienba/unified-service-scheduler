@@ -788,7 +788,7 @@ Every number here was re-run for this pass on `main` at commit `6845a22` (all 30
 
 The search times were measured on this Mac, not on the CI machine, so they show the size of the margin rather than a server figure. Each was a single timed run. The human kept these Mac numbers, labelled as single runs (D-0001-113 A).
 
-The same timed test also ran on the CI machine (GitHub Actions, `ubuntu-latest`) in [run 40870236665](https://github.com/thienba/unified-service-scheduler/actions/runs/40870236665), on the branch of #33, which has the same code as `main` plus the CI split. One day's search took 36.0 ms (`TZ=UTC`), 13.1 ms (`TZ=Pacific/Kiritimati`) and 15.1 ms (with coverage). The 14-day suggestions took 16.7 ms, 12.1 ms and 19.4 ms. All are under the budget, again as single runs (D-0001-113 B).
+The same timed test also ran on the CI machine (GitHub Actions, `ubuntu-latest`) in run 40870236665 (in the earlier copy of this repository, before it was recreated without the old pull request pages), on the branch of #33, which has the same code as `main` plus the CI split. One day's search took 36.0 ms (`TZ=UTC`), 13.1 ms (`TZ=Pacific/Kiritimati`) and 15.1 ms (with coverage). The 14-day suggestions took 16.7 ms, 12.1 ms and 19.4 ms. All are under the budget, again as single runs (D-0001-113 B).
 
 ## Pull requests
 
