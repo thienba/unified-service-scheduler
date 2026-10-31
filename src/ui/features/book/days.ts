@@ -194,6 +194,25 @@ export function groupTimes(
     .map((label) => ({ label, times: groups[label] }));
 }
 
+/**
+ * How many starts an empty day has in each group: every step of the grid from opening until the job still
+ * fits before closing. The space held for the times while they load.
+ */
+export function possibleStarts(
+  dealership: Dealership,
+  date: string,
+  minutes: number,
+): number[] {
+  const hours = hoursOn(dealership, date);
+  const counts = [0, 0, 0];
+  if (!hours) return counts;
+  const grid = dealership.policies.gridMinutes;
+  const last = minutesOf(hours.close) - minutes;
+  for (let at = minutesOf(hours.open); at <= last; at += grid)
+    counts[at < 12 * 60 ? 0 : at < 17 * 60 ? 1 : 2]! += 1;
+  return counts;
+}
+
 /** "Morning · 10 times", "Afternoon · 1 time", "Morning · none left": only the times that can be chosen count. */
 export function groupCount(group: TimeGroup): string {
   const n = group.times.filter((t) => !t.unavailable).length;

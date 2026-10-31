@@ -28,7 +28,13 @@ import {
   open,
   signInAs,
 } from "./demo-support";
-import { chooseOption, dateNamed, selectNamed, typeDate } from "./support";
+import {
+  chooseOption,
+  dateNamed,
+  selectNamed,
+  typeDate,
+  waitForTimes,
+} from "./support";
 
 const NOW = new Date("2026-10-28T10:40:00Z");
 const TECHNICIANS: Record<string, string> = {
@@ -259,6 +265,7 @@ test("scenario 2, staff sees it and books (REQ-BOOK-004, 010.AC-2, 014): the new
     selectNamed(page, "Service (required)"),
     "service-oil-change",
   );
+  await waitForTimes(page);
   await page.getByRole("radio", { name: "Waits on site" }).check();
   await beat(page);
   await page.getByRole("button", { name: "Confirm booking" }).click();
@@ -634,6 +641,7 @@ test("scenario 5, manager books for a customer (D-0001-53, D-0001-54 B, REQ-BOOK
     selectNamed(page, "Service (required)"),
     "service-oil-change",
   );
+  await waitForTimes(page);
   await page.getByRole("radio", { name: "Waits on site" }).check();
   await beat(page);
   await page.getByRole("button", { name: "Confirm booking" }).click();

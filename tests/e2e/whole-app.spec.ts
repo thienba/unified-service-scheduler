@@ -29,6 +29,7 @@ import {
   pickRole,
   widths,
   chooseOption,
+  waitForTimes,
   selectNamed,
 } from "./support";
 
@@ -131,6 +132,7 @@ test("SEC-15.AC-3: the three role journeys on the built app send every request t
     selectNamed(staff, "Service (required)"),
     "service-oil-change",
   );
+  await waitForTimes(staff);
   await staff.getByRole("radio", { name: "Waits on site" }).check();
   await staff.getByRole("button", { name: "Confirm booking" }).click();
   await expect(

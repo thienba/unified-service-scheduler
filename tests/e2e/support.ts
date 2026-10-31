@@ -181,6 +181,17 @@ export async function chooseOption(
     .toBe(true);
 }
 
+/**
+ * Waits until the start times of the booking page are shown. Press the car choice only after this: at phone
+ * width the choice sits below the times, and a press that spans their arrival can end on another element.
+ * (times-space.spec.ts holds the test that proves the page itself keeps the press.)
+ */
+export async function waitForTimes(page: Page) {
+  await expect(
+    page.getByRole("radio", { name: /^\d\d:\d\d to \d\d:\d\d$/ }).first(),
+  ).toBeVisible();
+}
+
 /** A DatePicker by its label: the group of its three segments and the calendar button. */
 export function dateNamed(scope: Page | Locator, label: string): Locator {
   return scope.getByRole("group", { name: label, exact: true });

@@ -11,6 +11,7 @@ import {
   instantAt,
   lastDay,
   needsTimes,
+  possibleStarts,
   splitSuggestions,
   weekDates,
   weekLabel,
@@ -174,6 +175,19 @@ describe("time groups", () => {
         times: [{ start: "a", end: "b", unavailable: "Just taken" }],
       }),
     ).toBe("none left");
+  });
+});
+
+describe("possibleStarts", () => {
+  it("counts the grid steps from opening until the job still fits, in morning, afternoon and evening", () => {
+    // 09:00 to 16:00 and 60 minutes: starts 09:00 to 15:00.
+    expect(possibleStarts(leeds, "2026-11-07", 60)).toEqual([12, 13, 0]);
+    // 08:00 to 18:00 and 60 minutes: starts 08:00 to 17:00.
+    expect(possibleStarts(leeds, "2026-11-02", 60)).toEqual([16, 20, 1]);
+  });
+
+  it("is empty on a closed day", () => {
+    expect(possibleStarts(leeds, "2026-11-01", 60)).toEqual([0, 0, 0]);
   });
 });
 
