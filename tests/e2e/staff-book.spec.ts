@@ -25,6 +25,7 @@ import {
   widths,
   chooseOption,
   selectNamed,
+  waitForTimes,
 } from "./support";
 
 const NOW = new Date("2026-10-28T10:40:00Z");
@@ -791,6 +792,7 @@ for (const width of [390, 1440]) {
           .getByRole("radiogroup", { name: "Choose a day" })
           .getByRole("radio", { checked: true }),
       ).toHaveCount(1);
+      await waitForTimes(page);
       await page.getByRole("radio", { name: "Waits on site" }).check();
       await page
         .getByRole("button", { name: "Any technician" })
@@ -943,6 +945,7 @@ for (const width of [390, 1440]) {
       );
       await pickMarta(page);
       await chooseOption(service(page), "service-oil-change");
+      await waitForTimes(page);
       await page.getByRole("radio", { name: "Waits on site" }).check();
       await confirm(page).click();
       await expect(
@@ -1496,6 +1499,7 @@ test("video: a staff member taps a free gap, finds a customer, picks a car, a se
   await continueButton(page).click();
   await slow();
   await chooseOption(service(page), "service-oil-change");
+  await waitForTimes(page);
   await slow();
   await page.getByRole("radio", { name: "Waits on site" }).check();
   await slow();

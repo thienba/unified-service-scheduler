@@ -34,3 +34,32 @@ export function useAfterDelay(ms: number): boolean {
   }, [ms]);
   return passed;
 }
+
+/**
+ * True while a finger, pen or mouse button is down on the page. It ends on release, on cancel (a touch that
+ * turns into a scroll), when the window loses focus, and when a move reports no button down, so it cannot
+ * stay stuck.
+ */
+export function usePressing(): boolean {
+  const [pressing, setPressing] = useState(false);
+  useEffect(() => {
+    const on = () => setPressing(true);
+    const off = () => setPressing(false);
+    const move = (event: PointerEvent) => {
+      if (event.pointerType === "mouse" && event.buttons === 0) off();
+    };
+    window.addEventListener("pointerdown", on, true);
+    window.addEventListener("pointerup", off, true);
+    window.addEventListener("pointercancel", off, true);
+    window.addEventListener("pointermove", move, true);
+    window.addEventListener("blur", off);
+    return () => {
+      window.removeEventListener("pointerdown", on, true);
+      window.removeEventListener("pointerup", off, true);
+      window.removeEventListener("pointercancel", off, true);
+      window.removeEventListener("pointermove", move, true);
+      window.removeEventListener("blur", off);
+    };
+  }, []);
+  return pressing;
+}
