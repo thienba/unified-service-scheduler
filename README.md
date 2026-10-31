@@ -159,7 +159,14 @@ All people, cars and contact details in the sample data are made up.
 4. **Adjust and flag.** Switch to Demo Manager London. Adjust a booking on the schedule. Then shorten a day's opening hours under **Settings**, or change a technician's shift under **Shifts**. Bookings that no longer fit show up under **Flagged**.
 5. **Read the outbox.** As the manager, open **Outbox** to see the confirmations and reminders.
 
-To see the race yourself, open the app in two tabs as Demo Customer A and Demo Customer B, choose the same time in both, and press Confirm in each.
+To see the race yourself, you need a time with only one place left. On a quiet time two technicians and two bays are free, so both customers get booked, and that is correct. Only two technicians at Fakeford Motors (the London dealership) can do the Battery and EV systems check, and it has two bays, so one booking first leaves one place:
+
+1. Open the app in two windows, side by side. Two tabs will not do: a hidden tab stops checking, and warns you as soon as you come back.
+2. In the first window, pick **Demo Walk-in Carol** in **Viewing as**. Book the Battery and EV systems check at Fakeford Motors at 10:00, on a weekday about a week ahead.
+3. In the first window, pick **Demo Customer A**. In the second window, pick **Demo Customer B**. In both, choose the same service, day and time, and how you will leave the car (wait or drop off).
+4. Press Confirm in each window, within 30 seconds. After 30 seconds the second window warns you early instead.
+
+One customer is booked. The other gets an apology and the closest free times. Do not reload a window during this: the windows share the saved **Viewing as** choice, so a reloaded window becomes whoever was picked last.
 
 ### Start again
 
