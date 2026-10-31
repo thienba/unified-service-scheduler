@@ -6,7 +6,13 @@
 // "Booking for" panel takes the car's place, the words are the staff's, and a tapped free gap fixes the
 // technician (D-0001-20 B, D-0001-31 A). One strip, one chip grid, one summary for both.
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ComponentProps,
+} from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { useNavigate, useSearchParams } from "react-router";
 import { z } from "zod";
@@ -19,8 +25,14 @@ import { BookingSummary } from "../../components/BookingSummary";
 import { Button } from "../../components/Button";
 import { DayStrip } from "../../components/DayStrip";
 import { focusField, type Choice } from "../../components/Fields";
+import { cx } from "../../components/cx";
 import { Select } from "../../components/Select";
-import { query, useMediaQuery } from "../../components/hooks";
+import {
+  query,
+  useAfterDelay,
+  useMediaQuery,
+  usePressing,
+} from "../../components/hooks";
 import { ForCustomerPanel } from "../../components/ForCustomer";
 import { InlineNote, PageBack, PhoneLink, Plate } from "../../components/Small";
 import { Skeleton, StateBlock } from "../../components/StateBlock";
@@ -57,6 +69,7 @@ import {
   instantAt,
   lastDay,
   needsTimes,
+  possibleStarts,
   splitSuggestions,
   todayIn,
   weekDates,
@@ -282,7 +295,8 @@ function Booking({ who }: { who: Who }) {
   const [message, setMessage] = useState(0);
   // The start at which a chosen courtesy car was cleared because none is free then (`courtesy-cleared`).
   const [clearedAt, setClearedAt] = useState<string | null>(null);
-  const autoKey = useRef<string | null>(null);
+  // The strip the first day was chosen for. The times wait for it, so they do not flash the "pick a day" hint.
+  const [autoKey, setAutoKey] = useState<string | null>(null);
   const pending = useRef<Pending | null>(null);
   const busy = useRef(false);
 
@@ -386,12 +400,12 @@ function Booking({ who }: { who: Who }) {
       gapBlocked ||
       stripLoading ||
       stripFailure ||
-      autoKey.current === stripKey
+      autoKey === stripKey
     )
       return;
     // A gap waits for its own answer: it chooses the gap's day, or no day when the job does not fit.
     if (gap && fit.isPending) return;
-    autoKey.current = stripKey;
+    setAutoKey(stripKey);
     if (day && dates.includes(day)) return;
     if (notice || gapShort || (gap && fit.data?.available)) return;
     const linked = linkDay?.kind === "open" ? linkDay : undefined;
@@ -452,7 +466,7 @@ function Booking({ who }: { who: Who }) {
     setDay(null);
     setWeekStart(null);
     setLinkDismissed(false);
-    autoKey.current = null;
+    setAutoKey(null);
     pending.current = null;
   }
 
@@ -1088,7 +1102,7 @@ function Booking({ who }: { who: Who }) {
 
           {ready && !noVehicle && !gapBlocked && dealership && service && (
             <>
-              <section aria-labelledby="days-title" className="grid gap-3">
+              <HeldSection aria-labelledby="days-title" className="grid gap-3">
                 <h2 id="days-title" className="text-xl">
                   Pick a day
                 </h2>
@@ -1146,10 +1160,13 @@ function Booking({ who }: { who: Who }) {
                     }}
                   />
                 )}
-              </section>
+              </HeldSection>
 
-              {stripFailure === undefined && !stripLoading && (
-                <section aria-labelledby="times-title" className="grid gap-3">
+              {stripFailure === undefined && (
+                <HeldSection
+                  aria-labelledby="times-title"
+                  className="grid gap-3"
+                >
                   <h2 id="times-title" tabIndex={-1} className="text-xl">
                     Pick a start time
                   </h2>
@@ -1158,7 +1175,14 @@ function Booking({ who }: { who: Who }) {
                       ? `${formatTimesCount(selected.count)} on ${dayWords(day)}`
                       : ""}
                   </p>
-                  {gap && gapShort && !day ? (
+                  {stripLoading || (!day && autoKey !== stripKey) ? (
+                    // The room an empty day's times will take, so what is below does not move when they arrive.
+                    <TimesSkeleton
+                      dealership={dealership}
+                      date={day && dates.includes(day) ? day : fetchDates[0]!}
+                      minutes={minutes}
+                    />
+                  ) : gap && gapShort && !day ? (
                     <SuggestionGroup
                       title={`Closest times with ${gap.technicianName}`}
                       items={gapShort.map((s) => ({
@@ -1182,6 +1206,7 @@ function Booking({ who }: { who: Who }) {
                       conflict={conflict}
                       dealership={dealership}
                       serviceTypeId={service.id}
+                      minutes={minutes}
                       transport={queryTransport}
                       zone={zone}
                       now={now}
@@ -1191,7 +1216,7 @@ function Booking({ who }: { who: Who }) {
                       label={timeLabel}
                     />
                   )}
-                </section>
+                </HeldSection>
               )}
             </>
           )}
@@ -1429,23 +1454,79 @@ function LoadFailure({ error, retry }: { error: unknown; retry: () => void }) {
   );
 }
 
+/**
+ * A section that keeps the height it had while a press is down. Late times would otherwise move what is below
+ * them under the finger, and the press would end on another element. It fits as soon as the press is over.
+ */
+function HeldSection(props: ComponentProps<"section">) {
+  const pressing = usePressing();
+  const ref = useRef<HTMLElement>(null);
+  const height = useRef(0);
+  useLayoutEffect(() => {
+    height.current = ref.current?.offsetHeight ?? 0;
+  });
+  return (
+    <section
+      ref={ref}
+      style={pressing ? { minHeight: height.current } : undefined}
+      {...props}
+    />
+  );
+}
+
 function StripSkeleton() {
   return (
     <>
-      <div className="grid auto-cols-(--size-day) grid-flow-col gap-2 overflow-hidden sm:grid-flow-row sm:grid-cols-7">
+      <Skeleton className="h-(--size-target) rounded-pill" />
+      <div className="grid auto-cols-(--size-day) grid-flow-col gap-2 overflow-hidden pb-2 sm:grid-flow-row sm:grid-cols-7 sm:pb-0">
         {Array.from({ length: 7 }, (_, i) => (
-          <Skeleton key={i} className="min-h-(--size-row) rounded-card" />
-        ))}
-      </div>
-      <div className="flex flex-wrap gap-2">
-        {Array.from({ length: 5 }, (_, i) => (
           <Skeleton
             key={i}
-            className="min-h-(--size-target) min-w-(--size-chip) rounded-pill"
+            className="aspect-square min-h-(--size-row) rounded-card sm:aspect-auto"
           />
         ))}
       </div>
     </>
+  );
+}
+
+/**
+ * The times of an empty day, drawn as the grid that will replace it: the same groups and chips, so the page
+ * below does not jump when they arrive. Like the other skeletons it shows after a short wait and always
+ * takes its space.
+ */
+function TimesSkeleton({
+  dealership,
+  date,
+  minutes,
+}: {
+  dealership: Dealership;
+  date: string;
+  minutes: number;
+}) {
+  const visible = useAfterDelay(200);
+  const groups = possibleStarts(dealership, date, minutes);
+  return (
+    <div
+      className={cx("grid gap-6", !visible && "invisible")}
+      aria-hidden="true"
+    >
+      {groups.map((count, g) =>
+        count === 0 ? null : (
+          <div key={g} className="grid gap-3">
+            <Skeleton className="h-6 w-40" />
+            <div className="flex flex-wrap gap-2">
+              {Array.from({ length: count }, (_, i) => (
+                <Skeleton
+                  key={i}
+                  className="min-h-(--size-target) grow basis-(--size-chip) rounded-pill sm:grow-0 sm:basis-auto sm:min-w-(--size-chip)"
+                />
+              ))}
+            </div>
+          </div>
+        ),
+      )}
+    </div>
   );
 }
 
@@ -1460,6 +1541,7 @@ function Times({
   conflict,
   dealership,
   serviceTypeId,
+  minutes,
   transport,
   zone,
   now,
@@ -1481,6 +1563,7 @@ function Times({
   conflict: Conflict | null;
   dealership: Dealership;
   serviceTypeId: string;
+  minutes: number;
   transport: Transport;
   zone: string;
   now: number;
@@ -1531,7 +1614,9 @@ function Times({
       <StateBlock
         kind="loading"
         loadingLabel="Loading the times"
-        skeleton={<StripSkeleton />}
+        skeleton={
+          <TimesSkeleton dealership={dealership} date={day} minutes={minutes} />
+        }
       />
     );
   }
