@@ -265,12 +265,14 @@ test("D-0001-107, REQ-BOOK-012.AC-3: reschedule: page B books the new time page 
   await expect(
     a.getByRole("radio", { name: `${londonTime(start)}, just taken` }),
   ).toBeDisabled();
-  expect(
-    await a.evaluate(() => {
-      const now = document.activeElement as HTMLInputElement;
-      return `${now.type} ${now.name} ${now.disabled}`;
-    }),
-  ).toBe("radio new-start false");
+  await expect
+    .poll(() =>
+      a.evaluate(() => {
+        const now = document.activeElement as HTMLInputElement;
+        return `${now.type} ${now.name} ${now.disabled}`;
+      }),
+    )
+    .toBe("radio new-start false");
   await expect(
     a.getByRole("button", { name: "Pick a new time to confirm" }),
   ).toHaveCount(1);
