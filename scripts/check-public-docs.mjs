@@ -1,4 +1,4 @@
-// Checks the public copies in docs/ai-collaboration/ and the README (D-0000-36 B, D-0000-11). It fails
+// Checks the public copies in docs/ai-collaboration/ and the README (D-0000-11). It fails
 // when a file holds a secret-looking string, a local path, an email address that is not an obviously
 // made-up one, or a link into the work repo's private `references/` folder.
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
@@ -149,7 +149,7 @@ export function findCompanyNameProblems(file, text) {
 }
 
 /**
- * D-0000-42: the public project does not name the AI tool, in any case.
+ * The public project does not name the AI tool, in any case.
  * @param {string} file path of the file, relative to the repository root
  * @param {string} text the file's text
  * @returns {string[]} what is wrong, one line each, as `file:line: problem`
@@ -158,32 +158,7 @@ export function findToolNameProblems(file, text) {
   return text
     .split("\n")
     .flatMap((line, index) =>
-      /claude/i.test(line)
-        ? [`${file}:${index + 1}: names the AI tool (D-0000-42)`]
-        : [],
-    );
-}
-
-/** D-0000-45: the public process files say "do not decide alone, ask the human", never the opposite. */
-const askWordingPatterns = [
-];
-
-/**
- * @param {string} file path of the file, relative to the repository root
- * @param {string} text the file's text
- * @returns {string[]} what is wrong, one line each, as `file:line: problem`
- */
-export function findAskWordingProblems(file, text) {
-  return text
-    .split("\n")
-    .flatMap((line, index) =>
-      askWordingPatterns.flatMap((re) =>
-        re.test(line)
-          ? [
-              `${file}:${index + 1}: says to decide alone or not to ask (D-0000-45): ${re.exec(line)?.[0]}`,
-            ]
-          : [],
-      ),
+      /claude/i.test(line) ? [`${file}:${index + 1}: names the AI tool`] : [],
     );
 }
 
@@ -242,15 +217,13 @@ function main() {
     ];
   });
   problems.push(...named);
-  for (const file of markdownFiles(join(publicDocsDir, "assistant")))
-    problems.push(...findAskWordingProblems(file, readFileSync(file, "utf8")));
   for (const problem of problems) console.error(problem);
   if (problems.length > 0) {
     console.error(`${problems.length} problem(s) in the public docs.`);
     process.exit(1);
   }
   console.log(
-    `Public docs are clean: ${files.length} files checked for secrets, local paths, real email addresses and links into references/; the README, docs/, src/ and the page files for the company and AI tool names; the README for reference codes; and the process files for wording that says not to ask the human.`,
+    `Public docs are clean: ${files.length} files checked for secrets, local paths, real email addresses and links into references/; the README, docs/, src/ and the page files for the company and AI tool names; and the README for reference codes.`,
   );
 }
 
