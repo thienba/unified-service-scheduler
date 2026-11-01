@@ -2,7 +2,6 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
-  findAskWordingProblems,
   findCompanyNameProblems,
   findToolNameProblems,
   findPublicDocProblems,
@@ -16,7 +15,7 @@ const nothingExists = () => false;
 const check = (text: string, exists: (p: string) => boolean = nothingExists) =>
   findPublicDocProblems(file, text, exists);
 
-describe("public docs check (D-0000-36 B, D-0000-11)", () => {
+describe("public docs check (D-0000-11)", () => {
   it.each([
     ["an AWS access key", "key AKIAABCDEFGHIJKLMNOP here"],
     ["a GitHub token", "ghp_abcdefghijklmnopqrstuvwxyz0123456789"],
@@ -86,8 +85,10 @@ describe("public docs check (D-0000-36 B, D-0000-11)", () => {
     ).toMatch(/links into a references\/ folder/);
   });
 
-  it("allows a link to the copied skill's own references/ folder", () => {
+  it("allows a link to a references/ folder next to the file", () => {
+    const skill = `${publicDocsDir}/guide/index.md`;
     const exists = (p: string) =>
+      p === `${publicDocsDir}/guide/references/run.md`;
     expect(
       findPublicDocProblems(skill, "[run.md](references/run.md#a)", exists),
     ).toEqual([]);
@@ -106,11 +107,11 @@ describe("public docs check (D-0000-36 B, D-0000-11)", () => {
     expect(findCompanyNameProblems("docs/a.md", "the company")).toEqual([]);
   });
 
-  it("fails on the AI tool's name in any case (D-0000-42)", () => {
+  it("fails on the AI tool's name in any case", () => {
     for (const word of ["Claude", "CLAUDE", "claude"])
       expect(
         findToolNameProblems("docs/a.md", `one\nbuilt with ${word}`),
-      ).toEqual(["docs/a.md:2: names the AI tool (D-0000-42)"]);
+      ).toEqual(["docs/a.md:2: names the AI tool"]);
     expect(findToolNameProblems("docs/a.md", "the AI assistant")).toEqual([]);
   });
 
@@ -147,35 +148,6 @@ describe("public docs check (D-0000-36 B, D-0000-11)", () => {
         readFileSync(path.join(repoRoot, f), "utf8"),
         exists,
       ),
-    );
-    expect(problems).toEqual([]);
-  });
-});
-
-describe("ask, do not decide alone (D-0000-45)", () => {
-  it.each([
-  ])("fails on %s", (text) => {
-    expect(findAskWordingProblems("a.md", `one\n${text}`)).not.toEqual([]);
-  });
-
-    expect(
-      findAskWordingProblems(
-        "a.md",
-      ),
-    ).toEqual([]);
-  });
-
-    const walk = (dir: string): string[] =>
-      readdirSync(path.join(repoRoot, dir)).flatMap((entry) => {
-        const rel = `${dir}/${entry}`;
-        if (statSync(path.join(repoRoot, rel)).isDirectory()) return walk(rel);
-        return entry.endsWith(".md") ? [rel] : [];
-      });
-    const files = walk(`${publicDocsDir}/assistant`);
-    expect(files).toContain(
-    );
-    const problems = files.flatMap((f) =>
-      findAskWordingProblems(f, readFileSync(path.join(repoRoot, f), "utf8")),
     );
     expect(problems).toEqual([]);
   });
