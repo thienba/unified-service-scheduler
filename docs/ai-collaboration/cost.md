@@ -18,3 +18,12 @@
 | 2026-10-30 | Firefox and WebKit runs green; repo recreated without the AI tool as contributor | 2026-10-30-firefox-and-webkit-green | 30687239 | 10.9474 | assistant |
 | 2026-10-30 | Verify the current code against the challenge PDF and report | none | 4049904 | 3.0408 | assistant |
 | 2026-10-30 | CI failures: root causes in Firefox and WebKit; CI split per pull request | 2026-10-30-firefox-and-webkit-green, 2026-10-30-ci-chromium-per-pr | 49272537 | 16.2738 | assistant |
+| 2026-10-30 | Fix the required group from the check against the brief | 2026-10-30-start-times-on-the-grid, 2026-10-30-one-car-one-appointment-at-a-time, 2026-10-30-logs-replay-conflicts-and-steps, 2026-10-30-first-visit-opens-as-customer-a, 2026-10-30-documents-match-the-product | 65898008 | 25.4158 | assistant |
+| 2026-10-30 | Merge and deploy the required fixes | 2026-10-31-after-the-merge-documents-and-webkit-tests | 11063822 | 3.2589 | assistant |
+| 2026-10-31 | Merge PR 10 and deploy | 2026-10-31-early-warning-test-waits-for-focus | 6713754 | 1.7637 | assistant |
+| 2026-10-31 | Video guide and spoken script for Scenario A | none | 5717030 | 3.1220 | assistant |
+| 2026-10-31 | Merge PR 11 | 2026-10-31-early-warning-test-waits-for-focus | 522662 | 0.1291 | assistant |
+| 2026-10-31 | Fix the README race steps | 2026-10-31-readme-race-steps-work-on-a-quiet-time | 2250505 | 0.8809 | assistant |
+| 2026-10-31 | Investigate the flaky Firefox and WebKit tests | none | 8870837 | 2.6357 | assistant |
+| 2026-10-31 | Hold space for the times and fix the tests | 2026-10-31-times-hold-their-space-while-loading | 23008534 | 7.4858 | assistant |
+| 2026-11-01 | Merge PR 13 and deploy | 2026-10-31-times-hold-their-space-while-loading | 2481546 | 0.5848 | assistant |
