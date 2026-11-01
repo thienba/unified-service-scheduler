@@ -56,14 +56,20 @@ export function DayStrip({
   const previousWhy = useId();
   const nextWhy = useId();
 
-  // The chosen day scrolls into view inside its row on a phone.
+  // The chosen day scrolls into view inside its row on a phone. Only the row moves: scrolling the page too
+  // would carry away a press the person has under their finger while the times arrive.
   const row = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (!value) return;
-    const chosen = row.current?.querySelector<HTMLElement>(
+    if (!value || !row.current) return;
+    const chosen = row.current.querySelector<HTMLElement>(
       `[data-date="${value}"]`,
     );
-    chosen?.scrollIntoView?.({ block: "nearest", inline: "nearest" });
+    if (!chosen) return;
+    const box = row.current.getBoundingClientRect();
+    const tile = chosen.getBoundingClientRect();
+    if (tile.left < box.left) row.current.scrollLeft += tile.left - box.left;
+    else if (tile.right > box.right)
+      row.current.scrollLeft += tile.right - box.right;
   }, [value]);
 
   return (
